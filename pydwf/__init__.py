@@ -7,14 +7,7 @@ from typing import Optional, Tuple, List
 
 from .dwf_function_signatures import dwf_function_signatures
 
-# Current version:
-#
-#   - Based on dwf.h version 3.12.1 (md5sum = 670fc8ba690cbe0f848444c6f1458682)
-#
-# Earlier versions:
-#
-#   - Based on dwf.h version 3.11.14 beta (md5sum = 58380f585390a41549e6e0c9b42b5c48).
-#   - Based on dwf.h version 3.10.9       (md5sum = 05d0692e037305d75b89da432637f34f).
+# The mapping given here is based on the C header file "dwf.h", version 3.12.1 (md5sum = 670fc8ba690cbe0f848444c6f1458682).
 
 # Open Issues (to be reported):
 #
@@ -277,12 +270,20 @@ class DigilentWaveformLibraryError(RuntimeError):
     def __init__(self, code: Optional[DWFERC], msg: Optional[str]) -> None:
         self.code = code
         self.msg = msg
-    def __str__(self):
-        return "DWF Error {!r} ({}): {!r}".format(self.code.name, self.code.value, self.msg.strip())
+    def __str__(self) -> str:
+        if self.code is None:
+            first_part = "DWF Error (unspecified)"
+        else:
+            first_part = "DWF Error {!r} ({})".format(self.code.name, self.code.value)
+
+        if self.msg is None:
+            return first_part
+        else:
+            return "{}: {!r}".format(first_part, self.msg.strip())
 
 
 class _typespec_ctypes:
-    """The members of this map the type specifications as given in the 'dwf_function_signatures' variable to ctypes types."""
+    """The class members given below map the type specifications as given in the 'dwf_function_signatures' variable to ctypes types."""
 
     c_bool           = ctypes.c_bool  # Note: use of type 'bool' in dwf.h is probably not intentional.
 
@@ -298,10 +299,7 @@ class _typespec_ctypes:
     c_int          = ctypes.c_int
     c_int_ptr      = ctypes.POINTER(c_int)
 
-    c_int16        = ctypes.c_int16
-    c_int16_ptr    = ctypes.POINTER(c_int16)
-
-    c_unsigned_char     = ctypes.c_uint8                      # Is there no ctypes type for 'unsigned char'?
+    c_unsigned_char     = ctypes.c_ubyte
     c_unsigned_char_ptr = ctypes.POINTER(c_unsigned_char)
 
     c_unsigned_short     = ctypes.c_ushort
@@ -319,8 +317,6 @@ class _typespec_ctypes:
 
     c_void_ptr      = ctypes.c_void_p
 
-    BYTE             = c_int
-
     HDWF          = c_int  # Handle
     HDWF_ptr      = ctypes.POINTER(HDWF)
 
@@ -329,10 +325,10 @@ class _typespec_ctypes:
 
     ENUMFILTER    = c_int
 
-    TRIGSRC       = BYTE
+    TRIGSRC       = c_unsigned_char
     TRIGSRC_ptr   = ctypes.POINTER(TRIGSRC)
 
-    FUNC          = BYTE
+    FUNC          = c_unsigned_char
     FUNC_ptr      = ctypes.POINTER(FUNC)
 
     DEVID         = c_int
@@ -341,7 +337,7 @@ class _typespec_ctypes:
     DEVVER        = c_int
     DEVVER_ptr    = ctypes.POINTER(DEVVER)
 
-    DwfState      = BYTE
+    DwfState      = c_unsigned_char
     DwfState_ptr  = ctypes.POINTER(DwfState)
 
     DwfEnumConfigInfo = c_int
@@ -350,7 +346,7 @@ class _typespec_ctypes:
     ACQMODE       = c_int
     ACQMODE_ptr   = ctypes.POINTER(ACQMODE)
 
-    ANALOGIO      = BYTE
+    ANALOGIO      = c_unsigned_char
     ANALOGIO_ptr  = ctypes.POINTER(ANALOGIO)
 
     FILTER         = c_int
@@ -394,7 +390,9 @@ class _typespec_ctypes:
 class DigilentWaveformLibrary:
     """Provides access to the DWF shared library functions.
 
-    Version 3.12.1 of the DWF library has 5 miscellaneous functions, none of which are obsolete:
+    Version 3.12.1 of the DWF library has 5 miscellaneous functions, none of which are obsolete, that are
+    wrapped as DigilentWaveformLibrary methods:
+
         FDwfGetLastError, FDwfGetLastErrorMsg, FDwfGetVersion, FDwfParamSet, and FDwfParamGet.
 
     In addition, the following two methods are provided for implementing the Python interface:
@@ -424,7 +422,7 @@ class DigilentWaveformLibrary:
         self.device = DigilentWaveformLibrary.DeviceAPI(self)
 
     @staticmethod
-    def _annotate_function_signatures(lib) -> None:
+    def _annotate_function_signatures(lib: ctypes.CDLL) -> None:
         """Adds 'ctype' return type and parameter type annotations for all known functions in the DWF library."""
 
         function_signatures = dwf_function_signatures(_typespec_ctypes)
@@ -525,7 +523,7 @@ class DigilentWaveformLibrary:
         These functions are used to discover all connected, compatible devices.
         """
 
-        def __init__(self, dwf) -> None:
+        def __init__(self, dwf: 'DigilentWaveformLibrary') -> None:
             self._dwf = dwf
 
         def count(self, enumfilter: Optional[ENUMFILTER]=None) -> int:
@@ -771,7 +769,7 @@ class DigilentWaveformLibrary:
         The DeviceAPI class also provides the openBySerialNumber() convenience method, which is the recommended way to open a specific device.
         """
 
-        def __init__(self, dwf) -> None:
+        def __init__(self, dwf: 'DigilentWaveformLibrary') -> None:
             self._dwf = dwf
 
         def open(self, device_index: int, config_index: Optional[int]=None) -> 'DigilentWaveformDevice':
@@ -834,7 +832,7 @@ class DigilentWaveformDevice:
     It also includes 11 sub-APIs that can be reached via fields of the instance.
     """
 
-    def __init__(self, dwf, hdwf) -> None:
+    def __init__(self, dwf: DigilentWaveformLibrary, hdwf: int) -> None:
         self._dwf = dwf
         self._hdwf = hdwf
         self.analogIn = DigilentWaveformDevice.AnalogInAPI(self)
@@ -993,7 +991,7 @@ class DigilentWaveformDevice:
         Version 3.12.1 of the DWF library has 88 'FDwfAnalogIn' functions, 1 of which (FDwfAnalogInTriggerSourceInfo) is obsolete.
         """
 
-        def __init__(self, device) -> None:
+        def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
 
         def reset(self) -> None:
@@ -1093,7 +1091,7 @@ class DigilentWaveformDevice:
 
         def statusData16(self, idxChannel: int, idxData: int, cdData: int) -> np.ndarray:
             samples = np.empty(cdData, dtype=np.int16)
-            result = self._device._dwf._lib.FDwfAnalogInStatusData16(self._device._hdwf, idxChannel, samples.ctypes.data_as(_typespec_ctypes.c_int16_ptr), idxData, cdData)
+            result = self._device._dwf._lib.FDwfAnalogInStatusData16(self._device._hdwf, idxChannel, samples.ctypes.data_as(_typespec_ctypes.c_short_ptr), idxData, cdData)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             return samples
@@ -1337,7 +1335,7 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def channelRangeGet(self, idxChannel) -> float:
+        def channelRangeGet(self, idxChannel: int) -> float:
             c_voltsRange = _typespec_ctypes.c_double()
             result = self._device._dwf._lib.FDwfAnalogInChannelRangeGet(self._device._hdwf, idxChannel, c_voltsRange)
             if result != _RESULT_SUCCESS:
@@ -1362,7 +1360,7 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def channelOffsetGet(self, idxChannel) -> float:
+        def channelOffsetGet(self, idxChannel: int) -> float:
             c_voltOffset = _typespec_ctypes.c_double()
             result = self._device._dwf._lib.FDwfAnalogInChannelOffsetGet(self._device._hdwf, idxChannel, c_voltOffset)
             if result != _RESULT_SUCCESS:
@@ -1375,7 +1373,7 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def channelAttenuationGet(self, idxChannel) -> float:
+        def channelAttenuationGet(self, idxChannel: int) -> float:
             c_attenuation = _typespec_ctypes.c_double()
             result = self._device._dwf._lib.FDwfAnalogInChannelAttenuationGet(self._device._hdwf, idxChannel, c_attenuation)
             if result != _RESULT_SUCCESS:
@@ -1707,7 +1705,7 @@ class DigilentWaveformDevice:
             sec = c_sec.value
             return sec
 
-        def triggerSourceInfo(self):
+        def triggerSourceInfo(self) -> List[TRIGSRC]:
             """Get analog-in trigger source info.
 
             Note: This function is OBSOLETE. Use the generic DeviceAPI.triggerInfo() method instead.
@@ -2102,7 +2100,7 @@ class DigilentWaveformDevice:
             samplesMax = c_samplesMax.value
             return (samplesMin, samplesMax)
 
-        def nodeDataSet(self):
+        def nodeDataSet(self) -> None:
             raise NotImplementedError()
 
         def customAMFMEnableSet(self, idxChannel: int, enable: bool) -> None:
@@ -2148,108 +2146,108 @@ class DigilentWaveformDevice:
             dataCorrupted = c_dataCorrupted.value
             return (dataFree, dataLost, dataCorrupted)
 
-        def nodePlayData(self):
+        def nodePlayData(self) -> None:
             raise NotImplementedError()
 
         ################################################# Obsolete functions follow:
 
-        def triggerSourceInfo(self):
+        def triggerSourceInfo(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutTriggerSourceInfo(HDWF hdwf, int idxChannel, int *pfstrigsrc); // use IsBitSet
 
-        def enableSet(self):
+        def enableSet(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutEnableSet(HDWF hdwf, int idxChannel, BOOL fEnable);
 
-        def enableGet(self):
+        def enableGet(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutEnableGet(HDWF hdwf, int idxChannel, BOOL *pfEnable);
 
-        def functionInfo(self):
+        def functionInfo(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutFunctionInfo(HDWF hdwf, int idxChannel, int *pfsfunc); // use IsBitSet
 
-        def functionSet(self):
+        def functionSet(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutFunctionSet(HDWF hdwf, int idxChannel, FUNC func);
 
-        def functionGet(self):
+        def functionGet(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutFunctionGet(HDWF hdwf, int idxChannel, FUNC *pfunc);
 
-        def frequencyInfo(self):
+        def frequencyInfo(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutFrequencyInfo(HDWF hdwf, int idxChannel, double *phzMin, double *phzMax);
 
-        def frequencySet(self):
+        def frequencySet(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutFrequencySet(HDWF hdwf, int idxChannel, double hzFrequency);
 
-        def frequencyGet(self):
+        def frequencyGet(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutFrequencyGet(HDWF hdwf, int idxChannel, double *phzFrequency);
 
-        def amplitudeInfo(self):
+        def amplitudeInfo(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutAmplitudeInfo(HDWF hdwf, int idxChannel, double *pvoltsMin, double *pvoltsMax);
 
-        def amplitudeSet(self):
+        def amplitudeSet(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutAmplitudeSet(HDWF hdwf, int idxChannel, double voltsAmplitude);
 
-        def amplitudeGet(self):
+        def amplitudeGet(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutAmplitudeGet(HDWF hdwf, int idxChannel, double *pvoltsAmplitude);
 
-        def offsetInfo(self):
+        def offsetInfo(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutOffsetInfo(HDWF hdwf, int idxChannel, double *pvoltsMin, double *pvoltsMax);
 
-        def offsetSet(self):
+        def offsetSet(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutOffsetSet(HDWF hdwf, int idxChannel, double voltsOffset);
 
-        def offsetGet(self):
+        def offsetGet(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutOffsetGet(HDWF hdwf, int idxChannel, double *pvoltsOffset);
 
-        def symmetryInfo(self):
+        def symmetryInfo(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutSymmetryInfo(HDWF hdwf, int idxChannel, double *ppercentageMin, double *ppercentageMax);
 
-        def symmetrySet(self):
+        def symmetrySet(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutSymmetrySet(HDWF hdwf, int idxChannel, double percentageSymmetry);
 
-        def symmetryGet(self):
+        def symmetryGet(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutSymmetryGet(HDWF hdwf, int idxChannel, double *ppercentageSymmetry);
 
-        def phaseInfo(self):
+        def phaseInfo(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutPhaseInfo(HDWF hdwf, int idxChannel, double *pdegreeMin, double *pdegreeMax);
 
-        def phaseSet(self):
+        def phaseSet(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutPhaseSet(HDWF hdwf, int idxChannel, double degreePhase);
 
-        def phaseGet(self):
+        def phaseGet(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutPhaseGet(HDWF hdwf, int idxChannel, double *pdegreePhase);
 
-        def dataInfo(self):
+        def dataInfo(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutDataInfo(HDWF hdwf, int idxChannel, int *pnSamplesMin, int *pnSamplesMax);
 
-        def dataSet(self):
+        def dataSet(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutDataSet(HDWF hdwf, int idxChannel, double *rgdData, int cdData);
 
-        def playStatus(self):
+        def playStatus(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutPlayStatus(HDWF hdwf, int idxChannel, int *cdDataFree, int *cdDataLost, int *cdDataCorrupted);
 
-        def playData(self):
+        def playData(self) -> None:
             raise NotImplementedError()
             # DWFAPI BOOL FDwfAnalogOutPlayData(HDWF hdwf, int idxChannel, double *rgdData, int cdData);
 
@@ -2627,7 +2625,7 @@ class DigilentWaveformDevice:
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
 
-        def reset(self):
+        def reset(self) -> None:
             """Resets and configures (by default, having auto configure enabled) all DigitalIn instrument parameters to default values."""
             result = self._device._dwf._lib.FDwfDigitalInReset(self._device._hdwf)
             if result != _RESULT_SUCCESS:
@@ -2729,15 +2727,15 @@ class DigilentWaveformDevice:
             hzFreq = c_hzFreq.value
             return hzFreq
 
-        def clockSourceInfo(self):
+        def clockSourceInfo(self) -> None:
             #('FDwfDigitalInClockSourceInfo', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pfsDwfDigitalInClockSource', typespec.c_int_ptr) ], False),
             raise NotImplementedError()
 
-        def clockSourceSet(self):
+        def clockSourceSet(self) -> None:
             #('FDwfDigitalInClockSourceSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('v', typespec.DwfDigitalInClockSource) ], False),
             raise NotImplementedError()
 
-        def clockSourceGet(self):
+        def clockSourceGet(self) -> None:
             #('FDwfDigitalInClockSourceGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pv', typespec.DwfDigitalInClockSource_ptr) ], False),
             raise NotImplementedError()
 
@@ -2770,59 +2768,59 @@ class DigilentWaveformDevice:
             nBits = c_nBits.value
             return nBits
 
-        def sampleFormatSet(self):
+        def sampleFormatSet(self) -> None:
             #('FDwfDigitalInSampleFormatSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('nBits', typespec.c_int) ], False),
             raise NotImplementedError()
 
-        def sampleFormatGet(self):
+        def sampleFormatGet(self) -> None:
             #('FDwfDigitalInSampleFormatGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pnBits', typespec.c_int_ptr) ], False),
             raise NotImplementedError()
 
-        def inputOrderSet(self):
+        def inputOrderSet(self) -> None:
             #('FDwfDigitalInInputOrderSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('fDioFirst', typespec.c_bool) ], False),
             raise NotImplementedError()
 
-        def bufferSizeInfo(self):
+        def bufferSizeInfo(self) -> None:
             #('FDwfDigitalInBufferSizeInfo', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pnSizeMax', typespec.c_int_ptr) ], False),
             raise NotImplementedError()
 
-        def bufferSizeSet(self):
+        def bufferSizeSet(self) -> None:
             #('FDwfDigitalInBufferSizeSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('nSize', typespec.c_int) ], False),
             raise NotImplementedError()
 
-        def bufferSizeGet(self):
+        def bufferSizeGet(self) -> None:
             #('FDwfDigitalInBufferSizeGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pnSize', typespec.c_int_ptr) ], False),
             raise NotImplementedError()
 
-        def sampleModeInfo(self):
+        def sampleModeInfo(self) -> None:
             #('FDwfDigitalInSampleModeInfo', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pfsDwfDigitalInSampleMode', typespec.c_int_ptr) ], False),
             raise NotImplementedError()
 
-        def sampleModeSet(self):
+        def sampleModeSet(self) -> None:
             #('FDwfDigitalInSampleModeSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('v', typespec.DwfDigitalInSampleMode) ], False),
             raise NotImplementedError()
 
-        def sampleModeGet(self):
+        def sampleModeGet(self) -> None:
             #('FDwfDigitalInSampleModeGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pv', typespec.DwfDigitalInSampleMode_ptr) ], False),
             raise NotImplementedError()
 
-        def sampleSensibleSet(self):
+        def sampleSensibleSet(self) -> None:
             #('FDwfDigitalInSampleSensibleSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('fs', typespec.c_unsigned_int) ], False),
             raise NotImplementedError()
 
-        def sampleSensibleGet(self):
+        def sampleSensibleGet(self) -> None:
             #('FDwfDigitalInSampleSensibleGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pfs', typespec.c_unsigned_int_ptr) ], False),
             raise NotImplementedError()
 
-        def acquisitionModeInfo(self):
+        def acquisitionModeInfo(self) -> None:
             #('FDwfDigitalInAcquisitionModeInfo', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pfsacqmode', typespec.c_int_ptr) ], False),
             raise NotImplementedError()
 
-        def acquisitionModeSet(self):
+        def acquisitionModeSet(self) -> None:
             #('FDwfDigitalInAcquisitionModeSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('acqmode', typespec.ACQMODE) ], False),
             raise NotImplementedError()
 
-        def acquisitionModeGet(self):
+        def acquisitionModeGet(self) -> None:
             #('FDwfDigitalInAcquisitionModeGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pacqmode', typespec.ACQMODE_ptr) ], False),
             raise NotImplementedError()
 
@@ -2854,23 +2852,23 @@ class DigilentWaveformDevice:
             slope = DwfTriggerSlope(c_slope.value)
             return slope
 
-        def triggerPositionInfo(self):
+        def triggerPositionInfo(self) -> None:
             #('FDwfDigitalInTriggerPositionInfo', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pnSamplesAfterTriggerMax', typespec.c_unsigned_int_ptr) ], False),
             raise NotImplementedError()
 
-        def triggerPositionSet(self):
+        def triggerPositionSet(self) -> None:
             #('FDwfDigitalInTriggerPositionSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('cSamplesAfterTrigger', typespec.c_unsigned_int) ], False),
             raise NotImplementedError()
 
-        def triggerPositionGet(self):
+        def triggerPositionGet(self) -> None:
             #('FDwfDigitalInTriggerPositionGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pcSamplesAfterTrigger', typespec.c_unsigned_int_ptr) ], False),
             raise NotImplementedError()
 
-        def triggerPrefillSet(self):
+        def triggerPrefillSet(self) -> None:
             #('FDwfDigitalInTriggerPrefillSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('cSamplesBeforeTrigger', typespec.c_unsigned_int) ], False),
             raise NotImplementedError()
 
-        def triggerPrefillGet(self):
+        def triggerPrefillGet(self) -> None:
             #('FDwfDigitalInTriggerPrefillGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pcSamplesBeforeTrigger', typespec.c_unsigned_int_ptr) ], False),
             raise NotImplementedError()
 
@@ -2937,25 +2935,25 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def triggerCountSet(self):
+        def triggerCountSet(self) -> None:
             #('FDwfDigitalInTriggerCountSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('cCount', typespec.c_int), ('fRestart', typespec.c_int) ], False),
             raise NotImplementedError()
 
-        def triggerLengthSet(self):
+        def triggerLengthSet(self) -> None:
             #('FDwfDigitalInTriggerLengthSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('secMin', typespec.c_double), ('secMax', typespec.c_double), ('idxSync', typespec.c_int) ], False),
             raise NotImplementedError()
 
-        def triggerMatchSet(self):
+        def triggerMatchSet(self) -> None:
             #('FDwfDigitalInTriggerMatchSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('iPin', typespec.c_int), ('fsMask', typespec.c_unsigned_int), ('fsValue', typespec.c_unsigned_int), ('cBitStuffing', typespec.c_int) ], False),
             raise NotImplementedError()
 
         # Obsolete functions:
 
-        def mixedSet(self):
+        def mixedSet(self) -> None:
             #('FDwfDigitalInMixedSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('fEnable', typespec.BOOL) ], True),
             raise NotImplementedError()
 
-        def triggerSourceInfo(self):
+        def triggerSourceInfo(self) -> None:
             #('FDwfDigitalInTriggerSourceInfo', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pfstrigsrc', typespec.c_int_ptr) ], True),
             raise NotImplementedError()
  
@@ -2965,7 +2963,7 @@ class DigilentWaveformDevice:
 
         Version 3.12.1 of the DWF library has 46 'FDwfDigitalOut' functions, 1 of which (FDwfDigitalOutTriggerSourceInfo) is obsolete.
         """
-        def __init__(self, device) -> None:
+        def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
 
         def reset(self) -> None:
@@ -3382,7 +3380,7 @@ class DigilentWaveformDevice:
 
         Version 3.12.1 of the DWF library has 9 'FDwfDigitalUart' functions, none of which are obsolete.
         """
-        def __init__(self, device) -> None:
+        def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
 
         def reset(self) -> None:
@@ -3422,11 +3420,11 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def tx(self, tx_data: bytes):
+        def tx(self, tx_data: bytes) -> None:
             # DWFAPI BOOL FDwfDigitalUartTx(HDWF hdwf, char *szTx, int cTx);
             raise NotImplementedError()
 
-        def rx(self):
+        def rx(self) -> None:
             # DWFAPI BOOL FDwfDigitalUartRx(HDWF hdwf, char *szRx, int cRx, int *pcRx, int *pParity);
             raise NotImplementedError()
 
@@ -3435,7 +3433,7 @@ class DigilentWaveformDevice:
 
         Version 3.12.1 of the DWF library has 18 'FDwfDigitalSpi' functions, none of which are obsolete.
         """
-        def __init__(self, device) -> None:
+        def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
 
         def reset(self) -> None:
@@ -3537,7 +3535,7 @@ class DigilentWaveformDevice:
 
         Version 3.12.1 of the DWF library has 11 'FDwfDigitalI2c' functions, none of which are obsolete.
         """
-        def __init__(self, device) -> None:
+        def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
 
         def reset(self) -> None:
@@ -3591,7 +3589,7 @@ class DigilentWaveformDevice:
 
         Version 3.12.1 of the DWF library has 7 'FDwfDigitalCan' functions, none of which are obsolete.
         """
-        def __init__(self, device) -> None:
+        def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
 
         def reset(self) -> None:
@@ -3633,7 +3631,7 @@ class DigilentWaveformDevice:
 
         Version 3.12.1 of the DWF library has 22 'FDwfAnalogImpedance' functions, none of which are obsolete.
         """
-        def __init__(self, device) -> None:
+        def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
 
         def reset(self) -> None:

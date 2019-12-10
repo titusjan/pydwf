@@ -140,7 +140,9 @@ def main():
         with redirect_stdout(fo):
             print("# This is generated code, do not edit by hand!")
             print()
-            print("def dwf_function_signatures(typespec):")
+            print("from typing import List, Tuple, Any")
+            print()
+            print("def dwf_function_signatures(typespec: Any) -> List[Tuple[str, Any, List[Tuple[str, Any]], bool]]:")
             print()
             print("    return [")
             print( ",\n".join("        " + funcspec.emit() for funcspec in funcspecs))

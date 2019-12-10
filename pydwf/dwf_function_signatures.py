@@ -1,6 +1,8 @@
 # This is generated code, do not edit by hand!
 
-def dwf_function_signatures(typespec):
+from typing import List, Tuple, Any
+
+def dwf_function_signatures(typespec: Any) -> List[Tuple[str, Any, List[Tuple[str, Any]], bool]]:
 
     return [
         ('FDwfGetLastError', typespec.c_int, [ ('pdwferc', typespec.DWFERC_ptr) ], False),
