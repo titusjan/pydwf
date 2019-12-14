@@ -18,6 +18,7 @@ from .dwf_function_signatures import dwf_function_signatures
 #   The DEVVER enum type has 2 values with integer 2, is that intentional?
 #   The DwfState enum type has 2 values with integer 3, is that intentional?
 #   FDwfAnalogInTriggerForce not documented in the PDF?
+#   FDwfAnalogInTriggerHoldOffInfo: parameter is called 'pnStep' rather than 'pnSteps'.
 
 hdwfNone = 0  # HDWF value representing a bad device handle.
 
@@ -1610,8 +1611,8 @@ class DigilentWaveformDevice:
             secTimeout = c_secTimeout.value
             return secTimeout
 
-        # TODO: Typo 'nStep' (corrected)
         def triggerHoldOffInfo(self) -> Tuple[float, float, float]:
+            # TODO: Typo 'nStep' (corrected)
             c_secMin = _typespec_ctypes.c_double()
             c_secMax = _typespec_ctypes.c_double()
             c_nSteps = _typespec_ctypes.c_double()
