@@ -17,7 +17,6 @@ from .dwf_function_signatures import dwf_function_signatures
 #   There's a bunch of lines in dwf.h with trailing spaces.
 #   The DEVVER enum type has 2 values with integer 2, is that intentional?
 #   The DwfState enum type has 2 values with integer 3, is that intentional?
-#   FDwfParamSet/FDwfParamGet vs FDwfDeviceParamSet/FDwfDeviceParamGet : on library level and on device level. What's the difference?
 #   FDwfAnalogInTriggerForce not documented in the PDF?
 
 hdwfNone = 0  # HDWF value representing a bad device handle.
@@ -321,12 +320,6 @@ class _typespec_ctypes:
     DEVVER                      = c_int
     DEVVER_ptr                  = ctypes.POINTER(DEVVER)
 
-    DwfState                    = c_unsigned_char
-    DwfState_ptr                = ctypes.POINTER(DwfState)
-
-    DwfEnumConfigInfo           = c_int
-    AnalogOutNode               = c_int
-
     ACQMODE                     = c_int
     ACQMODE_ptr                 = ctypes.POINTER(ACQMODE)
 
@@ -338,6 +331,12 @@ class _typespec_ctypes:
 
     TRIGTYPE                    = c_int
     TRIGTYPE_ptr                = ctypes.POINTER(TRIGTYPE)
+
+    TRIGLEN                     = c_int
+    TRIGLEN_ptr                 = ctypes.POINTER(TRIGLEN)
+
+    DwfState                    = c_unsigned_char
+    DwfState_ptr                = ctypes.POINTER(DwfState)
 
     DwfAnalogOutMode            = c_int
     DwfAnalogOutMode_ptr        = ctypes.POINTER(DwfAnalogOutMode)
@@ -364,11 +363,10 @@ class _typespec_ctypes:
     DwfDigitalOutIdle_ptr       = ctypes.POINTER(DwfDigitalOutIdle)
 
     DwfParam                    = c_int
-
+    DwfEnumConfigInfo           = c_int
     DwfAnalogImpedance          = c_int
 
-    TRIGLEN     = c_int
-    TRIGLEN_ptr = ctypes.POINTER(TRIGLEN)
+    AnalogOutNode               = c_int
 
 
 class DigilentWaveformLibraryError(RuntimeError):
@@ -502,6 +500,16 @@ class DigilentWaveformLibrary:
     def paramSet(self, parameter: DwfParam, parameter_value: int) -> None:
         """Sets a default parameter value.
 
+        Parameters are settings of a specific DigilentWaveformsDevice.
+        Different DigilentWaveformsDevice instances can have different values for each of the possible DwfParam parameters.
+
+        This function sets parameter values set at the library level.
+        They are used as default parameters for devices that are opened subsequently.
+
+        Note:
+            The parameter values are not checked to make sure they correspond to a valid value
+            for the specific parameter.
+
         Args:
             parameter: The parameter to set.
             parameter_value: The desired parameter value.
@@ -515,6 +523,12 @@ class DigilentWaveformLibrary:
 
     def paramGet(self, parameter: DwfParam) -> int:
         """Returns a default parameter value.
+
+        Parameters are settings of a specific DigilentWaveformsDevice.
+        Different DigilentWaveformsDevice instances can have different values for each of the possible DwfParam parameters.
+
+        This function retrieves parameter values set at the library level.
+        They are used as default parameters for devices that are opened subsequently.
 
         Args:
             parameter: The parameter to get.
@@ -549,6 +563,9 @@ class DigilentWaveformLibrary:
 
             This function must be called before using other enum functions because they obtain information about enumerated devices from this list,
             indexed by the device index.
+
+            Note:
+                This method takes approximately 2 seconds to complete.
 
             Args:
                 enumfilter: Specify which devices to enumerate. If not specified, enumerate all devices.
@@ -817,13 +834,15 @@ class DigilentWaveformLibrary:
         Version 3.12.1 of the DWF library has 15 'FDwfDevice' functions, none of which are obsolete.
 
         The 'open' and 'closeAll' methods are implemented here, since they are not associated to a specific previously opened device.
-        Note that the 'open' method defined below encapsulates two different library calls (FDwfDeviceOpen and FDwfDeviceConfigOpen).
-        These API calls open either the default configuration, or an explicitly specified configuration of the device. In the open()
-        method defined below, the decision is made based on the optional 'config_index' parameter.
-
         The 12 remaining library functions are implemented as methods of the DigilentWaveformDevice class.
 
-        The DeviceAPI class also provides the openBySerialNumber() convenience method, which is the recommended way to open a specific device.
+        The 'open' method wraps two different library calls: 'FDwfDeviceOpen' and 'FDwfDeviceConfigOpen'.
+        These API calls open either the default configuration, or an explicitly specified configuration of the device.
+        In the open() method defined below, the decision on which underlying library function to call is made based
+        on the value of the'config_index' parameter.
+
+        The DeviceAPI class also provides the openBySerialNumber() convenience method.
+        This the recommended way to open a specific device.
         """
 
         def __init__(self, dwf: 'DigilentWaveformLibrary') -> None:
@@ -831,6 +850,9 @@ class DigilentWaveformLibrary:
 
         def open(self, device_index: int, config_index: Optional[int]=None) -> 'DigilentWaveformDevice':
             """Opens a device identified by the enumeration index and retrieve a handle.
+
+            Note:
+                This method takes approximately 2 seconds to complete.
 
             Args:
                 device_index: Zero-based index of the previously enumerated device (see the EnumAPI.count() method).
@@ -868,16 +890,21 @@ class DigilentWaveformLibrary:
         def openBySerialNumber(self, serial_number_sought: str) -> 'DigilentWaveformDevice':
             """Opens a device identified by its serial number.
 
-            Note: this is a convenience function that doesn't directly encapsulate a single function call of the library.
+            Note:
+                This is a convenience method that doesn't directly encapsulate a single function call of the library.
+
+            Note:
+                This method takes approximately 2 seconds to complete.
 
             Args:
-                serial_number_sought: The serial number of the device to be opened. Device serial numbers consist of 12 hexadecimal digits.
+                serial_number_sought: The serial number of the device to be opened.
+                                      Digilent device serial numbers consist of 12 hexadecimal digits.
 
             Returns:
-                The DigilentWaveformDevice created as a result of this call.
+                The DigilentWaveformDevice instance created as a result of this call.
 
             Raises:
-                DigilentWaveformLibraryError: an error occured in the underlying API.
+                DigilentWaveformLibraryError: an error occurred in the underlying API.
                 ValueError: the serial number specified was not found or it was found more than once (unlikely).
             """
             num_devices = self._dwf.enum.count()  # Perform a device enumeration.
@@ -887,20 +914,38 @@ class DigilentWaveformLibrary:
                 raise ValueError("Cannot open Digilent device by serial number {!r}: {} candidates.".format(serial_number_sought, len(candidates)))
 
             # We found a unique candidate. Open it.
-            return self.open(candidates[0])
+            device_index = candidates[0]
+            return self.open(device_index)
 
 
 class DigilentWaveformDevice:
-    """Implements API functions that associate to a single specific device.
+    """A DigilentWaveformDevice represents a single Digilent measurement device.
+
+    A DigitalWaveform device consists of multiple instruments,
+    e.g. Analog In, Analog Out, Digital In, and Digital Out.
+
+    The DigilentWaveformDevice class wraps API functions that are specific to a specific device.
 
     This includes 12 of the 15 FDwfDevice functions provided by the C API, namely,
-    those functions that refer to a specific open device.
+    the 12 functions that refer to a specific open device.
     The other 3 FDwfDevice devices are wrapped at the DigilentWaveformLibrary library level.
 
-    It also includes 11 sub-APIs that can be reached via fields of the instance.
+    It also includes 11 sub-APIs to address the various instruments inside the device.
+    Those can be reached via fields of the DigilentWaveformDevice instance.
     """
 
     def __init__(self, dwf: DigilentWaveformLibrary, hdwf: int) -> None:
+        """Initialize a DigilentWaveformDevice with the specified dwf handle value.
+
+        Note:
+            The user should not make DigilentWaveformDevice instances directly.
+            Use DigilentWaveformLibrary.device.open() or DigilentWaveformLibrary.device.openBySerialNumber()
+            to obtain a valid DigilentWaveformDevice.
+
+        Args:
+            dwf: The DigilentWaveformLibrary instance used to make calls to the underlying library.
+            hdwf: the device to open.
+        """
         self._dwf = dwf
         self._hdwf = hdwf
         self.analogIn = DigilentWaveformDevice.AnalogInAPI(self)
@@ -916,7 +961,7 @@ class DigilentWaveformDevice:
         self.analogImpedance = DigilentWaveformDevice.AnalogImpedanceAPI(self)
 
     def close(self) -> None:
-        """Closes a interface handle when access to the device is no longer needed.
+        """Closes an interface handle when access to the device is no longer needed.
 
         Once this function returns, the DigilentWaveformDevice can no longer be used to access the device.
 
@@ -936,7 +981,7 @@ class DigilentWaveformDevice:
         With value 3 the analog-out configuration will be applied dynamically, without stopping the instrument.
 
         Args:
-            autoConfigure: Value for this option: 0 disable, 1 enable, 3 dynamic.
+            autoConfigure: Value for this option; 0: disable, 1: enable, 3: dynamic.
 
         Raises:
             DigilentWaveformLibraryError: the autoConfigure value cannot be set.
@@ -946,10 +991,10 @@ class DigilentWaveformDevice:
             raise self._dwf._exception()
 
     def autoConfigureGet(self) -> int:
-        """Returns the AutoConfig setting in the device.
+        """Returns the AutoConfig setting of the device.
 
         Returns:
-            The auto-configure setting 0 disable, 1 enable, 3 dynamic.
+            The auto-configure setting; 0: disable, 1: enable, 3: dynamic.
 
         Raises:
             DigilentWaveformLibraryError: the autoConfigure value cannot be retrieved.
