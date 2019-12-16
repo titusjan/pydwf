@@ -21,13 +21,15 @@ def main():
 
         print("Device index {} ({} of {} devices):".format(device_index, device_index+1, num_devices))
         print()
-
         devtype = dwf.enum.deviceType(device_index)
         is_open = dwf.enum.deviceIsOpened(device_index)
         username = dwf.enum.userName(device_index)
         devicename = dwf.enum.deviceName(device_index)
         serial = dwf.enum.serialNumber(device_index)
 
+        print("    Basic device information")
+        print("    ========================")
+        print()
         print("    device .......... : {}".format(devtype[0]))
         print("    version ......... : {}".format(devtype[1]))
         print("    open ............ : {}".format(is_open))
@@ -43,7 +45,8 @@ def main():
             ai_bits = dwf.enum.analogInBits(device_index)
             ai_frequency = dwf.enum.analogInFrequency(device_index)
 
-            print("    analog-in info (obsolete API):")
+            print("    Analog-in information (retrieved through obsolete API)")
+            print("    ======================================================")
             print()
             print("    number of channels ...... : {!r}".format(ai_channels))
             print("    buffer size ............. : {!r}".format(ai_bufsize))
@@ -62,7 +65,8 @@ def main():
                     configuration_parameter_value = dwf.enum.configInfo(configuration_index, configuration_parameter)
                     configuration_data[(configuration_index, configuration_parameter)] = configuration_parameter_value
 
-            print("    supported configurations:")
+            print("    Supported configurations")
+            print("    ========================")
             print()
             print("    configuration_index:    {}".format("  ".join("{:6d}".format(configuration_index) for configuration_index in range(num_config))))
             print("    ----------------------  {}".format("  ".join("------" for configuration_index in range(num_config))))
