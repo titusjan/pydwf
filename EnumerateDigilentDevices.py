@@ -53,16 +53,21 @@ def main():
 
         if args.list_configurations:
 
-            num_config = dwf.enum.configCount(device_index)
-            for configuration_index in range(num_config):
+            configuration_data = {}
 
-                print("    Configuration index {} ({} of {} configurations):".format(configuration_index,configuration_index+1, num_config))
-                print()
+            num_config = dwf.enum.configCount(device_index)
+
+            for configuration_index in range(num_config):
                 for configuration_parameter in DwfEnumConfigInfo:
                     configuration_parameter_value = dwf.enum.configInfo(configuration_index, configuration_parameter)
-                    print("        {:22s} : {:8d}".format(configuration_parameter.name, configuration_parameter_value))
-                print()
+                    configuration_data[(configuration_index, configuration_parameter)] = configuration_parameter_value
 
+            print("    supported configurations:")
+            print()
+            print("    configuration_index:    {}".format("  ".join("{:6d}".format(configuration_index) for configuration_index in range(num_config))))
+            print("    ----------------------  {}".format("  ".join("------" for configuration_index in range(num_config))))
+            for configuration_parameter in DwfEnumConfigInfo:
+                print("    {:22}  {}".format(configuration_parameter.name, "  ".join("{:6d}".format(configuration_data[(configuration_index, configuration_parameter)]) for configuration_index in range(num_config))))
             print()
 
 if __name__ == "__main__":
