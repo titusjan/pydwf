@@ -2536,7 +2536,9 @@ class DigilentWaveformDevice:
             """Returns node value limits.
 
             Since a Node can represent many things (Power supply, Temperature sensor, etc.), the Minimum, Maximum, and Steps parameters also represent different types of values.
-            In broad terms, the (Maximum – Minimum)/Steps = the number of specific input/output values.
+
+            The (Maximum - Minimum) / Steps is the step size.
+
             FDwfAnalogIOChannelNodeInfo returns the type of values to expect and FDwfAnalogIOChannelNodeName returns the units of these values.
             """
             c_min_value = _typespec_ctypes.c_double()
@@ -2677,8 +2679,7 @@ class DigilentWaveformDevice:
             return output
 
         def inputInfo(self) -> int:
-            """Returns the readable input value mask (bit set) that can be used on the device.
-            """
+            """Returns the readable input value mask (bit set) that can be used on the device."""
             c_input_mask = _typespec_ctypes.c_unsigned_int()
             result = self._device._dwf._lib.FDwfDigitalIOInputInfo(self._device._hdwf, c_input_mask)
             if result != _RESULT_SUCCESS:
@@ -2689,7 +2690,7 @@ class DigilentWaveformDevice:
         def inputStatus(self) -> int:
             """Returns the input states of all I/O pins.
 
-            Before calling this function, call the FDwfDigitalIOStatus function to read the Digital I/O states from the device.
+            Before calling this method, call the `status` method to read the Digital I/O states from the device.
             """
             c_input = _typespec_ctypes.c_unsigned_int()
             result = self._device._dwf._lib.FDwfDigitalIOInputStatus(self._device._hdwf, c_input)
@@ -2753,8 +2754,7 @@ class DigilentWaveformDevice:
             return output
 
         def inputInfo64(self) -> int:
-            """Returns the readable input value mask (bit set) that can be used on the device.
-            """
+            """Returns the readable input value mask (bit set) that can be used on the device."""
             c_input_mask = _typespec_ctypes.c_unsigned_long_long()
             result = self._device._dwf._lib.FDwfDigitalIOInputInfo64(self._device._hdwf, c_input_mask)
             if result != _RESULT_SUCCESS:
@@ -2765,7 +2765,7 @@ class DigilentWaveformDevice:
         def inputStatus64(self) -> int:
             """Returns the input states of all I/O pins.
 
-            Before calling this function, call the FDwfDigitalIOStatus function to read the Digital I/O states from the device.
+            Before calling this method, call the `status` method to read the Digital I/O states from the device.
             """
             c_input = _typespec_ctypes.c_unsigned_long_long()
             result = self._device._dwf._lib.FDwfDigitalIOInputStatus64(self._device._hdwf, c_input)
@@ -3113,7 +3113,6 @@ class DigilentWaveformDevice:
         def triggerSourceInfo(self) -> None:
             #('FDwfDigitalInTriggerSourceInfo', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pfstrigsrc', typespec.c_int_ptr) ], True),
             raise NotImplementedError()
- 
 
     class DigitalOutAPI:
         """Provides wrappers for the 'FDwfDigitalOut' API functions.
@@ -3552,6 +3551,7 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def bitsSet(self, bits: int) -> None:
+            # NOTE: the 'bits' parameter to FDwfDigitalUartBitsSet is (strangely) a double.
             result = self._device._dwf._lib.FDwfDigitalUartBitsSet(self._device._hdwf, bits)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
