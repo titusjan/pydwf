@@ -68,10 +68,10 @@ def main():
             print("    Supported configurations")
             print("    ========================")
             print()
-            print("    configuration_index:    {}".format("  ".join("{:6d}".format(configuration_index) for configuration_index in range(num_config))))
-            print("    ----------------------  {}".format("  ".join("------" for configuration_index in range(num_config))))
+            print("    configuration_index:    {}".format("  ".join("{:8d}".format(configuration_index) for configuration_index in range(num_config))))
+            print("    ----------------------  {}".format("  ".join("--------" for configuration_index in range(num_config))))
             for configuration_parameter in DwfEnumConfigInfo:
-                print("    {:22}  {}".format(configuration_parameter.name, "  ".join("{:6d}".format(configuration_data[(configuration_index, configuration_parameter)]) for configuration_index in range(num_config))))
+                print("    {:22}  {}".format(configuration_parameter.name, "  ".join("{:8d}".format(configuration_data[(configuration_index, configuration_parameter)]) for configuration_index in range(num_config))))
             print()
 
 if __name__ == "__main__":

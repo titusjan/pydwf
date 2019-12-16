@@ -1,55 +1,62 @@
 #! /usr/bin/env python3
 
+import argparse
+import contextlib
+
 from pydwf import DigilentWaveformLibrary
 
-def TestDigitalIO(device):
+def demonstrate_usage(serial_number):
     # Version 3.12.1 of the DWF library has 19 'FDwfDigitalIO' functions, none of which are obsolete.
     # There are 3 generic functions (reset, configure, and status), and 8 functions that come in 32- and 64-bits variants.
 
-    device.autoConfigureSet(False)
+    dwf = DigilentWaveformLibrary()
 
-    digitalIO = device.digitalIO
+    with contextlib.closing(dwf.device.openBySerialNumber(serial_number)) as device:
 
-    digitalIO.reset()
+        digitalIO = device.digitalIO
 
-    # These are the two set functions.
-    digitalIO.outputEnableSet(0x00005555)
-    digitalIO.outputSet(0x0000aa55)
-    digitalIO.configure()
+        device.autoConfigureSet(False)
 
-    outputEnableInfo   = digitalIO.outputEnableInfo()
-    outputEnableInfo64 = digitalIO.outputEnableInfo64()
+        digitalIO.reset()
 
-    outputEnableGet   = digitalIO.outputEnableGet()
-    outputEnableGet64 = digitalIO.outputEnableGet64()
+        # These are the two set functions.
+        digitalIO.outputEnableSet(0x00005555)
+        digitalIO.outputSet(0x0000aa55)
+        digitalIO.configure()
 
-    outputInfo   = digitalIO.outputInfo()
-    outputInfo64 = digitalIO.outputInfo64()
+        outputEnableInfo   = digitalIO.outputEnableInfo()
+        outputEnableInfo64 = digitalIO.outputEnableInfo64()
 
-    outputGet   = digitalIO.outputGet()
-    outputGet64 = digitalIO.outputGet64()
+        outputEnableGet   = digitalIO.outputEnableGet()
+        outputEnableGet64 = digitalIO.outputEnableGet64()
 
-    inputInfo   = digitalIO.inputInfo()
-    inputInfo64 = digitalIO.inputInfo64()
+        outputInfo   = digitalIO.outputInfo()
+        outputInfo64 = digitalIO.outputInfo64()
 
-    inputStatus   = digitalIO.inputStatus()
-    inputStatus64 = digitalIO.inputStatus64()
+        outputGet   = digitalIO.outputGet()
+        outputGet64 = digitalIO.outputGet64()
 
-    print("outputEnableInfo ...... : 0x{:08x}  0x{:016x}".format(outputEnableInfo, outputEnableInfo64))
-    print("outputEnableGet ....... : 0x{:08x}  0x{:016x}".format(outputEnableGet, outputEnableGet64))
-    print("outputInfo ............ : 0x{:08x}  0x{:016x}".format(outputInfo, outputInfo64))
-    print("outputGet ............. : 0x{:08x}  0x{:016x}".format(outputGet, outputGet64))
-    print("inputInfo ............. : 0x{:08x}  0x{:016x}".format(inputInfo, inputInfo64))
-    print("inputStatus ........... : 0x{:08x}  0x{:016x}".format(inputStatus, inputStatus64))
+        inputInfo   = digitalIO.inputInfo()
+        inputInfo64 = digitalIO.inputInfo64()
+
+        inputStatus   = digitalIO.inputStatus()
+        inputStatus64 = digitalIO.inputStatus64()
+
+        print("outputEnableInfo ...... : 0x{:08x}  0x{:016x}".format(outputEnableInfo, outputEnableInfo64))
+        print("outputEnableGet ....... : 0x{:08x}  0x{:016x}".format(outputEnableGet, outputEnableGet64))
+        print("outputInfo ............ : 0x{:08x}  0x{:016x}".format(outputInfo, outputInfo64))
+        print("outputGet ............. : 0x{:08x}  0x{:016x}".format(outputGet, outputGet64))
+        print("inputInfo ............. : 0x{:08x}  0x{:016x}".format(inputInfo, inputInfo64))
+        print("inputStatus ........... : 0x{:08x}  0x{:016x}".format(inputStatus, inputStatus64))
 
 def main():
-    dwf = DigilentWaveformLibrary()
-    serial_number = '210321AA214B'
-    device = dwf.device.openBySerialNumber(serial_number)
-    try:
-        TestDigitalIO(device)
-    finally:
-        device.close()
+
+    parser = argparse.ArgumentParser(description="Demonstrate usage of the DigitalIO instrument.")
+    parser.add_argument('serial_number', help="help")
+
+    args = parser.parse_args()
+
+    demonstrate_usage(args.serial_number)
 
 if __name__ == "__main__":
     main()
