@@ -52,7 +52,7 @@ def demonstrate_usage(serial_number):
 def main():
 
     parser = argparse.ArgumentParser(description="Demonstrate usage of the DigitalIO instrument.")
-    parser.add_argument('serial_number', help="help")
+    parser.add_argument('serial_number', help="serial number of the Digilent device")
 
     args = parser.parse_args()
 

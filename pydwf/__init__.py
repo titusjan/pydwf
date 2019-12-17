@@ -3578,12 +3578,22 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def tx(self, tx_data: bytes) -> None:
-            # DWFAPI BOOL FDwfDigitalUartTx(HDWF hdwf, char *szTx, int cTx);
-            raise NotImplementedError()
+            result = self._device._dwf._lib.FDwfDigitalUartTx(self._device._hdwf, tx_data, len(tx_data))
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def rx(self) -> None:
-            # DWFAPI BOOL FDwfDigitalUartRx(HDWF hdwf, char *szRx, int cRx, int *pcRx, int *pParity);
-            raise NotImplementedError()
+        def rx(self, rx_max: int) -> Tuple[bytes, int]:
+            """If rx_max is 0, initialize reception. Else, receive characters."""
+            c_rx_count = _typespec_ctypes.c_int()
+            c_parity_error = _typespec_ctypes.c_int()
+            c_rx_buffer = ctypes.create_string_buffer(rx_max)
+            result = self._device._dwf._lib.FDwfDigitalUartRx(self._device._hdwf, c_rx_buffer, rx_max, c_rx_count, c_parity_error)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            rx_count = c_rx_count.value
+            rx_buffer = c_rx_buffer.value[:rx_count]
+            parity_error = c_parity_error.value
+            return (rx_buffer, parity_error)
 
     class DigitalSpiAPI:
         """Provides wrappers for the 'FDwfDigitalSpi' API functions.
