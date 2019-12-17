@@ -5,7 +5,7 @@ import contextlib
 
 from pydwf import DigilentWaveformLibrary
 
-def demonstrate_usage(serial_number):
+def demonstrate_usage(serial_number: str) -> None:
     # Version 3.12.1 of the DWF library has 19 'FDwfDigitalIO' functions, none of which are obsolete.
     # There are 3 generic functions (reset, configure, and status), and 8 functions that come in 32- and 64-bits variants.
 

@@ -6,7 +6,7 @@ import contextlib
 
 from pydwf import DigilentWaveformLibrary
 
-def demonstrate_usage(serial_number):
+def demonstrate_usage(serial_number: str) -> None:
 
     # The Digital UART protocol interface has 9 methods:
     # - reset()                                      -- reset the UART protocol functionality
@@ -31,6 +31,7 @@ def demonstrate_usage(serial_number):
         uart.stopSet(1)
 
         # Loopback TX to RX, both on digital I/O pin #0.
+        # No need to connect a loopback wire!
 
         uart.txSet(0)
         uart.rxSet(0)
@@ -49,7 +50,7 @@ def demonstrate_usage(serial_number):
 
 def main():
 
-    parser = argparse.ArgumentParser(description="Demonstrate usage of the UART protocol analysis functionality.")
+    parser = argparse.ArgumentParser(description="Demonstrate usage of the UART protocol functionality.")
     parser.add_argument('serial_number', help="serial number of the Digilent device")
 
     args = parser.parse_args()

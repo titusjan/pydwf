@@ -6,30 +6,30 @@ import contextlib
 from pydwf import DigilentWaveformLibrary
 
 
-def demonstrate_usage(serial_number: str):
-    #
+def demonstrate_usage(serial_number: str) -> None:
+
     # Operations on the AnalogIO instrument:
     #
-    #    reset()
-    #    configure()
-    # ok status()
+    #      reset()
+    #      configure()
+    # (ok) status()
     #
-    # ok enableInfo() -> Tuple[bool, bool]
-    #    enableSet(master_enable: bool)
-    # ok enableGet() -> bool
-    # ok enableStatus() -> bool
+    # (ok) enableInfo() -> Tuple[bool, bool]
+    #      enableSet(master_enable: bool)
+    # (ok) enableGet() -> bool
+    # (ok) enableStatus() -> bool
     #
-    # ok channelCount() -> int
-    # ok channelName(channel_index: int) -> Tuple[str, str]
-    # ok channelInfo(channel_index: int) -> int
+    # (ok) channelCount() -> int
+    # (ok) channelName(channel_index: int) -> Tuple[str, str]
+    # (ok) channelInfo(channel_index: int) -> int
     #
-    # ok channelNodeName(channel_index: int, node_index: int) -> Tuple[str, str]
-    # ok channelNodeInfo(channel_index: int, node_index: int) -> ANALOGIO
-    # ok channelNodeSetInfo(channel_index: int, node_index: int) -> Tuple[float, float, int]
-    #    channelNodeSet(channel_index: int, node_index: int, node_value: float)
-    # ok channelNodeGet(channel_index: int, node_index: int) -> float
-    # ok channelNodeStatusInfo(channel_index: int, node_index: int) -> Tuple[float, float, int]
-    # ok channelNodeStatus(channel_index: int, node_index: int) -> float
+    # (ok) channelNodeName(channel_index: int, node_index: int) -> Tuple[str, str]
+    # (ok) channelNodeInfo(channel_index: int, node_index: int) -> ANALOGIO
+    # (ok) channelNodeSetInfo(channel_index: int, node_index: int) -> Tuple[float, float, int]
+    #      channelNodeSet(channel_index: int, node_index: int, node_value: float)
+    # (ok) channelNodeGet(channel_index: int, node_index: int) -> float
+    # (ok) channelNodeStatusInfo(channel_index: int, node_index: int) -> Tuple[float, float, int]
+    # (ok) channelNodeStatus(channel_index: int, node_index: int) -> float
 
     dwf = DigilentWaveformLibrary()
 
