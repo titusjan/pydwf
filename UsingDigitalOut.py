@@ -40,6 +40,24 @@ def demonstrate_usage(serial_number: str) -> None:
 
         digitalOut.reset()
 
+        internal_clock = digitalOut.internalClockInfo()
+        trigger_source_info = digitalOut.triggerSourceInfo()
+        run_info = digitalOut.runInfo()
+        wait_info = digitalOut.waitInfo()
+        repeat_info = digitalOut.repeatInfo()
+        channel_count = digitalOut.count()
+
+        print("internal_clock ........................ : {} [Hz]".format(internal_clock))
+        print("trigger source info (DEPRECATED) ...... : {}".format(trigger_source_info))
+        print("run info .............................. : {}".format(run_info))
+        print("wait info ............................. : {}".format(wait_info))
+        print("repeat info ........................... : {}".format(repeat_info))
+        print("channel count ......................... : {}".format(channel_count))
+
+        for channel_index in range(channel_count):
+
+            zz = 
+
 def main():
 
     parser = argparse.ArgumentParser(description="Demonstrate usage of the DigitalOut instrument.")
