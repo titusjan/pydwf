@@ -14,7 +14,7 @@ def demonstrate_usage(serial_number: str) -> None:
     # [1] status() -> DwfState
     #
     # [1] internalClock    float                  [Hz]   Info
-    # [3] triggerSource    TRIGSRC                [-]    Info Set Get              // NOTE: triggerSourceInfo() is deprecated!
+    # [3] triggerSource    TRIGSRC                [-]    Info Set Get              // NOTE: triggerSourceInfo() is obsolete.
     # [4] run              float                  [s]    Info Set Get Status
     # [3] wait             float                  [s]    Info Set Get
     # [4] repeat           int                    [-]    Info Set Get Status
