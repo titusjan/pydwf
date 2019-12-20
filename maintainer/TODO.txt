@@ -1,0 +1,12 @@
+- Fix mypy errors
+- if not result
+- Make tickets:
+  - verify functionalities:
+  - document functionalities:
+- Make setup.py
+- Make sure we can put package on pypi
+- Make sure we can put docs on readtehdocs.io
+- Write docs
+- Add utility code
+
+- Copy back into our QMI repository
