@@ -6,9 +6,9 @@ import contextlib
 
 from pydwf import DigilentWaveformLibrary
 
-def demonstrate_usage(serial_number: str) -> None:
+def demo_i2c_protocol_api(i2c) -> None:
 
-    # The Digital I2C protocol interface has 11 methods:
+    # The Digital I2C protocol API has 11 methods:
     #
     # reset()
     # clear()
@@ -25,25 +25,19 @@ def demonstrate_usage(serial_number: str) -> None:
     # write()
     # writeOne()
 
-    dwf = DigilentWaveformLibrary()
+    i2c.reset()
 
-    with contextlib.closing(dwf.device.openBySerialNumber(serial_number)) as device:
-
-        i2c = device.digitalI2c
-
-        i2c.reset()
 
 def main():
 
-    parser = argparse.ArgumentParser(description="Demonstrate usage of the I2C protocol functionality.")
+    parser = argparse.ArgumentParser(description="Demonstrate usage of the I2C protocol API.")
     parser.add_argument('serial_number', help="serial number of the Digilent device")
 
     args = parser.parse_args()
 
-    demonstrate_usage(args.serial_number)
+    dwf = DigilentWaveformLibrary()
+    with contextlib.closing(dwf.device.openBySerialNumber(args.serial_number)) as device:
+        demo_i2c_protocol_api(device.digitalI2c)
 
 if __name__ == "__main__":
     main()
-
-
-

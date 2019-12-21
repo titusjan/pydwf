@@ -6,7 +6,7 @@ import contextlib
 
 from pydwf import DigilentWaveformLibrary
 
-def demonstrate_usage(serial_number: str) -> None:
+def demo_spi_protocol_api(spi) -> None:
 
     # The Digital SPI protocol interface has 18 methods:
     #
@@ -34,22 +34,18 @@ def demonstrate_usage(serial_number: str) -> None:
     # write16()
     # write32()
 
-    dwf = DigilentWaveformLibrary()
-
-    with contextlib.closing(dwf.device.openBySerialNumber(serial_number)) as device:
-
-        spi = device.digitalSpi
-
-        spi.reset()
+    spi.reset()
 
 def main():
 
-    parser = argparse.ArgumentParser(description="Demonstrate usage of the SPI protocol functionality.")
+    parser = argparse.ArgumentParser(description="Demonstrate usage of the SPI protocol API.")
     parser.add_argument('serial_number', help="serial number of the Digilent device")
 
     args = parser.parse_args()
 
-    demonstrate_usage(args.serial_number)
+    dwf = DigilentWaveformLibrary()
+    with contextlib.closing(dwf.device.openBySerialNumber(args.serial_number)) as device:
+        demo_spi_protocol_api(device.digitalSpi)
 
 if __name__ == "__main__":
     main()
