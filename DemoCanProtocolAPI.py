@@ -5,7 +5,7 @@ import contextlib
 
 from pydwf import DigilentWaveformLibrary
 
-def demonstrate_usage(can) -> None:
+def demo_can_protocol_api(can) -> None:
 
     # The Digital CAN protocol interface has 7 methods:
     #
@@ -31,7 +31,7 @@ def main():
 
     dwf = DigilentWaveformLibrary()
     with contextlib.closing(dwf.device.openBySerialNumber(args.serial_number)) as device:
-        demo_spi_protocol_api(device.digitalCan)
+        demo_can_protocol_api(device.digitalCan)
 
 if __name__ == "__main__":
     main()
