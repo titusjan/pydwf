@@ -7,7 +7,7 @@ from typing import Optional, Tuple, List
 
 from .dwf_function_signatures import dwf_function_signatures
 
-# The mapping given here is based on the C header file "dwf.h", version 3.12.1 (size = 47009 bytes; md5sum = 670fc8ba690cbe0f848444c6f1458682).
+# The mapping given here is based on the C header file "dwf.h", version 3.12.2 (size = 47009 bytes; md5sum = 670fc8ba690cbe0f848444c6f1458682).
 
 # Open Issues (to be reported):
 #
@@ -391,7 +391,7 @@ class DigilentWaveformLibraryError(RuntimeError):
 class DigilentWaveformLibrary:
     """Provides access to the DWF shared library functions.
 
-    Version 3.12.1 of the DWF library has 5 miscellaneous functions, none of which are obsolete, that are
+    Version 3.12.2 of the DWF library has 5 miscellaneous functions, none of which are obsolete, that are
     wrapped as DigilentWaveformLibrary methods:
 
         FDwfGetLastError, FDwfGetLastErrorMsg, FDwfGetVersion, FDwfParamSet, and FDwfParamGet.
@@ -486,7 +486,7 @@ class DigilentWaveformLibrary:
         """Returns the library version string.
 
         Returns:
-            Version string, composed of major, minor, and build numbers (e.g., "3.12.1").
+            Version string, composed of major, minor, and build numbers (e.g., "3.12.2").
 
         Raises:
             DigilentWaveformLibraryError: the library version string cannot be retrieved.
@@ -551,7 +551,7 @@ class DigilentWaveformLibrary:
 
         """Encapsulates the 'FDwfEnum' API calls.
 
-        Version 3.12.1 of the DWF library has 12 'FDwfEnum' functions, 4 of which are obsolete.
+        Version 3.12.2 of the DWF library has 12 'FDwfEnum' functions, 4 of which are obsolete.
 
         These functions are used to discover all connected, compatible devices.
         """
@@ -832,7 +832,7 @@ class DigilentWaveformLibrary:
     class DeviceAPI:
         """Implements the 'FDwfDevice' API calls.
 
-        Version 3.12.1 of the DWF library has 15 'FDwfDevice' functions, none of which are obsolete.
+        Version 3.12.2 of the DWF library has 15 'FDwfDevice' functions, none of which are obsolete.
 
         The 'open' and 'closeAll' methods are implemented here, since they are not associated to a specific previously opened device.
         The 12 remaining library functions are implemented as methods of the DigilentWaveformDevice class.
@@ -1145,7 +1145,7 @@ class DigilentWaveformDevice:
     class AnalogInAPI:
         """Provides wrappers for the 'FDwfAnalogIn' API calls.
 
-        Version 3.12.1 of the DWF library has 88 'FDwfAnalogIn' functions, 1 of which (FDwfAnalogInTriggerSourceInfo) is obsolete.
+        Version 3.12.2 of the DWF library has 88 'FDwfAnalogIn' functions, 1 of which (FDwfAnalogInTriggerSourceInfo) is obsolete.
         """
 
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
@@ -1879,7 +1879,7 @@ class DigilentWaveformDevice:
     class AnalogOutAPI:
         """Provides wrappers for the 'FDwfAnalogOut' API functions.
 
-        Version 3.12.1 of the DWF library has 83 'FDwfAnalogOut' functions, 25 of which are obsolete.
+        Version 3.12.2 of the DWF library has 83 'FDwfAnalogOut' functions, 25 of which are obsolete.
         """
 
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
@@ -2412,7 +2412,7 @@ class DigilentWaveformDevice:
 
         """Provides wrappers for the 'FDwfAnalogIO' API functions.
 
-        Version 3.12.1 of the DWF library has 17 'FDwfAnalogIO' functions, none of which are obsolete.
+        Version 3.12.2 of the DWF library has 17 'FDwfAnalogIO' functions, none of which are obsolete.
 
         The AnalogIO functions are used to control the power supplies, reference voltage supplies, voltmeters, ammeters,
         thermometers, and any other sensors on the device. These are organized into channels which contain a number of
@@ -2592,7 +2592,7 @@ class DigilentWaveformDevice:
     class DigitalIOAPI:
         """Provides wrappers for the 'FDwfDigitalIO' API functions.
 
-        Version 3.12.1 of the DWF library has 19 'FDwfDigitalIO' functions, none of which are obsolete.
+        Version 3.12.2 of the DWF library has 19 'FDwfDigitalIO' functions, none of which are obsolete.
 
         There are 3 generic functions (reset, configure, and status), and 8 functions that come in 32- and 64-bits variants.
         """
@@ -2777,7 +2777,7 @@ class DigilentWaveformDevice:
     class DigitalInAPI:
         """Provides wrappers for the 'FDwfDigitalIn' API functions.
 
-        Version 3.12.1 of the DWF library has 54 'FDwfDigitalIn' functions, 2 of which (FDwfDigitalInMixedSet, FDwfDigitalInTriggerSourceInfo) are obsolete.
+        Version 3.12.2 of the DWF library has 54 'FDwfDigitalIn' functions, 2 of which (FDwfDigitalInMixedSet, FDwfDigitalInTriggerSourceInfo) are obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
@@ -3117,7 +3117,7 @@ class DigilentWaveformDevice:
     class DigitalOutAPI:
         """Provides wrappers for the 'FDwfDigitalOut' API functions.
 
-        Version 3.12.1 of the DWF library has 46 'FDwfDigitalOut' functions, 1 of which (FDwfDigitalOutTriggerSourceInfo) is obsolete.
+        Version 3.12.2 of the DWF library has 46 'FDwfDigitalOut' functions, 1 of which (FDwfDigitalOutTriggerSourceInfo) is obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
@@ -3534,7 +3534,7 @@ class DigilentWaveformDevice:
     class DigitalUartAPI:
         """Provides wrappers for the 'FDwfDigitalUart' API functions.
 
-        Version 3.12.1 of the DWF library has 9 'FDwfDigitalUart' functions, none of which are obsolete.
+        Version 3.12.2 of the DWF library has 9 'FDwfDigitalUart' functions, none of which are obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
@@ -3598,7 +3598,7 @@ class DigilentWaveformDevice:
     class DigitalSpiAPI:
         """Provides wrappers for the 'FDwfDigitalSpi' API functions.
 
-        Version 3.12.1 of the DWF library has 18 'FDwfDigitalSpi' functions, none of which are obsolete.
+        Version 3.12.2 of the DWF library has 18 'FDwfDigitalSpi' functions, none of which are obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
@@ -3700,7 +3700,7 @@ class DigilentWaveformDevice:
     class DigitalI2cAPI:
         """Provides wrappers for the 'FDwfDigitalI2c' API functions.
 
-        Version 3.12.1 of the DWF library has 11 'FDwfDigitalI2c' functions, none of which are obsolete.
+        Version 3.12.2 of the DWF library has 11 'FDwfDigitalI2c' functions, none of which are obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
@@ -3754,7 +3754,7 @@ class DigilentWaveformDevice:
     class DigitalCanAPI:
         """Provides wrappers for the 'FDwfDigitalCan' API functions.
 
-        Version 3.12.1 of the DWF library has 7 'FDwfDigitalCan' functions, none of which are obsolete.
+        Version 3.12.2 of the DWF library has 7 'FDwfDigitalCan' functions, none of which are obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
@@ -3796,7 +3796,7 @@ class DigilentWaveformDevice:
     class AnalogImpedanceAPI:
         """Provides wrappers for the 'FDwfAnalogImpedance' API functions.
 
-        Version 3.12.1 of the DWF library has 22 'FDwfAnalogImpedance' functions, none of which are obsolete.
+        Version 3.12.2 of the DWF library has 22 'FDwfAnalogImpedance' functions, none of which are obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
