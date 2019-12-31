@@ -3123,19 +3123,19 @@ class DigilentWaveformDevice:
             self._device = device
 
         def reset(self) -> None:
-            """Resets the digital-out device."""
+            """Resets the digital-out instrument."""
             result = self._device._dwf._lib.FDwfDigitalOutReset(self._device._hdwf)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def configure(self, start: bool) -> None:
-            """Starts or stops the digital-out device."""
+            """Starts or stops the digital-out instrument."""
             result = self._device._dwf._lib.FDwfDigitalOutConfigure(self._device._hdwf, start)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def status(self) -> DwfState:
-            """Returns the status of the digital-out device."""
+            """Returns the status of the digital-out instrument."""
             c_status = _typespec_ctypes.DwfState()
             result = self._device._dwf._lib.FDwfDigitalOutStatus(self._device._hdwf, c_status)
             if result != _RESULT_SUCCESS:
@@ -3540,7 +3540,7 @@ class DigilentWaveformDevice:
             self._device = device
 
         def reset(self) -> None:
-            """Resets the digital-UART device."""
+            """Resets the digital-UART protocol instrument."""
             result = self._device._dwf._lib.FDwfDigitalUartReset(self._device._hdwf)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
@@ -3551,7 +3551,6 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def bitsSet(self, bits: int) -> None:
-            # NOTE: the 'bits' parameter to FDwfDigitalUartBitsSet is (strangely) a double.
             result = self._device._dwf._lib.FDwfDigitalUartBitsSet(self._device._hdwf, bits)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
@@ -3604,7 +3603,7 @@ class DigilentWaveformDevice:
             self._device = device
 
         def reset(self) -> None:
-            """Resets the digital-SPI device."""
+            """Resets the digital-SPI protocol instrument."""
             result = self._device._dwf._lib.FDwfDigitalSpiReset(self._device._hdwf)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
@@ -3706,7 +3705,7 @@ class DigilentWaveformDevice:
             self._device = device
 
         def reset(self) -> None:
-            """Resets the digital-I2C device."""
+            """Resets the digital-I2C protocol instrument."""
             result = self._device._dwf._lib.FDwfDigitalI2cReset(self._device._hdwf)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
@@ -3760,7 +3759,7 @@ class DigilentWaveformDevice:
             self._device = device
 
         def reset(self) -> None:
-            """Resets the digital-CAN device."""
+            """Resets the digital-CAN protocol instrument."""
             result = self._device._dwf._lib.FDwfDigitalCanReset(self._device._hdwf)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
@@ -3802,7 +3801,7 @@ class DigilentWaveformDevice:
             self._device = device
 
         def reset(self) -> None:
-            """Resets the Analog Impedance device."""
+            """Resets the Analog Impedance measurement instrument."""
             result = self._device._dwf._lib.FDwfAnalogImpedanceReset(self._device._hdwf)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
@@ -3872,7 +3871,7 @@ class DigilentWaveformDevice:
             # DWFAPI BOOL FDwfAnalogImpedancePeriodGet(HDWF hdwf, int *cMinPeriods);
 
         def compReset(self) -> None:
-            """Resets the Analog Impedance device."""
+            """Resets the Analog Impedance instrument."""
             result = self._device._dwf._lib.FDwfAnalogImpedanceCompReset(self._device._hdwf)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
