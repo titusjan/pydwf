@@ -2257,8 +2257,13 @@ class DigilentWaveformDevice:
             samplesMax = c_samplesMax.value
             return (samplesMin, samplesMax)
 
-        def nodeDataSet(self) -> None:
-            raise NotImplementedError()
+        def nodeDataSet(self, idxChannel: int, node: AnalogOutNode, data: np.ndarray) -> None:
+
+            double_data = data.astype(np.float64)
+
+            result = self._device._dwf._lib.FDwfAnalogOutNodeDataSet(self._device._hdwf, idxChannel, node.value, double_data.ctypes.data_as(_typespec_ctypes.c_double_ptr), len(double_data))
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
         def customAMFMEnableSet(self, idxChannel: int, enable: bool) -> None:
             result = self._device._dwf._lib.FDwfAnalogOutCustomAMFMEnableSet(self._device._hdwf, idxChannel, enable)
