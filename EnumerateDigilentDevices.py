@@ -6,7 +6,7 @@ from pydwf import DigilentWaveformLibrary, DwfEnumConfigInfo
 
 def main():
 
-    parser = argparse.ArgumentParser(description="Enumerate Digilent Discovery devices.")
+    parser = argparse.ArgumentParser(description="Enumerate Digilent Waveform devices.")
     parser.add_argument('--no-obsolete-api', action='store_false',
                         help="for each device, suppress printing of analog-in parameters using obsolete FDwfEnumAnalogIn* API calls", dest='use_obsolete_api')
     parser.add_argument('--no-configurations', action='store_false',
@@ -17,6 +17,11 @@ def main():
     dwf = DigilentWaveformLibrary()
 
     num_devices = dwf.enum.count()
+
+    if num_devices == 0:
+        print("No Digilent Waveform devices found.")
+        return
+
     for device_index in range(num_devices):
 
         devtype = dwf.enum.deviceType(device_index)
@@ -75,6 +80,7 @@ def main():
             for configuration_parameter in DwfEnumConfigInfo:
                 print("  {:22}  {}".format(configuration_parameter.name, "  ".join("{:8d}".format(configuration_data[(configuration_index, configuration_parameter)]) for configuration_index in range(num_config))))
             print()
+
 
 if __name__ == "__main__":
     main()
