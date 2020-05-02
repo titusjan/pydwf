@@ -3789,13 +3789,37 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def tx(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfDigitalCanTx(HDWF hdwf, int vID, int fExtended, int fRemote, int cDLC, unsigned char *rgTX);
+        def tx(self, vID: int, extended: bool, remote: bool, data: bytes) -> None:
+            if len(data) > 8:
+                raise RuntimeError("CAN message too long.")
+            result = self._device._dwf._lib.FDwfDigitalCanTx(self._device._hdwf, vID, extended, remote, len(data), ctypes.cast(data, _typespec_ctypes.c_unsigned_char_ptr))
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def rx(self) -> None:
-            raise NotImplementedError()
+        def rx(self, size:int=8) -> (int, bool, bool, bytes, int):
+            """Returns a tuple (vID, extended, remote, data, status)
+            """
             # DWFAPI BOOL FDwfDigitalCanRx(HDWF hdwf, int *pvID, int *pfExtended, int *pfRemote, int *pcDLC, unsigned char *rgRX, int cRX, int *pvStatus);
+
+            c_vID      = _typespec_ctypes.c_int()
+            c_extended = _typespec_ctypes.c_int()
+            c_remote   = _typespec_ctypes.c_int()
+            c_dlc      = _typespec_ctypes.c_int()
+            c_data     = ctypes.create_string_buffer(size)
+            c_status   = _typespec_ctypes.c_int()
+
+            result = self._device._dwf._lib.FDwfDigitalCanRx(self._device._hdwf, c_vID, c_extended, c_remote, c_dlc, ctypes.cast(c_data, _typespec_ctypes.c_unsigned_char_ptr), size, c_status)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+            vID      = c_vID.value
+            extended = bool(c_extended.value)
+            remote   = bool(c_remote.value)
+            dlc      = c_dlc.value
+            data     = c_data.value[:dlc]
+            status   = c_status.value
+
+            return (vID, extended, remote, data, status)
 
     class AnalogImpedanceAPI:
         """Provides wrappers for the 'FDwfAnalogImpedance' API functions.
