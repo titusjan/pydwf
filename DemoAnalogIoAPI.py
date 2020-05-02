@@ -47,12 +47,13 @@ def demo_analog_io_api(analogIO) -> None:
     analogIO.status()
 
     channel_count = analogIO.channelCount()
-    print("channel count: {}".format(channel_count))
+    print("Analog IO device has {} channels:".format(channel_count))
+    print()
 
     for channel_index in range(channel_count):
         channel_name = analogIO.channelName(channel_index)
         node_count = analogIO.channelInfo(channel_index)  # Count number of nodes.
-        print("channel_index {} channel_name {} node_count {}".format(channel_index, channel_name, node_count))
+        print("Channel #{} ({} of {} channels) named {} has {} nodes:".format(channel_index, channel_index+1, channel_count, channel_name, node_count))
         for node_index in range(node_count):
             node_name        = analogIO.channelNodeName(channel_index, node_index)
             node_info        = analogIO.channelNodeInfo(channel_index, node_index)
@@ -60,26 +61,71 @@ def demo_analog_io_api(analogIO) -> None:
             node_get         = analogIO.channelNodeGet(channel_index, node_index)
             node_status_info = analogIO.channelNodeStatusInfo(channel_index, node_index)
             node_status      = analogIO.channelNodeStatus(channel_index, node_index)
-            print("    node_index {} node_name {} node_info {} node_set_info {} node_get {} node_status_info {} node_status {}".format(node_index, node_name, node_info, node_set_info, node_get, node_status_info, node_status))
+            print("    node_#{} ({} of {}):".format(node_index, node_index + 1, node_count))
+            print("        node_name ............. {}".format(node_name))
+            print("        node_info ............. {}".format(node_info))
+            print("        node_set_info ......... {}".format(node_set_info))
+            print("        node_get .............. {}".format(node_get))
+            print("        node_status_info ...... {}".format(node_status_info))
+            print("        node_status ........... {}".format(node_status))
+        print()
 
-    while True:
+    channel_index = 2
+
+    channel_name = analogIO.channelName(channel_index)[0]
+    assert channel_name == "USB Monitor"
+    for i in range(10):
         analogIO.status()  # Request status update
-        usb_volts = analogIO.channelNodeStatus(2, 0)
-        usb_amps  = analogIO.channelNodeStatus(2, 1)
-        temp      = analogIO.channelNodeStatus(2, 2)
-        print("{:.6f} [V] {:.3f} [mA] {:.2f} °C".format(usb_volts, usb_amps * 1000.0, temp))
+        usb_volts = analogIO.channelNodeStatus(channel_index, 0)
+        usb_amps  = analogIO.channelNodeStatus(channel_index, 1)
+        temp      = analogIO.channelNodeStatus(channel_index, 2)
+        print("{}: {:.6f} [V] {:.3f} [mA] {:.2f} °C".format(channel_name, usb_volts, usb_amps * 1000.0, temp))
         time.sleep(0.100)
+
+def open_demo_device(dwf, serial_number_sought):
+
+    num_devices = dwf.enum.count()
+
+    if num_devices == 0:
+        raise RuntimeError("No Digilent Waveforms devices found.")
+
+    serial_numbers_found = [dwf.enum.serialNumber(device_index) for device_index in range(num_devices)]
+
+    if serial_number_sought is None:
+
+        if num_devices != 1:
+            raise RuntimeError("Multiple Digilent Waveforms devices found, specify one. Available devices: {}.".format(
+                ", ".join(map(repr, serial_numbers_found))))
+        else:
+            return dwf.device.open(0)
+
+    else:
+
+        candidates = [device_index for (device_index, device_serial_number) in enumerate(serial_numbers_found) if device_serial_number == serial_number_sought]
+
+        # A serial number was not specified.
+        if len(candidates) == 0:
+            raise RuntimeError("The specified serial number {} was not found. Available devices: {}.".format(
+                repr(serial_number_sought), ", ".join(map(repr, serial_numbers_found))))
+        elif len(candidates) != 1:
+            raise ValueError("Multiple candidate devices for serial number specified ({}).".format(repr(serial_number_sought)))
+        else:
+            return dwf.device.open(candidates[0])
 
 def main():
 
     parser = argparse.ArgumentParser(description="Demonstrate usage of the AnalogIO channels.")
-    parser.add_argument('serial_number', help="serial number of the Digilent device")
+    parser.add_argument('serial_number', nargs='?', help="serial number of the Digilent device")
 
     args = parser.parse_args()
 
     dwf = DigilentWaveformLibrary()
-    with contextlib.closing(dwf.device.openBySerialNumber(args.serial_number)) as device:
-        demo_analog_io_api(device.analogIO)
+
+    try:
+        with contextlib.closing(open_demo_device(dwf, args.serial_number)) as device:
+            demo_analog_io_api(device.analogIO)
+    except Exception as exception:
+        print("Error:", exception)
 
 if __name__ == "__main__":
     main()
