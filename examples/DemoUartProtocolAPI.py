@@ -5,10 +5,12 @@ import argparse
 import contextlib
 
 from pydwf import DigilentWaveformLibrary
+from demo_utilities import open_demo_device, OpenDemoDeviceError
 
-def demo_uart_protocol_api(uart) -> None:
+def demo_uart_protocol_api(uart):
 
-    # The Digital UART protocol API has 9 methods:
+    # The Digital UART protocol API has the following 9 methods.
+    # All of them are used below
     #
     # - reset()                                      -- reset the UART protocol functionality.
     # - rateSet(), bitsSet(), paritySet(), stopSet() -- set UART protocol parameters.
@@ -21,7 +23,7 @@ def demo_uart_protocol_api(uart) -> None:
     # Setup UART communication for 115k2 baud, 8N1
     uart.rateSet(115200.0)
     uart.bitsSet(8)
-    uart.paritySet(0)
+    uart.paritySet(0) 
     uart.stopSet(1)
 
     # Loopback TX to RX, both on digital I/O pin #0 -- no need to connect a physical loopback wire.
@@ -43,13 +45,16 @@ def demo_uart_protocol_api(uart) -> None:
 def main():
 
     parser = argparse.ArgumentParser(description="Demonstrate usage of the UART protocol API.")
-    parser.add_argument('serial_number', help="serial number of the Digilent device")
+    parser.add_argument('serial_number', nargs='?', help="serial number of the Digilent device")
 
     args = parser.parse_args()
 
-    dwf = DigilentWaveformLibrary()
-    with contextlib.closing(dwf.device.openBySerialNumber(args.serial_number)) as device:
-        demo_uart_protocol_api(device.digitalUart)
+    try:
+        dwf = DigilentWaveformLibrary()
+        with contextlib.closing(open_demo_device(dwf, args.serial_number)) as device:
+            demo_uart_protocol_api(device.digitalUart)
+    except OpenDemoDeviceError:
+        print("Could not open demo device, exiting.")
 
 if __name__ == "__main__":
     main()
