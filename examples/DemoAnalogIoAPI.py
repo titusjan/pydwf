@@ -14,34 +14,34 @@ def demo_analog_io_api(analogIO) -> None:
 
     * Device-level methods:
 
-      - reset
-      - configure                       (*) NOTE: not used in this demo.
-      - status
+      - reset()
+      - configure()                     (*) NOTE: not used in this demo.
+      - status()
 
     * Device-level "enable" methods:
 
-      - enableInfo
-      - enableSet
-      - enableGet
-      - enableStatus
+      - enableInfo()
+      - enableSet()
+      - enableGet()
+      - enableStatus()
 
     * The Analog I/O device supports multiple channels.
       The following channel query methods are provided:
 
-      - channelCount
-      - channelName
-      - channelInfo
+      - channelCount()
+      - channelName()
+      - channelInfo()
 
     * Each channel consists of a number of channel nodes.
       The following channel node query and set methods are provided:
 
-      - channelNodeName
-      - channelNodeInfo
-      - channelNodeSetInfo
-      - channelNodeSet                  (*) NOTE: not used in this demo.
-      - channelNodeGet
-      - channelNodeStatusInfo
-      - channelNodeStatus
+      - channelNodeName()
+      - channelNodeInfo()
+      - channelNodeSetInfo()
+      - channelNodeSet()                (*) NOTE: not used in this demo.
+      - channelNodeGet()
+      - channelNodeStatusInfo()
+      - channelNodeStatus()
     """
 
     analogIO.reset()
