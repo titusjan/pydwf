@@ -20,7 +20,7 @@ def demo_can_protocol_api(can) -> None:
 
     can.reset()
 
-    # Setup CAN communication for 115k2 baud, 8N1
+    # Setup CAN communication for 125 kbits/sec.
     can.rateSet(125000.0)
     can.polaritySet(0)
 
@@ -28,7 +28,7 @@ def demo_can_protocol_api(can) -> None:
     can.txSet(0)
     can.rxSet(0)
 
-    # Before starting to transmit, we must initialize reception by calling the tx() method with vID equal to -1.
+    # Before starting to transmit, we must initialize transmission by calling the tx() method with vID equal to -1.
     can.tx(-1, 0, 0, b"")
 
     # Before starting to receive, we must initialize reception by calling the rx() method with size 0.
