@@ -37,7 +37,7 @@ def demo_uart_protocol_api(uart):
     # Repeatedly send and receive messages.
     i = 0
     while True:
-        message = "UART message #{}\r\n".format(i).encode()
+        message = "UART message #{}".format(i).encode()
         uart.tx(message)
         (rx_buffer, parity_status) = uart.rx(100)
         print("Received message {} with parity status {}".format(rx_buffer, parity_status))
