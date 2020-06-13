@@ -548,7 +548,6 @@ class DigilentWaveformLibrary:
         return parameter_value
 
     class EnumAPI:
-
         """Encapsulates the 'FDwfEnum' API calls.
 
         Version 3.12.2 of the DWF library has 12 'FDwfEnum' functions, 4 of which are obsolete.
@@ -927,7 +926,7 @@ class DigilentWaveformDevice:
 
     The DigilentWaveformDevice class wraps API functions that are specific to a specific device.
 
-    This includes 12 of the 15 FDwfDevice functions provided by the C API, namely,
+    This class implements 12 of the 15 FDwfDevice functions provided by the C API, namely,
     the 12 functions that refer to a specific open device.
     The other 3 FDwfDevice devices are wrapped at the DigilentWaveformLibrary library level.
 
