@@ -5,22 +5,21 @@ UART Protocol API
 The UART Protocol API provides functionality to use a Digilent device as a simple Universal Asynchronous Receiver/Transmitter (UART).
 
 The UART supports a single digital pin to act as a transmitter (TX), and a single digital pin to act as a receiver (RX).
-Transmission and reception are relative to the viewpoint of the Digilent device; so 'tranmission' means that the Digilent device sends outgoing data, and 'reception' means that the Digilent device receives incoming data.
+Transmission and reception are relative to the viewpoint of the Digilent device; so 'transmission' means that the Digilent device sends outgoing data, and 'reception' means that the Digilent device receives incoming data.
 
-The Digilent UART protocol instrument only supports the basic serial TX and RX signals. Other signals commonly encountered on serial ports (e.g., hardware handshaking) are not supported.
+The Digilent UART protocol instrument only supports the basic serial TX and RX signals. Other signals commonly encountered on serial ports (e.g., hardware handshaking using RTS/CTS) are not supported.
 
 Using the UART protocol API
 ---------------------------
 
-To use the UART protocol API functionality you first need to ininitialize a DigitalWaveformLibrary instance.
-Next, you open a specific device.
-The device's UART protocol API can now be accessed via its *digitalUart* attribute, which is an instance of the DigitalUartAPI class.
+To use the UART protocol API functionality you first need to ininitialize a DigitalWaveformLibrary instance. Next, you open a specific device. The device's UART protocol API can now be accessed via its *digitalUart* attribute, which is an instance of the DigitalUartAPI class.
 
-Version 3.12.2 of the underlying C library supports 9 functions, none of which are obsolete. These map precisely onto 9 methods of the DigitalUartAPI class:
+Version 3.12.2 of the underlying C library supports 9 UART-related functions, none of which are obsolete. These map precisely onto 9 methods of the DigitalUartAPI class:
 
 * The reset() method resets the UART protocol instrument.
 * The rateSet(), bitsSet(), paritySet(), and stopSet() methods set the serial protocol parameters.
 * The txSet() and rxSet() methods assign digital hardware pins to be used for the TX and RX signals.
+  For testing purposes, it can be useful to set these to the same pin, effectively creating a so-called *loopback*.
 * The rx() and tx() methods are used to receive and transmit serial data.
   In addition, the rx() method, when called with parameter 0, initializes the receiver.
   This must be done prior to using the rx() method to receive actual data.
