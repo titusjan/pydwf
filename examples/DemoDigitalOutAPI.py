@@ -46,7 +46,6 @@ def demo_digital_out_api(digitalOut) -> None:
     - repeatTriggerSet(repeatTrigger: bool)
     - repeatTriggerGet() -> bool
 
-
     Count the number of channels:
 
     - count() -> int
@@ -87,14 +86,17 @@ def demo_digital_out_api(digitalOut) -> None:
 
     digitalOut.reset()
 
+    print("===== DigitalOut instrument, fixed information =====")
+    print()
+
     channel_count = digitalOut.count()
 
-    print("DigitalOut clock ...................................... : {} [Hz]".format(digitalOut.internalClockInfo()))
-    print("DigitalOut number of channels ......................... : {}".format(channel_count))
-    print("DigitalOut possible trigger sources ................... : {{{}}}".format(", ".join(ts.name for ts in digitalOut.triggerSourceInfo())))
-    print("DigitalOut running time info (min, max) ............... : {} [s]".format(digitalOut.runInfo()))
-    print("DigitalOut waiting time info (min, max) ............... : {} [s]".format(digitalOut.waitInfo()))
-    print("DigitalOut repeat info (min, max) ..................... : {}".format(digitalOut.repeatInfo()))
+    print("    Clock ........................................... : {} [Hz]".format(digitalOut.internalClockInfo()))
+    print("    Number of channels .............................. : {}".format(channel_count))
+    print("    Possible trigger sources ........................ : {{{}}}".format(", ".join(ts.name for ts in digitalOut.triggerSourceInfo())))
+    print("    Running time range (min, max) ................... : {} [s]".format(digitalOut.runInfo()))
+    print("    Waiting time range (min, max) ................... : {} [s]".format(digitalOut.waitInfo()))
+    print("    Repeat range (min, max) ......................... : {}".format(digitalOut.repeatInfo()))
 
     options = None
     for channel_index in range(channel_count):
@@ -104,7 +106,7 @@ def demo_digital_out_api(digitalOut) -> None:
         else:
             assert options == channel_output_info
 
-    print("DigitalOut channel output options (all channels) ...... : {{{}}}".format(", ".join(option.name for option in options)))
+    print("    Channel output options (all channels) ........... : {{{}}}".format(", ".join(option.name for option in options)))
 
     options = None
     for channel_index in range(channel_count):
@@ -114,7 +116,7 @@ def demo_digital_out_api(digitalOut) -> None:
         else:
             assert options == channel_type_info
 
-    print("DigitalOut channel type options (all channels) ........ : {{{}}}".format(", ".join(option.name for option in options)))
+    print("    Channel type options (all channels) ............. : {{{}}}".format(", ".join(option.name for option in options)))
 
     options = None
     for channel_index in range(channel_count):
@@ -124,7 +126,7 @@ def demo_digital_out_api(digitalOut) -> None:
         else:
             assert options == channel_idle_info
 
-    print("DigitalOut channel idle options (all channels) ........ : {{{}}}".format(", ".join(option.name for option in options)))
+    print("    Channel idle options (all channels) ............. : {{{}}}".format(", ".join(option.name for option in options)))
 
     minmax = None
     for channel_index in range(channel_count):
@@ -134,7 +136,7 @@ def demo_digital_out_api(digitalOut) -> None:
         else:
             assert minmax == divider_info
 
-    print("DigitalOut channel divider range (all channels) ....... : {}".format(minmax))
+    print("    Channel divider range (all channels) ............ : {}".format(minmax))
 
     minmax = None
     for channel_index in range(channel_count):
@@ -144,7 +146,35 @@ def demo_digital_out_api(digitalOut) -> None:
         else:
             assert minmax == counter_info
 
-    print("DigitalOut channel counter range (all channels) ....... : {}".format(minmax))
+    print("    Channel counter range (all channels) ............ : {}".format(minmax))
+
+    bufsize = None
+    for channel_index in range(channel_count):
+        data_info = digitalOut.dataInfo(channel_index)
+        if channel_index == 0:
+            bufsize = data_info
+        else:
+            assert bufsize == data_info
+
+    print("    Channel pattern buffer size (all channels) ...... : {}".format(bufsize))
+
+    print()
+
+    print("===== DigitalOut instrument, settings =====")
+    print()
+
+    print("    Trigger source ........... : {}".format(digitalOut.triggerSourceGet().name))
+    print("    Running time ............. : {}".format(digitalOut.runGet()))
+    print("    Waiting time ............. : {}".format(digitalOut.waitGet()))
+    print("    Repeat count ............. : {}".format(digitalOut.repeatGet()))
+    print("    Trigger slope ............ : {}".format(digitalOut.triggerSlopeGet().name))
+    print("    Repeat trigger ........... : {}".format(digitalOut.repeatTriggerGet()))
+    print()
+
+    print("===== DigitalOut instrument, status =====")
+    print()
+    print("    Running time status ...... : {}".format(digitalOut.runStatus()))
+    print("    Repeat count status ...... : {}".format(digitalOut.repeatStatus()))
 
 def main():
 
