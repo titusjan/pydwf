@@ -8,7 +8,7 @@ from pydwf import DigilentWaveformLibrary
 from demo_utilities import open_demo_device, OpenDemoDeviceError
 
 def demo_analog_io_api(analogIO) -> None:
-    """Demonstrates the Analog I/O device functionality.
+    """Demonstrates the Analog I/O functionality.
 
     The Analog I/O API has 17 methods, 15 of which are used in this demo.
 
