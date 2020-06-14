@@ -8,15 +8,17 @@ from pydwf import DigilentWaveformLibrary
 from demo_utilities import open_demo_device, OpenDemoDeviceError
 
 def demo_can_protocol_api(can) -> None:
+    """Demonstrate the CAN protocol functionality.
 
-    # The Digital CAN protocol API has the following 7 methods.
-    # All of them are used below.
-    #
-    # - reset()                  -- reset the CAN protocol functionality.
-    # - rateSet(), polaritySet() -- set CAN protocol parameters.
-    # - txSet(), rxSet()         -- select digital pins for transmit (TX) and receive (RX) directions.
-    # - tx()                     -- transmit data from the Digilent device.
-    # - rx()                     -- receive data into the Digilent device, -or-, initialize receiver if called with zero argument.
+    The Digital CAN protocol API has the following 7 methods.
+    All of them are used below.
+
+    - reset()                  -- reset the CAN protocol functionality.
+    - rateSet(), polaritySet() -- set CAN protocol parameters.
+    - txSet(), rxSet()         -- select digital pins for transmit (TX) and receive (RX) directions.
+    - tx()                     -- transmit data from the Digilent device.
+    - rx()                     -- receive data into the Digilent device, -or-, initialize receiver if called with zero argument.
+    """
 
     can.reset()
 
