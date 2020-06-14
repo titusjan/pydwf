@@ -9,7 +9,7 @@ from demo_utilities import open_demo_device, OpenDemoDeviceError
 
 
 def demo_analog_input_instrument_api_simple(analogIn):
-    """Demonstrates the simplest possible use of the analog-in channels.
+    """Demonstrate the simplest possible use of the analog input channels.
 
     This demonstration simply calls the status() function of the AnalogIn instrument, with the 'readdData' argument specified as value False.
     Even though the 'readData' argument is false, the status update requested from the instrument does return up-to-date voltage levels of each
