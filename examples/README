@@ -1,22 +1,29 @@
 
-We put examples here to demonstrate the usage of the API.
+Overview of examples to demonstrate the useage of the API:
 
 * Miscellaneous functions
-* Device enumeration
+
+* Device enumeration             see file scripts/pydwf_tool.py, function `enumerate_dwf_devices`.
+
 * Primary instruments:
-  - AnalogIn instrument              examples/DemoAnalogInSimple.py
-                                     reverse_engineering/...
-  - AnalogOut instrument
-  - DigitalIn instrument
-  - DigitalOut instrument
+
+  - AnalogIn instrument:         see file examples/DemoAnalogInSimple.py
+                                 see file reverse_engineering/UnderstandAnalogInRecordMode.py
+  - AnalogOut instrument:
+
+  - DigitalIn instrument:
+
+  - DigitalOut instrument:
 
 * Secondary instruments:
-  - AnalogIO instrument              examples/DemoAnalogIoAPI.py
-  - DigitalIO instrument
+
+  - AnalogIO instrument:         see file examples/DemoAnalogIoAPI.py
+
+  - DigitalIO instrument:        see file examples/DemoDigitalIoAPI.py
 
 * Protocols:
-  - UART protocol                    examples/DemoUartProtocolAPI.py
-  - CAN protocol                     examples/DemoUartProtocolAPI.py
+  - UART protocol                see file examples/DemoUartProtocolAPI.py
+  - CAN protocol                 see file examples/DemoCanProtocolAPI.py
   - SPI protocol
   - I2C protocol
 
