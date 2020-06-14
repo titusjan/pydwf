@@ -3351,13 +3351,13 @@ class DigilentWaveformDevice:
             return repeat_status
 
         def triggerSlopeSet(self, slope: DwfTriggerSlope) -> None:
-            """Sets the slopt for the digital-out trigger."""
+            """Sets the slope for the digital-out trigger."""
             result = self._device._dwf._lib.FDwfDigitalOutTriggerSlopeSet(self._device._hdwf, slope.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def triggerSlopeGet(self) -> DwfTriggerSlope:
-            """Gets the slopt for the digital-out trigger."""
+            """Gets the slope for the digital-out trigger."""
             c_slope = _typespec_ctypes.DwfTriggerSlope()
             result = self._device._dwf._lib.FDwfDigitalOutTriggerSlopeGet(self._device._hdwf, c_slope)
             if result != _RESULT_SUCCESS:
