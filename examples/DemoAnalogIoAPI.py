@@ -110,7 +110,7 @@ def demo_analog_io_continuous_readout(analogIO) -> None:
 
 def main():
 
-    parser = argparse.ArgumentParser(description="Demonstrate usage of the AnalogIO channels.")
+    parser = argparse.ArgumentParser(description="Demonstrate usage of the AnalogIO functionality.")
     parser.add_argument('serial_number', nargs='?', help="serial number of the Digilent device")
     args = parser.parse_args()
 
