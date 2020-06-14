@@ -3547,6 +3547,7 @@ class DigilentWaveformDevice:
             return (low_count, high_count)
 
         def dataInfo(self, idxChannel: int) -> int:
+            """Return the maximum buffer size, the number of custom data bits."""
             c_max_databits = _typespec_ctypes.c_unsigned_int()
             result = self._device._dwf._lib.FDwfDigitalOutDataInfo(self._device._hdwf, idxChannel, c_max_databits)
             if result != _RESULT_SUCCESS:
