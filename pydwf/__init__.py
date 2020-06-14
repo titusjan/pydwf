@@ -1306,13 +1306,16 @@ class DigilentWaveformDevice:
             return (dataAvailable, dataLost, dataCorrupt)
 
         def recordLengthSet(self, length: float) -> None:
-            """Set the Record length in seconds."""
+            """Set the Record length in seconds.
+
+            With length of zero, the recording will run indefinitely.
+            """
             result = self._device._dwf._lib.FDwfAnalogInRecordLengthSet(self._device._hdwf, length)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def recordLengthGet(self) -> float:
-            """Get the Record length in seconds."""
+            """Get the current Record length in seconds."""
             c_length = _typespec_ctypes.c_double()
             result = self._device._dwf._lib.FDwfAnalogInRecordLengthGet(self._device._hdwf, c_length)
             if result != _RESULT_SUCCESS:
@@ -1323,6 +1326,7 @@ class DigilentWaveformDevice:
         # Acquisition configuration:
 
         def frequencyInfo(self) -> Tuple[float, float]:
+            """Retreive the minimum and maximum (ADC frequency) settable sample frequency."""
             c_hzMin = _typespec_ctypes.c_double()
             c_hzMax = _typespec_ctypes.c_double()
             result = self._device._dwf._lib.FDwfAnalogInFrequencyInfo(self._device._hdwf, c_hzMin, c_hzMax)
@@ -1333,11 +1337,17 @@ class DigilentWaveformDevice:
             return (hzMin, hzMax)
 
         def frequencySet(self, hzFrequency: float) -> None:
+            """Set the sample frequency for the instrument."""
             result = self._device._dwf._lib.FDwfAnalogInFrequencySet(self._device._hdwf, hzFrequency)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def frequencyGet(self) -> float:
+            """Read the configured sample frequency.
+
+            The AnalogIn ADC always runs at maximum frequency, but the method in which the samples are stored can be
+            individually configured for each channel with the `channelFilterSet` function.
+            """
             c_hzFrequency = _typespec_ctypes.c_double()
             result = self._device._dwf._lib.FDwfAnalogInFrequencyGet(self._device._hdwf, c_hzFrequency)
             if result != _RESULT_SUCCESS:
@@ -1346,6 +1356,7 @@ class DigilentWaveformDevice:
             return hzFrequency
 
         def bitsInfo(self) -> int:
+            """Retrieve the number of bits used by the AnalogIn ADC."""
             c_num_bits = _typespec_ctypes.c_int()
             result = self._device._dwf._lib.FDwfAnalogInBitsInfo(self._device._hdwf, c_num_bits)
             if result != _RESULT_SUCCESS:
@@ -1354,6 +1365,7 @@ class DigilentWaveformDevice:
             return num_bits
 
         def bufferSizeInfo(self) -> Tuple[int, int]:
+            """Returns the minimum and maximum allowable buffer size for the instrument."""
             c_nSizeMin = _typespec_ctypes.c_int()
             c_nSizeMax = _typespec_ctypes.c_int()
             result = self._device._dwf._lib.FDwfAnalogInBufferSizeInfo(self._device._hdwf, c_nSizeMin, c_nSizeMax)
@@ -1364,11 +1376,13 @@ class DigilentWaveformDevice:
             return (nSizeMin, nSizeMax)
 
         def bufferSizeSet(self, nSize: int) -> None:
+            """Adjust the AnalogIn instrument buffer size."""
             result = self._device._dwf._lib.FDwfAnalogInBufferSizeSet(self._device._hdwf, nSize)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def bufferSizeGet(self) -> int:
+            """Return the used AnalogIn instrument buffer size."""
             c_nSize = _typespec_ctypes.c_int()
             result = self._device._dwf._lib.FDwfAnalogInBufferSizeGet(self._device._hdwf, c_nSize)
             if result != _RESULT_SUCCESS:
@@ -1377,6 +1391,7 @@ class DigilentWaveformDevice:
             return nSize
 
         def noiseSizeInfo(self) -> int:
+            """Return the maximum noise buffer size for the instrument."""
             c_nSizeMax = _typespec_ctypes.c_int()
             result = self._device._dwf._lib.FDwfAnalogInNoiseSizeInfo(self._device._hdwf, c_nSizeMax)
             if result != _RESULT_SUCCESS:
@@ -1390,6 +1405,11 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def noiseSizeGet(self) -> int:
+            """Return the used AnalogIn noise buffer size.
+
+            This is automatically adjusted according to the sample buffer size. For instance, having maximum buffer
+            size of 8192 and noise buffer size of 512, setting the sample buffer size to 4096 the noise buffer size will be 256.
+            """
             c_nSize = _typespec_ctypes.c_int()
             result = self._device._dwf._lib.FDwfAnalogInNoiseSizeGet(self._device._hdwf, c_nSize)
             if result != _RESULT_SUCCESS:
@@ -1398,6 +1418,28 @@ class DigilentWaveformDevice:
             return nSize
 
         def acquisitionModeInfo(self) -> List[ACQMODE]:
+            """Returns the supported AnalogIn acquisition modes.
+
+            Single : Perform a single buffer acquisition and rearm the instrument for next capture after the data is fetched
+                     to host using the `status` function.
+
+            ScanShift : Perform a continuous acquisition in FIFO style.
+                        The trigger setting is ignored.
+                        The last sample is at the end of the buffer.
+                        The `statusSamplesValid` function is used to show the number of the acquired samples,
+                          which will grow until reaching the buffer size.
+                        Then, the waveform "picture" is shifted for every new sample.
+
+            ScanScreen : Perform continuous acquisition circularly writing samples into the buffer.
+                         The trigger setting is ignored.
+                         The IndexWrite shows the buffer write position.
+                         This is similar to a heart monitor display.
+
+            Record : Perform acquisition for length of time set by `recordLengthSet`.
+
+            Single1 : Perform a single buffer acquisition.
+            """
+
             c_acqmode_bitset = _typespec_ctypes.c_int()
             result = self._device._dwf._lib.FDwfAnalogInAcquisitionModeInfo(self._device._hdwf, c_acqmode_bitset)
             if result != _RESULT_SUCCESS:
@@ -1407,11 +1449,13 @@ class DigilentWaveformDevice:
             return acqmode_list
 
         def acquisitionModeSet(self, acqmode: ACQMODE) -> None:
+            """Set the acquisition mode."""
             result = self._device._dwf._lib.FDwfAnalogInAcquisitionModeSet(self._device._hdwf, acqmode.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def acquisitionModeGet(self) -> ACQMODE:
+            """Get the acquisition mode."""
             c_acquisition_mode = _typespec_ctypes.ACQMODE()
             result = self._device._dwf._lib.FDwfAnalogInAcquisitionModeGet(self._device._hdwf, c_acquisition_mode)
             if result != _RESULT_SUCCESS:
@@ -1422,6 +1466,7 @@ class DigilentWaveformDevice:
         # Channel configuration:
 
         def channelCount(self) -> int:
+            """Read the number of AnalogIn channels of the device."""
             c_channel_count = _typespec_ctypes.c_int()
             result = self._device._dwf._lib.FDwfAnalogInChannelCount(self._device._hdwf, c_channel_count)
             if result != _RESULT_SUCCESS:
@@ -1430,11 +1475,13 @@ class DigilentWaveformDevice:
             return channel_count
 
         def channelEnableSet(self, idxChannel: int, enable: bool) -> None:
+            """Enable or disable the specified AnalogIn channel."""
             result = self._device._dwf._lib.FDwfAnalogInChannelEnableSet(self._device._hdwf, idxChannel, enable)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def channelEnableGet(self, idxChannel: int) -> bool:
+            """Get the current enable/disable status of the specified AnalogIn channel."""
             c_enable = _typespec_ctypes.c_int()
             result = self._device._dwf._lib.FDwfAnalogInChannelEnableGet(self._device._hdwf, idxChannel, c_enable)
             if result != _RESULT_SUCCESS:
@@ -1823,11 +1870,13 @@ class DigilentWaveformDevice:
             return triglen
 
         def samplingSourceSet(self, trigsrc: TRIGSRC) -> None:
+            """Configure the AnalogIn acquisition data sampling source."""
             result = self._device._dwf._lib.FDwfAnalogInSamplingSourceSet(self._device._hdwf, trigsrc.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def samplingSourceGet(self) -> TRIGSRC:
+            """Return the configured sampling source."""
             c_trigsrc = _typespec_ctypes.TRIGSRC()
             result = self._device._dwf._lib.FDwfAnalogInSamplingSourceGet(self._device._hdwf, c_trigsrc)
             if result != _RESULT_SUCCESS:
@@ -1836,11 +1885,13 @@ class DigilentWaveformDevice:
             return trigsrc
 
         def samplingSlopeSet(self, slope: DwfTriggerSlope) -> None:
+            """Set the sampling slope for the instrument."""
             result = self._device._dwf._lib.FDwfAnalogInSamplingSlopeSet(self._device._hdwf, slope.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def samplingSlopeGet(self) -> DwfTriggerSlope:
+            """Return the sampling for the instrument."""
             c_slope = _typespec_ctypes.DwfTriggerSlope()
             result = self._device._dwf._lib.FDwfAnalogInSamplingSlopeGet(self._device._hdwf, c_slope)
             if result != _RESULT_SUCCESS:
@@ -1849,11 +1900,13 @@ class DigilentWaveformDevice:
             return slope
 
         def samplingDelaySet(self, sec: float) -> None:
+            """Set the sampling delay for the instrument, in seconds."""
             result = self._device._dwf._lib.FDwfAnalogInSamplingDelaySet(self._device._hdwf, sec)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def samplingDelayGet(self) -> float:
+            """Return the configured sampling delay, in seconds."""
             c_sec = _typespec_ctypes.c_double()
             result = self._device._dwf._lib.FDwfAnalogInSamplingDelayGet(self._device._hdwf, c_sec)
             if result != _RESULT_SUCCESS:
