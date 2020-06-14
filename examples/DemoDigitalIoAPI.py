@@ -9,35 +9,37 @@ from pydwf import DigilentWaveformLibrary
 from demo_utilities import open_demo_device, OpenDemoDeviceError
 
 def demo_digital_io_api(digitalIO) -> None:
-    """Demonstrates the Analog I/O device functionality.
+    """Demonstrate the Digital I/O functionality.
 
     The Digital I/O API has 19 methods:
 
-    # reset()
-    # configure()
-    # status()
-    #
-    # 32-bit digital I/O functions:
+    Three generic methods:
 
-    # outputEnableInfo() -> int
-    # outputEnableSet(output_enable: int)
-    # outputEnableGet() -> int
-    # outputInfo() -> int
-    # outputSet(output: int)
-    # outputGet() -> int
-    # inputInfo() -> int
-    # inputStatus() -> int
-    #
-    # 64-bit digital I/O functions:
-    #
-    # outputEnableInfo64() -> int
-    # outputEnableSet64(output_enable: int)
-    # outputEnableGet64() -> int
-    # outputInfo64() -> int
-    # outputSet64(output: int)
-    # outputGet64() -> int
-    # inputInfo64() -> int
-    # inputStatus64() -> int
+    - reset()
+    - configure()
+    - status()
+
+    Eight methods representing 32 pins:
+
+    - outputEnableInfo() -> int
+    - outputEnableSet(output_enable: int)
+    - outputEnableGet() -> int
+    - outputInfo() -> int
+    - outputSet(output: int)
+    - outputGet() -> int
+    - inputInfo() -> int
+    - inputStatus() -> int
+
+     Eight method representing 64 pins:
+
+    - outputEnableInfo64() -> int
+    - outputEnableSet64(output_enable: int)
+    - outputEnableGet64() -> int
+    - outputInfo64() -> int
+    - outputSet64(output: int)
+    - outputGet64() -> int
+    - inputInfo64() -> int
+    - inputStatus64() -> int
     """
 
     digitalIO.reset()
