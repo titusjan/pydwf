@@ -1,0 +1,24 @@
+
+We put examples here to demonstrate the usage of the API.
+
+* Miscellaneous functions
+* Device enumeration
+* Primary instruments:
+  - AnalogIn instrument              examples/DemoAnalogInSimple.py
+                                     reverse_engineering/...
+  - AnalogOut instrument
+  - DigitalIn instrument
+  - DigitalOut instrument
+
+* Secondary instruments:
+  - AnalogIO instrument              examples/DemoAnalogIoAPI.py
+  - DigitalIO instrument
+
+* Protocols:
+  - UART protocol                    examples/DemoUartProtocolAPI.py
+  - CAN protocol                     examples/DemoUartProtocolAPI.py
+  - SPI protocol
+  - I2C protocol
+
+* Measurement support:
+  - Analog Impedance measurement
