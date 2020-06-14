@@ -8,7 +8,7 @@ from pydwf import DigilentWaveformLibrary
 from demo_utilities import open_demo_device, OpenDemoDeviceError
 
 def demo_uart_protocol_api(uart):
-    """Demonstrates the UART protocol functionality.
+    """Demonstrate the UART protocol functionality.
 
     The Digital UART protocol API has 9 methods, all of which are used in this demo.
 
