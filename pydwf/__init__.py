@@ -398,14 +398,14 @@ class DigilentWaveformLibrary:
 
     These five functions are wrapped as methods of the DigilentWaveformLibrary class.
 
-    In addition, the following two methods are provided for implementing the Python wrapper:
+    In addition, the following two private helper methods are provided for the Python wrapper itself:
 
     - The _annotate_function_signatures static method.
     - The _exception() method.
 
     """
     def __init__(self) -> None:
-        """Initialize a DigilentWaveformLibrary instance.
+        """Initializes a DigilentWaveformLibrary instance.
 
         This function instantiates a ctypes library, type-annotates its functions, and instantiates 'enum' and 'device' fields
         that can be used to access the device enumeration and device functions of the API.
@@ -426,7 +426,7 @@ class DigilentWaveformLibrary:
 
     @staticmethod
     def _annotate_function_signatures(lib: ctypes.CDLL) -> None:
-        """Adds 'ctype' return type and parameter type annotations for all known functions in the DWF library."""
+        """Adds 'ctype' return type and parameter type annotations for all known functions in the DWF shared library."""
 
         function_signatures = dwf_function_signatures(_typespec_ctypes)
 
@@ -439,7 +439,7 @@ class DigilentWaveformLibrary:
     def _exception(self) -> DigilentWaveformLibraryError:
         """Returns an exception describing the most recent error.
 
-        This function is used by the Python API to make an informative DigilentWaveformLibraryError exception in case a DWF library function fails.
+        This function is used by the Python API to make an informative `DigilentWaveformLibraryError` exception in case a DWF library function fails.
 
         Returns:
             A DigilentWaveformLibraryError exception describing the error reported by the last DWF library call.
@@ -504,7 +504,7 @@ class DigilentWaveformLibrary:
         Parameters are settings of a specific DigilentWaveformsDevice.
         Different DigilentWaveformsDevice instances can have different values for each of the possible DwfParam parameters.
 
-        This function sets parameter values set at the library level.
+        This method sets parameter values at the library level.
         They are used as default parameters for devices that are opened subsequently.
 
         Note:
@@ -528,7 +528,7 @@ class DigilentWaveformLibrary:
         Parameters are settings of a specific DigilentWaveformsDevice.
         Different DigilentWaveformsDevice instances can have different values for each of the possible DwfParam parameters.
 
-        This function retrieves parameter values set at the library level.
+        This method retrieves parameter values at the library level.
         They are used as default parameters for devices that are opened subsequently.
 
         Args:
@@ -559,13 +559,13 @@ class DigilentWaveformLibrary:
             self._dwf = dwf
 
         def count(self, enumfilter: Optional[ENUMFILTER]=None) -> int:
-            """Build an internal list of detected devices filtered by the 'enumfilter' argument, and return the count of detected devices.
+            """Builds an internal list of detected devices filtered by the 'enumfilter' argument, and return the count of detected devices.
 
             This function must be called before using other enum functions because they obtain information about enumerated devices from this list,
             indexed by the device index.
 
             Note:
-                This method takes approximately 2 seconds to complete.
+                This method can take several seconds to complete.
 
             Args:
                 enumfilter: Specify which devices to enumerate. If not specified, enumerate all devices.
@@ -894,7 +894,7 @@ class DigilentWaveformLibrary:
                 This is a convenience method that doesn't directly encapsulate a single function call of the library.
 
             Note:
-                This method takes approximately 2 seconds to complete.
+                This method takes several seconds to complete.
 
             Args:
                 serial_number_sought: The serial number of the device to be opened.
@@ -921,14 +921,15 @@ class DigilentWaveformLibrary:
 class DigilentWaveformDevice:
     """A DigilentWaveformDevice represents a single Digilent measurement device.
 
-    A DigitalWaveform device consists of multiple instruments,
-    e.g. Analog In, Analog Out, Digital In, and Digital Out.
+    A DigitalWaveform device consists of multiple sub-modules (instruments, protocols,
+    and/or measurements); e.g. Analog In, Analog Out, Digital In, and Digital Out.
 
-    The DigilentWaveformDevice class wraps API functions that are specific to a specific device.
+    The DigilentWaveformDevice class wraps API functions that refer to a specific device,
+    but not to a specific instrument, protocol, or measurement in the device.
 
     This class implements 12 of the 15 FDwfDevice functions provided by the C API, namely,
     the 12 functions that refer to a specific open device.
-    The other 3 FDwfDevice devices are wrapped at the DigilentWaveformLibrary library level.
+    The other 3 FDwfDevice functions are wrapped at the DigilentWaveformLibrary library level.
 
     It also includes 11 sub-APIs to address the various instruments inside the device.
     Those can be reached via fields of the DigilentWaveformDevice instance.
@@ -1097,10 +1098,10 @@ class DigilentWaveformDevice:
 
         Returns: a list of possible TriggerSlope values.
 
-        Note: This function is not docoumented in the API reference PDF.
+        Note: This function is not documented in the API reference PDF.
 
         Raises:
-            DigilentWaveformLibraryError: the PC trigger line cannot be pulsed.
+            DigilentWaveformLibraryError: the trigger slope options cannot be retrieved.
         """
         c_slope_bitset = _typespec_ctypes.c_int()
         result = self._dwf._lib.FDwfDeviceTriggerSlopeInfo(self._hdwf, c_slope_bitset)
@@ -1129,6 +1130,9 @@ class DigilentWaveformDevice:
 
         Args:
             parameter: The device parameter to query.
+
+        Returns:
+            The integer value of the parameter.
 
         Raises:
             DigilentWaveformLibraryError: the specified device parameter cannot be retrieved.
@@ -1440,13 +1444,13 @@ class DigilentWaveformDevice:
             Single1 : Perform a single buffer acquisition.
             """
 
-            c_acqmode_bitset = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogInAcquisitionModeInfo(self._device._hdwf, c_acqmode_bitset)
+            c_acquisition_mode_bitset = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfAnalogInAcquisitionModeInfo(self._device._hdwf, c_acquisition_mode_bitset)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            acqmode_bitset = c_acqmode_bitset.value
-            acqmode_list = [acqmode for acqmode in ACQMODE if acqmode_bitset & (1 << acqmode.value)]
-            return acqmode_list
+            acquisition_mode_bitset = c_acquisition_mode_bitset.value
+            acquisiton_mode_list = [acquisiton_mode for acquisiton_mode in ACQMODE if acquisition_mode_bitset & (1 << acquisiton_mode.value)]
+            return acquisiton_mode_list
 
         def acquisitionModeSet(self, acqmode: ACQMODE) -> None:
             """Set the acquisition mode."""
@@ -1498,8 +1502,8 @@ class DigilentWaveformDevice:
             filter_list = [filter_ for filter_ in FILTER if filter_bitset & (1 << filter_.value)]
             return filter_list
 
-        def channelFilterSet(self, idxChannel: int, filter: FILTER) -> None:
-            result = self._device._dwf._lib.FDwfAnalogInChannelFilterSet(self._device._hdwf, idxChannel, filter.value)
+        def channelFilterSet(self, idxChannel: int, filter_: FILTER) -> None:
+            result = self._device._dwf._lib.FDwfAnalogInChannelFilterSet(self._device._hdwf, idxChannel, filter_.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -2366,88 +2370,247 @@ class DigilentWaveformDevice:
         ################################################# Obsolete functions follow:
 
         def triggerSourceInfo(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutTriggerSourceInfo(HDWF hdwf, int idxChannel, int *pfstrigsrc); // use IsBitSet
+            """Get analog out trigger source info.
 
-        def enableSet(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutEnableSet(HDWF hdwf, int idxChannel, BOOL fEnable);
+            This function is OBSOLETE.
+            """
+            c_trigger_source_bitset = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfAnalogOutTriggerSourceInfo(self._device._hdwf, c_trigger_source_bitset)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            trigger_source_bitset = c_trigger_source_bitset.value
+            trigger_source_list = [trigger_source for trigger_source in TRIGSRC if trigger_source_bitset & (1 << trigger_source.value)]
+            return trigger_source_list
 
-        def enableGet(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutEnableGet(HDWF hdwf, int idxChannel, BOOL *pfEnable);
+        def enableSet(self, idxChannel: int, enable: bool) -> None:
+            """Enable or disable the specified AnalogOut channel.
 
-        def functionInfo(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutFunctionInfo(HDWF hdwf, int idxChannel, int *pfsfunc); // use IsBitSet
+            This function is OBSOLETE. Use `nodeEnableSet` instead.
+            """
+            result = self._device._dwf._lib.FDwfAnalogOutEnableSet(self._device._hdwf, idxChannel, enable)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def functionSet(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutFunctionSet(HDWF hdwf, int idxChannel, FUNC func);
+        def enableGet(self, idxChannel: int) -> bool:
+            """Get the current enable/disable status of the specified AnalogOut channel.
 
-        def functionGet(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutFunctionGet(HDWF hdwf, int idxChannel, FUNC *pfunc);
+            This function is OBSOLETE. Use `nodeEnableGet` instead.
+            """
+            c_enable = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfAnalogOutEnableGet(self._device._hdwf, idxChannel, c_enable)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            enable = bool(c_enable.value)
+            return enable
 
-        def frequencyInfo(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutFrequencyInfo(HDWF hdwf, int idxChannel, double *phzMin, double *phzMax);
+        def functionInfo(self, idxChannel: int) -> List[FUNC]:
+            """Get AnalogOut function info.
 
-        def frequencySet(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutFrequencySet(HDWF hdwf, int idxChannel, double hzFrequency);
+            This function is OBSOLETE. Use `nodeFunctionInfo` instead.
+            """
+            c_function_bitset = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfAnalogOutFunctionInfo(self._device._hdwf, idxChannel, c_function_bitset)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            function_bitset = c_function_bitset.value
+            function_list = [function_ for function_ in FUNC if function_bitset & (1 << function_.value)]
+            return function_list
 
-        def frequencyGet(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutFrequencyGet(HDWF hdwf, int idxChannel, double *phzFrequency);
+        def functionSet(self, idxChannel: int, func: FUNC) -> None:
+            """Set AnalogOut function.
 
-        def amplitudeInfo(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutAmplitudeInfo(HDWF hdwf, int idxChannel, double *pvoltsMin, double *pvoltsMax);
+            This function is OBSOLETE. Use `nodeFunctionSet` instead.
+            """
+            result = self._device._dwf._lib.FDwfAnalogOutFunctionSet(self._device._hdwf, idxChannel, func.value)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def amplitudeSet(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutAmplitudeSet(HDWF hdwf, int idxChannel, double voltsAmplitude);
+        def functionGet(self, idxChannel: int) -> FUNC:
+            """Get AnalogOut function.
 
-        def amplitudeGet(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutAmplitudeGet(HDWF hdwf, int idxChannel, double *pvoltsAmplitude);
+            This function is OBSOLETE. Use `nodeFunctionGet` instead.
+            """
+            c_func = _typespec_ctypes.FUNC()
+            result = self._device._dwf._lib.FDwfAnalogOutFunctionGet(self._device._hdwf, idxChannel, c_func)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            func = FUNC(c_func.value)
+            return func
 
-        def offsetInfo(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutOffsetInfo(HDWF hdwf, int idxChannel, double *pvoltsMin, double *pvoltsMax);
+        def frequencyInfo(self, idxChannel: int) -> Tuple[float, float]:
+            """Get AnalogOut channel frequency range info.
 
-        def offsetSet(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutOffsetSet(HDWF hdwf, int idxChannel, double voltsOffset);
+            This function is OBSOLETE. Use `nodeFrequencyInfo` instead.
+            """
+            c_hzMin = _typespec_ctypes.c_double()
+            c_hzMax = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogOutFrequencyInfo(self._device._hdwf, idxChannel, c_hzMin, c_hzMax)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            hzMin = c_hzMin.value
+            hzMax = c_hzMax.value
+            return (hzMin, hzMax)
 
-        def offsetGet(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutOffsetGet(HDWF hdwf, int idxChannel, double *pvoltsOffset);
+        def frequencySet(self, idxChannel: int, hzFrequency: float) -> None:
+            """Get AnalogOut channel frequency.
 
-        def symmetryInfo(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutSymmetryInfo(HDWF hdwf, int idxChannel, double *ppercentageMin, double *ppercentageMax);
+            This function is OBSOLETE. Use `nodeFrequencySet` instead.
+            """
+            result = self._device._dwf._lib.FDwfAnalogOutFrequencySet(self._device._hdwf, idxChannel, hzFrequency)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def symmetrySet(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutSymmetrySet(HDWF hdwf, int idxChannel, double percentageSymmetry);
+        def frequencyGet(self, idxChannel: int) -> float:
+            """Get AnalogOut channel frequency.
 
-        def symmetryGet(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutSymmetryGet(HDWF hdwf, int idxChannel, double *ppercentageSymmetry);
+            This function is OBSOLETE. Use `nodeFrequencyGet` instead.
+            """
+            c_hzFrequency = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogOutFrequencyGet(self._device._hdwf, idxChannel, c_hzFrequency)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            hzFrequency = c_hzFrequency.value
+            return hzFrequency
 
-        def phaseInfo(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutPhaseInfo(HDWF hdwf, int idxChannel, double *pdegreeMin, double *pdegreeMax);
+        def amplitudeInfo(self, idxChannel: int) -> Tuple[float, float]:
+            """Get AnalogOut channel frequency range.
 
-        def phaseSet(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutPhaseSet(HDWF hdwf, int idxChannel, double degreePhase);
+            This function is OBSOLETE. Use `nodeAmplitudeInfo` instead.
+            """
+            c_min = _typespec_ctypes.c_double()
+            c_max = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogOutAmplitudeInfo(self._device._hdwf, idxChannel, c_min, c_max)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            min_ = c_min.value
+            max_ = c_max.value
+            return (min_, max_)
 
-        def phaseGet(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutPhaseGet(HDWF hdwf, int idxChannel, double *pdegreePhase);
+        def amplitudeSet(self, idxChannel: int, vAmplitude: float) -> None:
+            """Set AnalogOut channel frequency.
+
+            This function is OBSOLETE. Use `nodeAmplitudeSet` instead.
+            """
+            result = self._device._dwf._lib.FDwfAnalogOutAmplitudeSet(self._device._hdwf, idxChannel, vAmplitude)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+        def amplitudeGet(self, idxChannel: int) -> float:
+            """Get AnalogOut channel frequency.
+
+            This function is OBSOLETE. Use `nodeAmplitudeGet` instead.
+            """
+            c_vAmplitude = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogOutAmplitudeGet(self._device._hdwf, idxChannel, c_vAmplitude)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            vAmplitude = c_vAmplitude.value
+            return vAmplitude
+
+        def offsetInfo(self, idxChannel: int) -> Tuple[float, float]:
+            """Get AnalogOut channel offset range.
+
+            This function is OBSOLETE. Use `nodeOffsetInfo` instead.
+            """
+            c_min = _typespec_ctypes.c_double()
+            c_max = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogOutOffsetInfo(self._device._hdwf, idxChannel,c_min, c_max)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            min_ = c_min.value
+            max_ = c_max.value
+            return (min_, max_)
+
+        def offsetSet(self, idxChannel: int, vOffset: float) -> None:
+            """Set AnalogOut channel offset.
+
+            This function is OBSOLETE. Use `nodeOffsetSet` instead.
+            """
+            result = self._device._dwf._lib.FDwfAnalogOutOffsetSet(self._device._hdwf, idxChannel, vOffset)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+        def offsetGet(self, idxChannel: int) -> float:
+            """Get AnalogOut channel offset.
+
+            This function is OBSOLETE. Use `nodeOffsetGet` instead.
+            """
+            c_vOffset = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogOutOffsetGet(self._device._hdwf, idxChannel, c_vOffset)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            vOffset = c_vOffset.value
+            return vOffset
+
+        def symmetryInfo(self, idxChannel: int) -> Tuple[float, float]:
+            """Get AnalogOut channel symmetry range.
+
+            This function is OBSOLETE. Use `nodeSymmetryInfo` instead.
+            """
+            c_percentageMin = _typespec_ctypes.c_double()
+            c_percentageMax = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogOutSymmetryInfo(self._device._hdwf, idxChannel, c_percentageMin, c_percentageMax)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            percentageMin = c_percentageMin.value
+            percentageMax = c_percentageMax.value
+            return (percentageMin, percentageMax)
+
+        def symmetrySet(self, idxChannel: int, percentageSymmetry: float) -> None:
+            """Set AnalogOut channel symmetry.
+
+            This function is OBSOLETE. Use `nodeSymmetrySet` instead.
+            """
+            result = self._device._dwf._lib.FDwfAnalogOutSymmetrySet(self._device._hdwf, idxChannel, percentageSymmetry)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+        def symmetryGet(self, idxChannel: int) -> float:
+            """Get AnalogOut channel symmetry.
+
+            This function is OBSOLETE. Use `nodeSymmetryGet` instead.
+            """
+            c_percentageSymmetry = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogOutSymmetryGet(self._device._hdwf, idxChannel, c_percentageSymmetry)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            percentageSymmetry = c_percentageSymmetry.value
+            return percentageSymmetry
+
+        def phaseInfo(self, idxChannel: int) -> Tuple[float, float]:
+            """Get AnalogOut channel phase range.
+
+            This function is OBSOLETE. Use `nodePhaseInfo` instead.
+            """
+            c_degreeMin = _typespec_ctypes.c_double()
+            c_degreeMax = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogOutPhaseInfo(self._device._hdwf, idxChannel, c_degreeMin, c_degreeMax)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            degreeMin = c_degreeMin.value
+            degreeMax = c_degreeMax.value
+            return (degreeMin, degreeMax)
+
+        def phaseSet(self, idxChannel: int, degreePhase: float) -> None:
+            """Get AnalogOut channel phase.
+
+            This function is OBSOLETE. Use `nodePhaseSet` instead.
+            """
+            result = self._device._dwf._lib.FDwfAnalogOutPhaseSet(self._device._hdwf, idxChannel, degreePhase)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+        def phaseGet(self, idxChannel: int) -> float:
+            """Get AnalogOut channel phase.
+
+            This function is OBSOLETE. Use `nodePhaseGet` instead.
+            """
+            c_degreePhase = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogOutPhaseGet(self._device._hdwf, idxChannel, c_degreePhase)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            degreePhase = c_degreePhase.value
+            return degreePhase
 
         def dataInfo(self) -> None:
             raise NotImplementedError()
@@ -2898,7 +3061,7 @@ class DigilentWaveformDevice:
             return auto
 
         def statusData(self, idxChannel: int, cdData: int) -> np.ndarray:
-            """Retrieve the acquired data samples from the specified idxChannel on the AnalogIn instrument.
+            """Retrieve the acquired data samples from the specified idxChannel on the DigitalIn instrument.
 
             It copies the data samples to the provided buffer.
             """
@@ -2912,7 +3075,7 @@ class DigilentWaveformDevice:
             raise NotImplementedError()
 
         def statusData2(self, idxChannel: int, idxData: int, cdData: int) -> np.ndarray:
-            """Retrieve the acquired data samples from the specified idxChannel on the AnalogIn instrument.
+            """Retrieve the acquired data samples from the specified idxChannel on the DigitalIn instrument.
 
             It copies the data samples to the provided buffer.
             """
@@ -2941,9 +3104,15 @@ class DigilentWaveformDevice:
             hzFreq = c_hzFreq.value
             return hzFreq
 
-        def clockSourceInfo(self) -> None:
-            #('FDwfDigitalInClockSourceInfo', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pfsDwfDigitalInClockSource', typespec.c_int_ptr) ], False),
-            raise NotImplementedError()
+        def clockSourceInfo(self) -> List[DwfDigitalInClockSource]:
+            """Get digital-in clock source info."""
+            c_clock_source_bitset = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfDigitalInClockSourceInfo(self._device._hdwf, c_clock_source_bitset)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            clock_source_bitset = c_clock_source_bitset.value
+            clock_source_list = [clock_source for clock_source in DwfDigitalInClockSource if clock_source_bitset & (1 << clock_source.value)]
+            return clock_source_list
 
         def clockSourceSet(self) -> None:
             #('FDwfDigitalInClockSourceSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('v', typespec.DwfDigitalInClockSource) ], False),
@@ -3026,9 +3195,15 @@ class DigilentWaveformDevice:
             #('FDwfDigitalInSampleSensibleGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pfs', typespec.c_unsigned_int_ptr) ], False),
             raise NotImplementedError()
 
-        def acquisitionModeInfo(self) -> None:
-            #('FDwfDigitalInAcquisitionModeInfo', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pfsacqmode', typespec.c_int_ptr) ], False),
-            raise NotImplementedError()
+        def acquisitionModeInfo(self) -> List[ACQMODE]:
+            """Get digital-in acquisition mode info."""
+            c_acquisition_mode_bitset = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfDigitalInAcquisitionModeInfo(self._device._hdwf, c_acquisition_mode_bitset)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            acquisiton_mode_bitset = c_acquisition_mode_bitset.value
+            acquisition_mode_list = [acquisition_mode for acquisition_mode in ACQMODE if acquisiton_mode_bitset & (1 << acquisition_mode.value)]
+            return acquisition_mode_list
 
         def acquisitionModeSet(self) -> None:
             #('FDwfDigitalInAcquisitionModeSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('acqmode', typespec.ACQMODE) ], False),
