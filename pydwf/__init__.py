@@ -2078,7 +2078,7 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def repeatTriggerGet(self, idxChannel: int, node: AnalogOutNode) -> bool:
+        def repeatTriggerGet(self, idxChannel: int) -> bool:
             c_repeatTrigger = _typespec_ctypes.c_int()
             result = self._device._dwf._lib.FDwfAnalogOutRepeatTriggerGet(self._device._hdwf, idxChannel, c_repeatTrigger)
             if result != _RESULT_SUCCESS:
@@ -2356,7 +2356,7 @@ class DigilentWaveformDevice:
             c_dataFree = _typespec_ctypes.c_int()
             c_dataLost = _typespec_ctypes.c_int()
             c_dataCorrupted = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutNodePlayStatus(self._device._hdwf, idxChannel, node, c_dataFree, c_dataLost, c_dataCorrupted)
+            result = self._device._dwf._lib.FDwfAnalogOutNodePlayStatus(self._device._hdwf, idxChannel, node.value, c_dataFree, c_dataLost, c_dataCorrupted)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             dataFree = c_dataFree.value
@@ -2364,8 +2364,10 @@ class DigilentWaveformDevice:
             dataCorrupted = c_dataCorrupted.value
             return (dataFree, dataLost, dataCorrupted)
 
-        def nodePlayData(self) -> None:
-            raise NotImplementedError()
+        def nodePlayData(self, idxChannel:int,  node: AnalogOutNode, data: np.ndarray) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutNodePlayData(self._device._hdwf, idxChannel, node.value, data.ctypes.data_as(_typespec_ctypes.c_double_ptr), len(data))
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
         ################################################# Obsolete functions follow:
 
@@ -2612,21 +2614,53 @@ class DigilentWaveformDevice:
             degreePhase = c_degreePhase.value
             return degreePhase
 
-        def dataInfo(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutDataInfo(HDWF hdwf, int idxChannel, int *pnSamplesMin, int *pnSamplesMax);
+        def dataInfo(self, idxChannel: int) -> None:
+            """Get AnalogOut channel data info.
 
-        def dataSet(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutDataSet(HDWF hdwf, int idxChannel, double *rgdData, int cdData);
+            This function is OBSOLETE. Use `nodeDataInfo` instead.
+            """
+            c_samplesMin = _typespec_ctypes.c_int()
+            c_samplesMax = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfAnalogOutDataInfo(self._device._hdwf, idxChannel, c_samplesMin, c_samplesMax)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            samplesMin = c_samplesMin.value
+            samplesMax = c_samplesMax.value
+            return (samplesMin, samplesMax)
 
-        def playStatus(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutPlayStatus(HDWF hdwf, int idxChannel, int *cdDataFree, int *cdDataLost, int *cdDataCorrupted);
+        def dataSet(self, idxChannel: int, data: np.ndarray) -> None:
+            """Set AnalogOut channel data.
 
-        def playData(self) -> None:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogOutPlayData(HDWF hdwf, int idxChannel, double *rgdData, int cdData);
+            This function is OBSOLETE. Use `nodeDataSet` instead.
+            """
+            double_data = data.astype(np.float64)
+
+            result = self._device._dwf._lib.FDwfAnalogOutDataSet(self._device._hdwf, idxChannel, double_data.ctypes.data_as(_typespec_ctypes.c_double_ptr), len(double_data))
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+
+        def playStatus(self, idxChannel: int)  -> Tuple[int, int, int]:
+            """Get AnalogOut channel play status.
+
+            This function is OBSOLETE. Use `nodePlayStatus` instead.
+            """
+            c_dataFree = _typespec_ctypes.c_int()
+            c_dataLost = _typespec_ctypes.c_int()
+            c_dataCorrupted = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfAnalogOutPlayStatus(self._device._hdwf, idxChannel, c_dataFree, c_dataLost, c_dataCorrupted)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            dataFree = c_dataFree.value
+            dataLost = c_dataLost.value
+            dataCorrupted = c_dataCorrupted.value
+            return (dataFree, dataLost, dataCorrupted)
+
+        def playData(self, idxChannel: int, data: np.ndarray) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutPlayData(self._device._hdwf, idxChannel, data.ctypes.data_as(_typespec_ctypes.c_double_ptr), len(data))
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
 
     class AnalogIOAPI:
 
@@ -3114,13 +3148,19 @@ class DigilentWaveformDevice:
             clock_source_list = [clock_source for clock_source in DwfDigitalInClockSource if clock_source_bitset & (1 << clock_source.value)]
             return clock_source_list
 
-        def clockSourceSet(self) -> None:
-            #('FDwfDigitalInClockSourceSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('v', typespec.DwfDigitalInClockSource) ], False),
-            raise NotImplementedError()
+        def clockSourceSet(self, clock_source: DwfDigitalInClockSource) -> None:
+            result = self._device._dwf._lib.FDwfDigitalInClockSourceSet(self._device._hdwf, clock_source.value)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
         def clockSourceGet(self) -> None:
             #('FDwfDigitalInClockSourceGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pv', typespec.DwfDigitalInClockSource_ptr) ], False),
-            raise NotImplementedError()
+            c_clock_source = _typespec_ctypes.DwfDigitalInClockSource()
+            result = self._device._dwf._lib.FDwfDigitalInClockSourceGet(self._device._hdwf, c_clock_source)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            clock_source = DwfDigitalInClockSource(c_clock_source.value)
+            return clock_source
 
         def dividerInfo(self) -> int:
             c_divMax = _typespec_ctypes.c_unsigned_int()
@@ -3151,49 +3191,86 @@ class DigilentWaveformDevice:
             nBits = c_nBits.value
             return nBits
 
-        def sampleFormatSet(self) -> None:
-            #('FDwfDigitalInSampleFormatSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('nBits', typespec.c_int) ], False),
-            raise NotImplementedError()
+        def sampleFormatSet(self, nBits: int) -> None:
+            result = self._device._dwf._lib.FDwfDigitalInSampleFormatSet(self._device._hdwf, nBits)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def sampleFormatGet(self) -> None:
-            #('FDwfDigitalInSampleFormatGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pnBits', typespec.c_int_ptr) ], False),
-            raise NotImplementedError()
+        def sampleFormatGet(self) -> int:
+            c_nBits = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfDigitalInSampleFormatGet(self._device._hdwf, c_nBits)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            nBits = c_nBits.value
+            return nBits
 
-        def inputOrderSet(self) -> None:
-            #('FDwfDigitalInInputOrderSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('fDioFirst', typespec.c_bool) ], False),
-            raise NotImplementedError()
+        def inputOrderSet(self, dioFirst: bool) -> None:
+            """Configures the order of values stored in the sampling array.
 
-        def bufferSizeInfo(self) -> None:
-            #('FDwfDigitalInBufferSizeInfo', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pnSizeMax', typespec.c_int_ptr) ], False),
-            raise NotImplementedError()
+            If dioFirst is True, DIO 24..39 are placed at the beginning of the array followed by DIN 0..23.
+            If dioFirst is False, DIN 0..23 are placed at the beginning followed by DIO 24..31.
+            Valid only for Digital Discovery device.
+            """
+            result = self._device._dwf._lib.FDwfDigitalInInputOrderSet(self._device._hdwf, dioFirst)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def bufferSizeSet(self) -> None:
-            #('FDwfDigitalInBufferSizeSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('nSize', typespec.c_int) ], False),
-            raise NotImplementedError()
+        def bufferSizeInfo(self) -> int:
+            c_nSizeMax = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfDigitalInBufferSizeInfo(self._device._hdwf, c_nSizeMax)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            nSizeMax = c_nSizeMax.value
+            return nSizeMax
 
-        def bufferSizeGet(self) -> None:
-            #('FDwfDigitalInBufferSizeGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pnSize', typespec.c_int_ptr) ], False),
-            raise NotImplementedError()
+        def bufferSizeSet(self, nSize: int) -> None:
+            result = self._device._dwf._lib.FDwfDigitalInBufferSizeSet(self._device._hdwf, nSize)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def sampleModeInfo(self) -> None:
-            #('FDwfDigitalInSampleModeInfo', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pfsDwfDigitalInSampleMode', typespec.c_int_ptr) ], False),
-            raise NotImplementedError()
+        def bufferSizeGet(self) -> int:
+            c_nSize = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfDigitalInBufferSizeGet(self._device._hdwf, c_nSize)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            nSize = c_nSize.value
+            return nSize
 
-        def sampleModeSet(self) -> None:
-            #('FDwfDigitalInSampleModeSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('v', typespec.DwfDigitalInSampleMode) ], False),
-            raise NotImplementedError()
+        def sampleModeInfo(self) -> List[DwfDigitalInSampleMode]:
+            """Get digital-in sample mode info."""
+            c_sample_mode_bitset = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfDigitalInSampleModeInfo(self._device._hdwf, c_sample_mode_bitset)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            sample_mode_bitset = c_sample_mode_bitset.value
+            sample_mode_list = [sample_mode for sample_mode in DwfDigitalInSampleMode if sample_mode_bitset & (1 << sample_mode.value)]
+            return sample_mode_list
+
+        def sampleModeSet(self, sample_mode: DwfDigitalInSampleMode) -> None:
+            result = self._device._dwf._lib.FDwfDigitalInSampleModeSet(self._device._hdwf, sample_mode.value)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
         def sampleModeGet(self) -> None:
-            #('FDwfDigitalInSampleModeGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pv', typespec.DwfDigitalInSampleMode_ptr) ], False),
-            raise NotImplementedError()
+            c_sample_mode = _typespec_ctypes.DwfDigitalInSampleMode()
+            result = self._device._dwf._lib.FDwfDigitalInSampleModeGet(self._device._hdwf, c_sample_mode)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            sample_mode = DwfDigitalInClockSource(c_sample_mode.value)
+            return sample_mode
 
-        def sampleSensibleSet(self) -> None:
-            #('FDwfDigitalInSampleSensibleSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('fs', typespec.c_unsigned_int) ], False),
-            raise NotImplementedError()
+        def sampleSensibleSet(self, compression_bits: int) -> None:
+            result = self._device._dwf._lib.FDwfDigitalInSampleSensibleSet(self._device._hdwf, compression_bits)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
         def sampleSensibleGet(self) -> None:
-            #('FDwfDigitalInSampleSensibleGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pfs', typespec.c_unsigned_int_ptr) ], False),
-            raise NotImplementedError()
+            c_compression_bits = _typespec_ctypes.c_unsigned_int()
+            result = self._device._dwf._lib.FDwfDigitalInSampleSensibleGet(self._device._hdwf, c_compression_bits)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            compression_bits = c_compression_bits.value
+            return compression_bits
 
         def acquisitionModeInfo(self) -> List[ACQMODE]:
             """Get digital-in acquisition mode info."""
@@ -3205,13 +3282,18 @@ class DigilentWaveformDevice:
             acquisition_mode_list = [acquisition_mode for acquisition_mode in ACQMODE if acquisiton_mode_bitset & (1 << acquisition_mode.value)]
             return acquisition_mode_list
 
-        def acquisitionModeSet(self) -> None:
-            #('FDwfDigitalInAcquisitionModeSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('acqmode', typespec.ACQMODE) ], False),
-            raise NotImplementedError()
+        def acquisitionModeSet(self, acqmode: ACQMODE) -> None:
+            result = self._device._dwf._lib.FDwfDigitalInAcquisitionModeSet(self._device._hdwf, acqmode.value)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def acquisitionModeGet(self) -> None:
-            #('FDwfDigitalInAcquisitionModeGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pacqmode', typespec.ACQMODE_ptr) ], False),
-            raise NotImplementedError()
+        def acquisitionModeGet(self) -> ACQMODE:
+            c_acqmode = _typespec_ctypes.ACQMODE()
+            result = self._device._dwf._lib.FDwfDigitalInAcquisitionModeGet(self._device._hdwf, c_acqmode)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            acqmode = ACQMODE(c_acqmode.value)
+            return acqmode
 
         # Trigger functions:
 
@@ -3324,27 +3406,41 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def triggerCountSet(self) -> None:
-            #('FDwfDigitalInTriggerCountSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('cCount', typespec.c_int), ('fRestart', typespec.c_int) ], False),
-            raise NotImplementedError()
+        def triggerCountSet(self, count: int, restart: int) -> None:
+            result = self._device._dwf._lib.FDwfDigitalInTriggerCountSet(self._device._hdwf, count, restart)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def triggerLengthSet(self) -> None:
-            #('FDwfDigitalInTriggerLengthSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('secMin', typespec.c_double), ('secMax', typespec.c_double), ('idxSync', typespec.c_int) ], False),
-            raise NotImplementedError()
+        def triggerLengthSet(self, secMin: float, secMax: float, idxSync: int) -> None:
+            result = self._device._dwf._lib.FDwfDigitalInTriggerLengthSet(self._device._hdwf, secMin, secMax, idxSync)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def triggerMatchSet(self) -> None:
-            #('FDwfDigitalInTriggerMatchSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('iPin', typespec.c_int), ('fsMask', typespec.c_unsigned_int), ('fsValue', typespec.c_unsigned_int), ('cBitStuffing', typespec.c_int) ], False),
-            raise NotImplementedError()
+        def triggerMatchSet(self, pin: int, mask: int, value: int, bitstuffing: int) -> None:
+            result = self._device._dwf._lib.FDwfDigitalInTriggerMatchSet(self._device._hdwf, pin, mask, value, bitstuffing)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
         # Obsolete functions:
 
-        def mixedSet(self) -> None:
-            #('FDwfDigitalInMixedSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('fEnable', typespec.BOOL) ], True),
-            raise NotImplementedError()
+        def mixedSet(self, enable: bool) -> None:
+            result = self._device._dwf._lib.FDwfDigitalInMixedSet(self._device._hdwf, enable)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
         def triggerSourceInfo(self) -> None:
-            #('FDwfDigitalInTriggerSourceInfo', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pfstrigsrc', typespec.c_int_ptr) ], True),
-            raise NotImplementedError()
+            """Get digital-in trigger source info.
+
+            Note: This function is OBSOLETE. Use the generic `DeviceAPI.triggerInfo()` method instead.
+            """
+            c_trigger_source_bitset = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfDigitalInTriggerSourceInfo(self._device._hdwf, c_trigger_source_bitset)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            trigger_source_bitset = c_trigger_source_bitset.value
+            trigger_source_list = [trigger_source for trigger_source in TRIGSRC if trigger_source_bitset & (1 << trigger_source.value)]
+            return trigger_source_list
+
 
     class DigitalOutAPI:
         """Provides wrappers for the 'FDwfDigitalOut' API functions.
@@ -3594,12 +3690,12 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def outputGet(self, idxChannel: int) -> DwfDigitalOutOutput:
-            c_v = _typespec_ctypes.DwfDigitalOutOutput()
-            result = self._device._dwf._lib.FDwfDigitalOutOutputGet(self._device._hdwf, idxChannel, c_v)
+            c_output_value = _typespec_ctypes.DwfDigitalOutOutput()
+            result = self._device._dwf._lib.FDwfDigitalOutOutputGet(self._device._hdwf, idxChannel, c_output_value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            v = DwfDigitalOutOutput(c_v.value)
-            return v
+            output_value = DwfDigitalOutOutput(c_output_value.value)
+            return output_value
 
         def typeInfo(self, idxChannel: int) -> List[DwfDigitalOutType]:
             c_type_bitset = _typespec_ctypes.c_int()
@@ -3841,8 +3937,8 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def frequencySet(self, hz: float) -> None:
-            result = self._device._dwf._lib.FDwfDigitalSpiFrequencySet(self._device._hdwf, hz)
+        def frequencySet(self, frequency: float) -> None:
+            result = self._device._dwf._lib.FDwfDigitalSpiFrequencySet(self._device._hdwf, frequency)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -3851,19 +3947,35 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def dataSet(self) -> None:
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalSpiDataSet(HDWF hdwf, int idxDQ, int idxChannel); // 0 DQ0_MOSI_SISO, 1 DQ1_MISO, 2 DQ2, 3 DQ3
+        def dataSet(self, data_select: int, channel_index: int) -> None:
+            """Pick a hardware pin (channel_index) for an SPI function (data_select).
 
-        def modeSet(self, mode: int) -> None:
-            # bit1 CPOL, bit0 CPHA
-            result = self._device._dwf._lib.FDwfDigitalSpiModeSet(self._device._hdwf, mode)
+            data_select:
+                0 = DQ0 / MOSI
+                1 = DQ1 / MISO
+                2 = DQ2
+                3 = DQ3
+            """
+            result = self._device._dwf._lib.FDwfDigitalSpiDataSet(self._device._hdwf, data_select, channel_index)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def orderSet(self, order: int) -> None:
-            # bit order: 0 MSB first, 1 LSB first
-            result = self._device._dwf._lib.FDwfDigitalSpiOrderSet(self._device._hdwf, order)
+        def modeSet(self, spi_mode: int) -> None:
+            """
+            mode:
+                0 = { CPOL = 0, CPHA = 0 }
+                1 = { CPOL = 0, CPHA = 1 }
+                2 = { CPOL = 1, CPHA = 0 }
+                3 = { CPOL = 1, CPHA = 1 }
+            """
+            result = self._device._dwf._lib.FDwfDigitalSpiModeSet(self._device._hdwf, spi_mode)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+        def orderSet(self, bit_order: int) -> None:
+            # bit order: 1 MSB first, 0 LSB first
+            # TODO: check if the same as in the doc PDF
+            result = self._device._dwf._lib.FDwfDigitalSpiOrderSet(self._device._hdwf, bit_order)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -3873,61 +3985,186 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def writeRead(self) -> None:
-            # cDQ 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalSpiWriteRead(HDWF hdwf, int cDQ, int cBitPerWord, unsigned char *rgTX, int cTX, unsigned char *rgRX, int cRX);
+        def writeRead(self, transfer_type: int, bits_per_word: int, tx: List[int]) -> List[int]:
+            """Write and read, up to 8 bits per SPI word."""
+            # transfer_type 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
 
-        def writeRead16(self) -> None:
-            # cDQ 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalSpiWriteRead16(HDWF hdwf, int cDQ, int cBitPerWord, unsigned short *rgTX, int cTX, unsigned short *rgRX, int cRX);
+            tx_list = list(tx)
 
-        def writeRead32(self) -> None:
-            # cDQ 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalSpiWriteRead32(HDWF hdwf, int cDQ, int cBitPerWord, unsigned int *rgTX, int cTX, unsigned int *rgRX, int cRX);
+            number_of_words = len(tx_list)
 
-        def read(self) -> None:
-            # cDQ 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalSpiRead(HDWF hdwf, int cDQ, int cBitPerWord, unsigned char *rgRX, int cRX);
+            buffer_type = _typespec_ctypes.c_unsigned_char * number_of_words
 
-        def readOne(self) -> None:
-            # cDQ 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalSpiReadOne(HDWF hdwf, int cDQ, int cBitPerWord, unsigned int *pRX);
+            tx_buffer = buffer_type(*tx_list)
+            rx_buffer = buffer_type()
 
-        def read16(self) -> None:
-            # cDQ 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalSpiRead16(HDWF hdwf, int cDQ, int cBitPerWord, unsigned short *rgRX, int cRX);
+            result = self._device._dwf._lib.FDwfDigitalSpiWriteRead(self._device._hdwf, transfer_type, bits_per_word, tx_buffer, number_of_words, rx_buffer, number_of_words)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def read32(self) -> None:
-            # cDQ 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalSpiRead32(HDWF hdwf, int cDQ, int cBitPerWord, unsigned int *rgRX, int cRX);
+            rx_list = list(rx_buffer)
 
-        def write(self) -> None:
-            # cDQ 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalSpiWrite(HDWF hdwf, int cDQ, int cBitPerWord, unsigned char *rgTX, int cTX);
+            return rx_list
 
-        def writeOne(self) -> None:
+        def writeRead16(self, transfer_type: int, bits_per_word: int, tx: List[int]) -> List[int]:
+            """Write, then read, up to 16 bits per SPI word."""
             # cDQ 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalSpiWriteOne(HDWF hdwf, int cDQ, int cBits, unsigned int vTX);
 
-        def write16(self) -> None:
+            tx_list = list(tx)
+
+            number_of_words = len(tx_list)
+
+            buffer_type = _typespec_ctypes.c_unsigned_short * number_of_words
+
+            tx_buffer = buffer_type(*tx_list)
+            rx_buffer = buffer_type()
+
+            result = self._device._dwf._lib.FDwfDigitalSpiWriteRead16(self._device._hdwf, transfer_type, bits_per_word, tx_buffer, number_of_words, rx_buffer, number_of_words)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+            rx_list = list(rx_buffer)
+
+            return rx_list
+
+        def writeRead32(self, transfer_type: int, bits_per_word: int, tx: List[int]) -> List[int]:
+            """Write, then read, up to 32 bits per SPI word."""
             # cDQ 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalSpiWrite16(HDWF hdwf, int cDQ, int cBitPerWord, unsigned short *rgTX, int cTX);
 
-        def write32(self) -> None:
+            tx_list = list(tx)
+
+            number_of_words = len(tx_list)
+
+            buffer_type = _typespec_ctypes.c_unsigned_int * number_of_words
+
+            tx_buffer = buffer_type(*tx_list)
+            rx_buffer = buffer_type()
+
+            result = self._device._dwf._lib.FDwfDigitalSpiWriteRead32(self._device._hdwf, transfer_type, bits_per_word, tx_buffer, number_of_words, rx_buffer, number_of_words)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+            rx_list = list(rx_buffer)
+
+            return rx_list
+
+        def read(self, transfer_type: int, bits_per_word: int, number_of_words: int) -> List[int]:
             # cDQ 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalSpiWrite32(HDWF hdwf, int cDQ, int cBitPerWord, unsigned int *rgTX, int cTX);
 
+            buffer_type = _typespec_ctypes.c_unsigned_char * number_of_words
+
+            rx_buffer = buffer_type()
+
+            result = self._device._dwf._lib.FDwfDigitalSpiRead(self._device._hdwf, transfer_type, bits_per_word, rx_buffer, number_of_words)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+            rx_list = list(rx_buffer)
+
+            return rx_list
+
+        def readOne(self, dq: int, bits_per_word: int) -> int:
+            # cDQ 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
+            c_rx = _typespec_ctypes.c_unsigned_int()
+            result = self._device._dwf._lib.FDwfDigitalSpiReadOne(self._device._hdwf, dq, bits_per_word, c_rx)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            rx = c_rx.value
+            return rx
+
+        def read16(self, transfer_type: int, bits_per_word: int, number_of_words: int) -> List[int]:
+            # cDQ 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
+
+            buffer_type = _typespec_ctypes.c_unsigned_short * number_of_words
+
+            rx_buffer = buffer_type()
+
+            result = self._device._dwf._lib.FDwfDigitalSpiRead16(self._device._hdwf, transfer_type, bits_per_word, rx_buffer, number_of_words)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+            rx_list = list(rx_buffer)
+
+            return rx_list
+
+        def read32(self, transfer_type: int, bits_per_word: int, number_of_words: int) -> List[int]:
+            # cDQ 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
+
+            buffer_type = _typespec_ctypes.c_unsigned_int * number_of_words
+
+            rx_buffer = buffer_type()
+
+            result = self._device._dwf._lib.FDwfDigitalSpiRead32(self._device._hdwf, transfer_type, bits_per_word, rx_buffer, number_of_words)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+            rx_list = list(rx_buffer)
+
+            return rx_list
+
+        def write(self, transfer_type: int, bits_per_word: int, tx: List[int]) -> None:
+            """Write up to 8 bits per SPI word."""
+            # transfer_type 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
+
+            tx_list = list(tx)
+
+            number_of_words = len(tx_list)
+
+            buffer_type = _typespec_ctypes.c_unsigned_char * number_of_words
+
+            tx_buffer = buffer_type(*tx_list)
+
+            result = self._device._dwf._lib.FDwfDigitalSpiWrite(self._device._hdwf, transfer_type, bits_per_word, tx_buffer, number_of_words)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+        def writeOne(self, transfer_type: int, bits_per_word: int, tx: int) -> None:
+            """Write up to 8 bits per SPI word."""
+            # transfer_type 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
+
+            tx_list = list(tx)
+
+            number_of_words = len(tx_list)
+
+            buffer_type = _typespec_ctypes.c_unsigned_char * number_of_words
+
+            tx_buffer = buffer_type(*tx_list)
+
+            result = self._device._dwf._lib.FDwfDigitalSpiWriteOne(self._device._hdwf, transfer_type, bits_per_word, tx)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+        def write16(self, transfer_type: int, bits_per_word: int, tx: List[int]) -> None:
+            """Write up to 16 bits per SPI word."""
+            # transfer_type 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
+
+            tx_list = list(tx)
+
+            number_of_words = len(tx_list)
+
+            buffer_type = _typespec_ctypes.c_unsigned_short * number_of_words
+
+            tx_buffer = buffer_type(*tx_list)
+
+            result = self._device._dwf._lib.FDwfDigitalSpiWrite16(self._device._hdwf, transfer_type, bits_per_word, tx_buffer, number_of_words)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+        def write32(self, transfer_type: int, bits_per_word: int, tx: List[int]) -> None:
+            """Write up to 16 bits per SPI word."""
+            # transfer_type 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
+
+            tx_list = list(tx)
+
+            number_of_words = len(tx_list)
+
+            buffer_type = _typespec_ctypes.c_unsigned_int * number_of_words
+
+            tx_buffer = buffer_type(*tx_list)
+
+            result = self._device._dwf._lib.FDwfDigitalSpiWrite32(self._device._hdwf, transfer_type, bits_per_word, tx_buffer, number_of_words)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
     class DigitalI2cAPI:
         """Provides wrappers for the 'FDwfDigitalI2c' API functions.
@@ -4064,14 +4301,17 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def modeSet(self, mode: int) -> None:
-            # 0 W1-C1-DUT-C2-R-GND, 1 W1-C1-R-C2-DUT-GND, 8 Impedance Analyzer for AD
+            """0 W1-C1-DUT-C2-R-GND, 1 W1-C1-R-C2-DUT-GND, 8 Impedance Analyzer for AD"""
             result = self._device._dwf._lib.FDwfAnalogImpedanceModeSet(self._device._hdwf, mode)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def modeGet(self) -> int:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogImpedanceModeGet(HDWF hdwf, int *mode);
+            c_mode = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfAnalogImpedanceModeGet(self._device._hdwf, c_mode)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            mode = c_mode.value
 
         def referenceSet(self, ohms: float) -> None:
             result = self._device._dwf._lib.FDwfAnalogImpedanceReferenceSet(self._device._hdwf, ohms)
@@ -4079,8 +4319,12 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def referenceGet(self) -> float:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogImpedanceReferenceGet(HDWF hdwf, double *pohms);
+            c_ohms = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogImpedanceReferenceGet(self._device._hdwf, c_ohms)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            ohms = c_ohms.value
+            return ohms
 
         def frequencySet(self, hz: float) -> None:
             result = self._device._dwf._lib.FDwfAnalogImpedanceFrequencySet(self._device._hdwf, hz)
@@ -4088,8 +4332,12 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def frequencyGet(self) -> float:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogImpedanceFrequencyGet(HDWF hdwf, double *phz);
+            c_frequency = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogImpedanceFrequencyGet(self._device._hdwf, c_frequency)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            frequency = c_frequency.value
+            return frequency
 
         def amplitudeSet(self, volts: float) -> None:
             result = self._device._dwf._lib.FDwfAnalogImpedanceAmplitudeSet(self._device._hdwf, volts)
@@ -4097,8 +4345,12 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def amplitudeGet(self) -> float:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogImpedanceAmplitudeGet(HDWF hdwf, double *pvolts);
+            c_amplitude = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogImpedanceAmplitudeGet(self._device._hdwf, c_amplitude)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            amplitude = c_amplitude.value
+            return amplitude
 
         def offsetSet(self, volts: float) -> None:
             result = self._device._dwf._lib.FDwfAnalogImpedanceOffsetSet(self._device._hdwf, volts)
@@ -4106,8 +4358,12 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def offsetGet(self) -> float:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogImpedanceOffsetGet(HDWF hdwf, double *pvolts);
+            c_offset = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogImpedanceOffsetGet(self._device._hdwf, c_offset)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            offset = c_offset.value
+            return offset
 
         def probeSet(self, ohmRes: float, faradCap: float) -> None:
             result = self._device._dwf._lib.FDwfAnalogImpedanceProbeSet(self._device._hdwf, ohmRes, faradCap)
@@ -4115,8 +4371,14 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def probeGet(self) -> Tuple[float, float]:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogImpedanceProbeGet(HDWF hdwf, double *pohmRes, double *pfaradCap);
+            c_ohmRes = _typespec_ctypes.c_double()
+            c_faradCap = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogImpedanceProbeGet(self._device._hdwf, c_ohmRes, c_faradCap)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            ohmRes = c_ohmRes.value
+            faradCap = c_faradCap.value
+            return (ohmRes, faradCap)
 
         def periodSet(self, period: int) -> None:
             result = self._device._dwf._lib.FDwfAnalogImpedancePeriodSet(self._device._hdwf, period)
@@ -4124,8 +4386,12 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def periodGet(self) -> int:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogImpedancePeriodGet(HDWF hdwf, int *cMinPeriods);
+            c_period = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfAnalogImpedancePeriodGet(self._device._hdwf, c_period)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            period = c_period.value
+            return period
 
         def compReset(self) -> None:
             """Resets the Analog Impedance instrument."""
@@ -4139,8 +4405,18 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def compGet(self) -> Tuple[float, float, float, float]:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogImpedanceCompGet(HDWF hdwf, double *pohmOpenResistance, double *pohmOpenReactance, double *pohmShortResistance, double *pohmShortReactance);
+            c_ohmOpenResistance = _typespec_ctypes.c_double()
+            c_ohmOpenReactance = _typespec_ctypes.c_double()
+            c_ohmShortResistance = _typespec_ctypes.c_double()
+            c_ohmShortReactance = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogImpedanceCompGet(self._device._hdwf, c_ohmOpenResistance, c_ohmOpenReactance, c_ohmShortResistance, c_ohmShortReactance)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            ohmOpenResistance = c_ohmOpenResistance.value
+            ohmOpenReactance = c_ohmOpenReactance.value
+            ohmShortResistance = c_ohmShortResistance.value
+            ohmShortReactance =c_ohmShortReactance.value
+            return (ohmOpenResistance, ohmOpenReactance, ohmShortResistance, ohmShortReactance)
 
         def configure(self, start: int) -> None:
             result = self._device._dwf._lib.FDwfAnalogImpedanceConfigure(self._device._hdwf, start)
@@ -4148,13 +4424,57 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def status(self) -> int:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogImpedanceStatus(HDWF hdwf, DwfState *psts);
+            """Returns the status of the AnalogImpedance pseudo-instrument."""
+            c_status = _typespec_ctypes.DwfState()
+            result = self._device._dwf._lib.FDwfAnalogImpedanceStatus(self._device._hdwf, c_status)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            status_ = DwfState(c_status.value)
+            return status_
 
         def statusInput(self, channel_index: int) -> Tuple[float, float]:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogImpedanceStatusInput(HDWF hdwf, int idxChannel, double *pgain, double *pradian);
+            c_gain = _typespec_ctypes.c_double()
+            c_radian = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogImpedanceStatusInput(self._device._hdwf, channel_index, c_gain, c_radian)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            gain = c_gain.value
+            radian = c_radian.value
+            return (gain, radian)
 
         def statusMeasure(self, measure: DwfAnalogImpedance) -> float:
-            raise NotImplementedError()
-            # DWFAPI BOOL FDwfAnalogImpedanceStatusMeasure(HDWF hdwf, DwfAnalogImpedance measure, double *pvalue);
+            c_value = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogImpedanceStatusInput(self._device._hdwf, measure.value, c_value)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            value = c_value.value
+            return value
+
+
+# Not implemented yet:
+#
+# DigitalInAPI (9)
+#
+#     statusData(idxChannel: int, cdData: int) -> np.ndarray
+#     statusData2(idxChannel: int, idxData: int, cdData: int) -> np.ndarray
+#     statusNoise2(idxChannel: int, idxData: int, cdData: int) -> np.ndarray
+#     statusRecord(idxChannel: int, idxData: int, cdData: int) -> np.ndarray
+#
+#     triggerPositionInfo()
+#     triggerPositionSet()
+#     triggerPositionGet()
+#     triggerPrefillSet()
+#     triggerPrefillGet()
+#
+#  DigitalI2cAPI (10)
+#
+#     clear()
+#     stretchSet()
+#     rateSet()
+#     readNakSet()
+#     sclSet()
+#     sdaSet()
+#     writeRead()
+#     read()
+#     write()
+#     writeOne()
