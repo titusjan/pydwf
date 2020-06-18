@@ -3323,25 +3323,39 @@ class DigilentWaveformDevice:
             slope = DwfTriggerSlope(c_slope.value)
             return slope
 
-        def triggerPositionInfo(self) -> None:
-            #('FDwfDigitalInTriggerPositionInfo', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pnSamplesAfterTriggerMax', typespec.c_unsigned_int_ptr) ], False),
-            raise NotImplementedError()
+        def triggerPositionInfo(self) -> int:
+            c_max_samples_after_trigger = _typespec_ctypes.c_unsigned_int()
+            result = self._device._dwf._lib.FDwfDigitalInTriggerPositionInfo(self._device._hdwf, c_max_samples_after_trigger)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            max_samples_after_trigger = c_max_samples_after_trigger.value
+            return max_samples_after_trigger
 
-        def triggerPositionSet(self) -> None:
-            #('FDwfDigitalInTriggerPositionSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('cSamplesAfterTrigger', typespec.c_unsigned_int) ], False),
-            raise NotImplementedError()
+        def triggerPositionSet(self, samples_after_trigger: int) -> None:
+            result = self._device._dwf._lib.FDwfDigitalInTriggerPositionSet(self._device._hdwf, samples_after_trigger)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def triggerPositionGet(self) -> None:
-            #('FDwfDigitalInTriggerPositionGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pcSamplesAfterTrigger', typespec.c_unsigned_int_ptr) ], False),
-            raise NotImplementedError()
+        def triggerPositionGet(self) -> int:
+            c_samples_after_trigger = _typespec_ctypes.c_unsigned_int()
+            result = self._device._dwf._lib.FDwfDigitalInTriggerPositionGet(self._device._hdwf, c_samples_after_trigger)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            samples_after_trigger = c_samples_after_trigger.value
+            return samples_after_trigger
 
-        def triggerPrefillSet(self) -> None:
-            #('FDwfDigitalInTriggerPrefillSet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('cSamplesBeforeTrigger', typespec.c_unsigned_int) ], False),
-            raise NotImplementedError()
+        def triggerPrefillSet(self, samples_before_trigger: int) -> None:
+            result = self._device._dwf._lib.FDwfDigitalInTriggerPrefillSet(self._device._hdwf, samples_before_trigger)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def triggerPrefillGet(self) -> None:
-            #('FDwfDigitalInTriggerPrefillGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pcSamplesBeforeTrigger', typespec.c_unsigned_int_ptr) ], False),
-            raise NotImplementedError()
+        def triggerPrefillGet(self) -> int:
+            c_samples_before_trigger = _typespec_ctypes.c_unsigned_int()
+            result = self._device._dwf._lib.FDwfDigitalInTriggerPrefillGet(self._device._hdwf, c_samples_before_trigger)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            samples_before_trigger = c_samples_before_trigger.value
+            return samples_before_trigger
 
         def triggerAutoTimeoutInfo(self) -> Tuple[float, float, float]:
             c_secMin = _typespec_ctypes.c_double()
@@ -4453,18 +4467,12 @@ class DigilentWaveformDevice:
 
 # Not implemented yet:
 #
-# DigitalInAPI (9)
+# DigitalInAPI (4)
 #
 #     statusData(idxChannel: int, cdData: int) -> np.ndarray
 #     statusData2(idxChannel: int, idxData: int, cdData: int) -> np.ndarray
 #     statusNoise2(idxChannel: int, idxData: int, cdData: int) -> np.ndarray
 #     statusRecord(idxChannel: int, idxData: int, cdData: int) -> np.ndarray
-#
-#     triggerPositionInfo()
-#     triggerPositionSet()
-#     triggerPositionGet()
-#     triggerPrefillSet()
-#     triggerPrefillGet()
 #
 #  DigitalI2cAPI (10)
 #
