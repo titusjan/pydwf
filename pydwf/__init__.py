@@ -2371,7 +2371,7 @@ class DigilentWaveformDevice:
 
         ################################################# Obsolete functions follow:
 
-        def triggerSourceInfo(self) -> None:
+        def triggerSourceInfo(self) -> List[TRIGSRC]:
             """Get analog out trigger source info.
 
             This function is OBSOLETE.
@@ -2614,7 +2614,7 @@ class DigilentWaveformDevice:
             degreePhase = c_degreePhase.value
             return degreePhase
 
-        def dataInfo(self, idxChannel: int) -> None:
+        def dataInfo(self, idxChannel: int) -> Tuple[int, int]:
             """Get AnalogOut channel data info.
 
             This function is OBSOLETE. Use `nodeDataInfo` instead.
@@ -3153,7 +3153,7 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def clockSourceGet(self) -> None:
+        def clockSourceGet(self) -> DwfDigitalInClockSource:
             #('FDwfDigitalInClockSourceGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pv', typespec.DwfDigitalInClockSource_ptr) ], False),
             c_clock_source = _typespec_ctypes.DwfDigitalInClockSource()
             result = self._device._dwf._lib.FDwfDigitalInClockSourceGet(self._device._hdwf, c_clock_source)
@@ -3251,12 +3251,12 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def sampleModeGet(self) -> None:
+        def sampleModeGet(self) -> DwfDigitalInSampleMode:
             c_sample_mode = _typespec_ctypes.DwfDigitalInSampleMode()
             result = self._device._dwf._lib.FDwfDigitalInSampleModeGet(self._device._hdwf, c_sample_mode)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            sample_mode = DwfDigitalInClockSource(c_sample_mode.value)
+            sample_mode = DwfDigitalInSampleMode(c_sample_mode.value)
             return sample_mode
 
         def sampleSensibleSet(self, compression_bits: int) -> None:
@@ -3264,7 +3264,7 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def sampleSensibleGet(self) -> None:
+        def sampleSensibleGet(self) -> int:
             c_compression_bits = _typespec_ctypes.c_unsigned_int()
             result = self._device._dwf._lib.FDwfDigitalInSampleSensibleGet(self._device._hdwf, c_compression_bits)
             if result != _RESULT_SUCCESS:
@@ -3442,7 +3442,7 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def triggerSourceInfo(self) -> None:
+        def triggerSourceInfo(self) -> List[TRIGSRC]:
             """Get digital-in trigger source info.
 
             Note: This function is OBSOLETE. Use the generic `DeviceAPI.triggerInfo()` method instead.
@@ -4136,14 +4136,6 @@ class DigilentWaveformDevice:
             """Write up to 8 bits per SPI word."""
             # transfer_type 0 SISO, 1 MOSI/MISO, 2 dual, 4 quad, // 1-32 bits / word
 
-            tx_list = list(tx)
-
-            number_of_words = len(tx_list)
-
-            buffer_type = _typespec_ctypes.c_unsigned_char * number_of_words
-
-            tx_buffer = buffer_type(*tx_list)
-
             result = self._device._dwf._lib.FDwfDigitalSpiWriteOne(self._device._hdwf, transfer_type, bits_per_word, tx)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
@@ -4275,7 +4267,7 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def rx(self, size:int=8) -> (int, bool, bool, bytes, int):
+        def rx(self, size:int=8) -> Tuple[int, bool, bool, bytes, int]:
             """Returns a tuple (vID, extended, remote, data, status)
             """
             # DWFAPI BOOL FDwfDigitalCanRx(HDWF hdwf, int *pvID, int *pfExtended, int *pfRemote, int *pcDLC, unsigned char *rgRX, int cRX, int *pvStatus);
@@ -4326,6 +4318,7 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             mode = c_mode.value
+            return mode
 
         def referenceSet(self, ohms: float) -> None:
             result = self._device._dwf._lib.FDwfAnalogImpedanceReferenceSet(self._device._hdwf, ohms)
@@ -4437,7 +4430,7 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def status(self) -> int:
+        def status(self) -> DwfState:
             """Returns the status of the AnalogImpedance pseudo-instrument."""
             c_status = _typespec_ctypes.DwfState()
             result = self._device._dwf._lib.FDwfAnalogImpedanceStatus(self._device._hdwf, c_status)
