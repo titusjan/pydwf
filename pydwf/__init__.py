@@ -4231,7 +4231,7 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def writeRead(self, address: int, tx: List[int], number_of_rx_bytes: int) -> None:
+        def writeRead(self, address: int, tx: List[int], number_of_rx_bytes: int) -> Tuple[int, List[int]]:
 
             c_nak = _typespec_ctypes.c_int()
 
@@ -4293,7 +4293,7 @@ class DigilentWaveformDevice:
 
             return nak
 
-        def writeOne(self, address: int, tx: int) -> None:
+        def writeOne(self, address: int, tx: int) -> int:
 
             c_nak = _typespec_ctypes.c_int()
 
