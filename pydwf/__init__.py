@@ -1,3 +1,18 @@
+"""Python binding for the DWF (Digilent Waveforms) shared library.
+
+This binding is based on the C header file "dwf.h", version 3.12.2 (size = 47009 bytes; md5sum = 670fc8ba690cbe0f848444c6f1458682).
+
+Open issues:
+
+- In dwf.h, function FDwfDigitalInInputOrderSet, parameter 'fDioFirst' is a bool. This doesn't exist in C.
+- There's a bunch of lines in dwf.h with trailing spaces.
+- The DEVVER enum type has 2 values with integer 2, is that intentional?
+- The DwfState enum type has 2 values with integer 3, is that intentional?
+- FDwfAnalogInTriggerForce not documented in the PDF?
+- FDwfAnalogInTriggerHoldOffInfo: parameter is called 'pnStep' rather than 'pnSteps'.
+
+(Some of these were addressed in an email response; cross-reference.)
+"""
 
 import sys
 import ctypes
@@ -7,20 +22,8 @@ from typing import Optional, Tuple, List
 
 from .dwf_function_signatures import dwf_function_signatures
 
-# The mapping given here is based on the C header file "dwf.h", version 3.12.2 (size = 47009 bytes; md5sum = 670fc8ba690cbe0f848444c6f1458682).
 
-# Open Issues (to be reported):
-#
-# (Some of these were addressed in an email response; cross-reference.)
-#
-#   In dwf.h, function FDwfDigitalInInputOrderSet, parameter 'fDioFirst' is a bool. This doesn't exist in C.
-#   There's a bunch of lines in dwf.h with trailing spaces.
-#   The DEVVER enum type has 2 values with integer 2, is that intentional?
-#   The DwfState enum type has 2 values with integer 3, is that intentional?
-#   FDwfAnalogInTriggerForce not documented in the PDF?
-#   FDwfAnalogInTriggerHoldOffInfo: parameter is called 'pnStep' rather than 'pnSteps'.
-
-hdwfNone = 0  # HDWF value representing a bad device handle.
+HDWF_NONE = 0  # HDWF value representing a bad device handle.
 
 _RESULT_SUCCESS = 1  # This value is returned by all API calls in case of success. (This used to be a boolean in earlier versions of the library).
 
@@ -371,7 +374,7 @@ class _typespec_ctypes:
 
 
 class DigilentWaveformLibraryError(RuntimeError):
-    """This class represents an error as reported back by one of the API functions."""
+    """This class represents an error as reported back by one of the DWF API functions."""
     def __init__(self, code: Optional[DWFERC], msg: Optional[str]) -> None:
         self.code = code
         self.msg = msg
@@ -498,7 +501,7 @@ class DigilentWaveformLibrary:
         version = c_version.value.decode()
         return version
 
-    def paramSet(self, parameter: DwfParam, parameter_value: int) -> None:
+    def paramSet(self, parameter: DwfParam, value: int) -> None:
         """Sets a default parameter value.
 
         Parameters are settings of a specific DigilentWaveformsDevice.
@@ -513,12 +516,12 @@ class DigilentWaveformLibrary:
 
         Args:
             parameter: The parameter to set.
-            parameter_value: The desired parameter value.
+            value: The desired parameter value.
 
         Raises:
             DigilentWaveformLibraryError: the parameter value cannot be set.
         """
-        result = self._lib.FDwfParamSet(parameter.value, parameter_value)
+        result = self._lib.FDwfParamSet(parameter, value)
         if result != _RESULT_SUCCESS:
             raise self._exception()
 
@@ -540,12 +543,12 @@ class DigilentWaveformLibrary:
         Raises:
             DigilentWaveformLibraryError: the parameter value cannot be retrieved.
         """
-        c_parameter_value = _typespec_ctypes.c_int()
-        result = self._lib.FDwfParamGet(parameter.value, c_parameter_value)
+        c_value = _typespec_ctypes.c_int()
+        result = self._lib.FDwfParamGet(parameter, c_value)
         if result != _RESULT_SUCCESS:
             raise self._exception()
-        parameter_value = c_parameter_value.value
-        return parameter_value
+        value = c_value.value
+        return value
 
     class EnumAPI:
         """Encapsulates the 'FDwfEnum' API calls.
@@ -580,7 +583,7 @@ class DigilentWaveformLibrary:
                 enumfilter = ENUMFILTER.All
 
             c_device_count = _typespec_ctypes.c_int()
-            result = self._dwf._lib.FDwfEnum(enumfilter.value, c_device_count)
+            result = self._dwf._lib.FDwfEnum(enumfilter, c_device_count)
             if result != _RESULT_SUCCESS:
                 raise self._dwf._exception()
             device_count = c_device_count.value
@@ -737,7 +740,7 @@ class DigilentWaveformLibrary:
                 DigilentWaveformLibraryError: the configuration info of the device cannot be retrieved.
             """
             c_configuration_parameter_value = _typespec_ctypes.c_int()
-            result = self._dwf._lib.FDwfEnumConfigInfo(config_index, info.value, c_configuration_parameter_value)
+            result = self._dwf._lib.FDwfEnumConfigInfo(config_index, info, c_configuration_parameter_value)
             if result != _RESULT_SUCCESS:
                 raise self._dwf._exception()
             configuration_parameter_value = c_configuration_parameter_value.value
@@ -807,26 +810,29 @@ class DigilentWaveformLibrary:
             return num_bits
 
         def analogInFrequency(self, device_index: int) -> float:
-            """Retrieve analog input sample frequency of the selected device.
+            """Retrieve the analog input sample frequency of the selected device.
 
             Args:
                 device_index: Zero-based index of the previously enumerated device (see the EnumAPI.count() method).
 
             Returns:
-                The analog input sample frequency of the selected device, in Hz.
+                The analog input sample frequency of the selected device, in samples per second.
 
-            Note: This function is OBSOLETE. The frequency of the analog input channels is configurable.
-                  Use AnalogInAPI.frequencyInfo(), AnalogInAPI.frequencyGet(), and AnalogInAPI.frequencySet() instead.
+            Note: This function is OBSOLETE. The frequency of the analog input channels is now configurable.
+                  Use `AnalogInAPI.frequencyInfo()`, `AnalogInAPI.frequencyGet()`, and `AnalogInAPI.frequencySet()` instead.
+
+            Check: check if this function returns the maximum analog input sample rate, or the currently configured
+                analog input sample rate.
 
             Raises:
-                DigilentWaveformLibraryError: the analog-in sample frequency of the device cannot be retrieved.
+                DigilentWaveformLibraryError: the analog input sample frequency of the device cannot be retrieved.
             """
-            c_frequency_hz = _typespec_ctypes.c_double()
-            result = self._dwf._lib.FDwfEnumAnalogInFrequency(device_index, c_frequency_hz)
+            c_sample_frequency = _typespec_ctypes.c_double()
+            result = self._dwf._lib.FDwfEnumAnalogInFrequency(device_index, c_sample_frequency)
             if result != _RESULT_SUCCESS:
                 raise self._dwf._exception()
-            frequency_hz = c_frequency_hz.value
-            return frequency_hz
+            sample_frequency = c_sample_frequency.value
+            return sample_frequency
 
     class DeviceAPI:
         """Implements the 'FDwfDevice' API calls.
@@ -973,7 +979,7 @@ class DigilentWaveformDevice:
         if result != _RESULT_SUCCESS:
             raise self._dwf._exception()
 
-    def autoConfigureSet(self, autoConfigure: int) -> None:
+    def autoConfigureSet(self, auto_configure: int) -> None:
         """Enables or disables the AutoConfig setting for a specific device.
 
         When this setting is enabled, the device is automatically configured every time an instrument parameter is set.
@@ -982,12 +988,12 @@ class DigilentWaveformDevice:
         With value 3 the analog-out configuration will be applied dynamically, without stopping the instrument.
 
         Args:
-            autoConfigure: Value for this option; 0: disable, 1: enable, 3: dynamic.
+            auto_configure: Value for this option; 0: disable, 1: enable, 3: dynamic.
 
         Raises:
-            DigilentWaveformLibraryError: the autoConfigure value cannot be set.
+            DigilentWaveformLibraryError: the value cannot be set.
         """
-        result = self._dwf._lib.FDwfDeviceAutoConfigureSet(self._hdwf, autoConfigure)
+        result = self._dwf._lib.FDwfDeviceAutoConfigureSet(self._hdwf, auto_configure)
         if result != _RESULT_SUCCESS:
             raise self._dwf._exception()
 
@@ -998,15 +1004,15 @@ class DigilentWaveformDevice:
             The auto-configure setting; 0: disable, 1: enable, 3: dynamic.
 
         Raises:
-            DigilentWaveformLibraryError: the autoConfigure value cannot be retrieved.
+            DigilentWaveformLibraryError: the value cannot be retrieved.
         """
 
-        c_autoConfigure = _typespec_ctypes.c_int()
-        result = self._dwf._lib.FDwfDeviceAutoConfigureGet(self._hdwf, c_autoConfigure)
+        c_auto_configure = _typespec_ctypes.c_int()
+        result = self._dwf._lib.FDwfDeviceAutoConfigureGet(self._hdwf, c_auto_configure)
         if result != _RESULT_SUCCESS:
             raise self._dwf._exception()
-        autoConfigure = c_autoConfigure.value
-        return autoConfigure
+        auto_configure = c_auto_configure.value
+        return auto_configure
 
     def reset(self) -> None:
         """Resets and configures (by default, having auto configure enabled) all device and instrument parameters to default values.
@@ -1025,7 +1031,7 @@ class DigilentWaveformDevice:
             enable: True for enable, False for disable.
 
         Raises:
-            DigilentWaveformLibraryError: the device cannot be enabled.
+            DigilentWaveformLibraryError: the device's enabled state cannot be set.
         """
         result = self._dwf._lib.FDwfDeviceEnableSet(self._hdwf, enable)
         if result != _RESULT_SUCCESS:
@@ -1038,7 +1044,7 @@ class DigilentWaveformDevice:
             A list of available trigger sources.
 
         Raises:
-            DigilentWaveformLibraryError: the list of valid trigger sources cannot be retrieved.
+            DigilentWaveformLibraryError: the list of supported trigger sources cannot be retrieved.
         """
         c_trigger_source_bitset = _typespec_ctypes.c_int()
         result = self._dwf._lib.FDwfDeviceTriggerInfo(self._hdwf, c_trigger_source_bitset)
@@ -1076,15 +1082,15 @@ class DigilentWaveformDevice:
         Raises:
             DigilentWaveformLibraryError: the trigger source cannot be retrieved.
         """
-        c_trigsrc = _typespec_ctypes.TRIGSRC()
-        result = self._dwf._lib.FDwfDeviceTriggerGet(self._hdwf, pin_index, c_trigsrc)
+        c_trigger_source = _typespec_ctypes.TRIGSRC()
+        result = self._dwf._lib.FDwfDeviceTriggerGet(self._hdwf, pin_index, c_trigger_source)
         if result != _RESULT_SUCCESS:
             raise self._dwf._exception()
-        trigsrc = TRIGSRC(c_trigsrc.value)
-        return trigsrc
+        trigger_source = TRIGSRC(c_trigger_source.value)
+        return trigger_source
 
     def triggerPC(self) -> None:
-        """Generate one pulse on the PC trigger line.
+        """Generates one pulse on the PC trigger line.
 
         Raises:
             DigilentWaveformLibraryError: the PC trigger line cannot be pulsed.
@@ -1096,9 +1102,11 @@ class DigilentWaveformDevice:
     def triggerSlopeInfo(self) -> List[DwfTriggerSlope]:
         """Returns the supported trigger slope options.
 
-        Returns: a list of possible TriggerSlope values.
+        Returns:
+            A list of possible TriggerSlope values.
 
-        Note: This function is not documented in the API reference PDF.
+        Note:
+            This function is not documented in the API reference PDF.
 
         Raises:
             DigilentWaveformLibraryError: the trigger slope options cannot be retrieved.
@@ -1112,7 +1120,7 @@ class DigilentWaveformDevice:
         return slope_list
 
     def paramSet(self, parameter: DwfParam, value: int) -> None:
-        """Configure a device parameter.
+        """Configures a device parameter.
 
         Args:
             parameter: The device parameter to configure.
@@ -1121,7 +1129,7 @@ class DigilentWaveformDevice:
         Raises:
             DigilentWaveformLibraryError: the specified device parameter cannot be set to the specified value.
         """
-        result = self._dwf._lib.FDwfDeviceParamSet(self._hdwf, parameter.value, value)
+        result = self._dwf._lib.FDwfDeviceParamSet(self._hdwf, parameter, value)
         if result != _RESULT_SUCCESS:
             raise self._dwf._exception()
 
@@ -1137,12 +1145,12 @@ class DigilentWaveformDevice:
         Raises:
             DigilentWaveformLibraryError: the specified device parameter cannot be retrieved.
         """
-        c_parameter_value = _typespec_ctypes.c_int()
-        result = self._dwf._lib.FDwfDeviceParamGet(self._hdwf, parameter.value, c_parameter_value)
+        c__value = _typespec_ctypes.c_int()
+        result = self._dwf._lib.FDwfDeviceParamGet(self._hdwf, parameter, c__value)
         if result != _RESULT_SUCCESS:
             raise self._dwf._exception()
-        parameter_value = c_parameter_value.value
-        return parameter_value
+        value = c__value.value
+        return value
 
 
     class AnalogInAPI:
@@ -1454,7 +1462,7 @@ class DigilentWaveformDevice:
 
         def acquisitionModeSet(self, acqmode: ACQMODE) -> None:
             """Set the acquisition mode."""
-            result = self._device._dwf._lib.FDwfAnalogInAcquisitionModeSet(self._device._hdwf, acqmode.value)
+            result = self._device._dwf._lib.FDwfAnalogInAcquisitionModeSet(self._device._hdwf, acqmode)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -1503,7 +1511,7 @@ class DigilentWaveformDevice:
             return filter_list
 
         def channelFilterSet(self, idxChannel: int, filter_: FILTER) -> None:
-            result = self._device._dwf._lib.FDwfAnalogInChannelFilterSet(self._device._hdwf, idxChannel, filter_.value)
+            result = self._device._dwf._lib.FDwfAnalogInChannelFilterSet(self._device._hdwf, idxChannel, filter_)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -1590,18 +1598,18 @@ class DigilentWaveformDevice:
 
         # Trigger configuration:
 
-        def triggerSourceSet(self, trigsrc: TRIGSRC) -> None:
-            result = self._device._dwf._lib.FDwfAnalogInTriggerSourceSet(self._device._hdwf, trigsrc.value)
+        def triggerSourceSet(self, trigger_source: TRIGSRC) -> None:
+            result = self._device._dwf._lib.FDwfAnalogInTriggerSourceSet(self._device._hdwf, trigger_source)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def triggerSourceGet(self) -> TRIGSRC:
-            c_trigsrc = _typespec_ctypes.TRIGSRC()
-            result = self._device._dwf._lib.FDwfAnalogInTriggerSourceGet(self._device._hdwf, c_trigsrc)
+            c_trigger_source = _typespec_ctypes.TRIGSRC()
+            result = self._device._dwf._lib.FDwfAnalogInTriggerSourceGet(self._device._hdwf, c_trigger_source)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            trigsrc = TRIGSRC(c_trigsrc.value)
-            return trigsrc
+            trigger_source = TRIGSRC(c_trigger_source.value)
+            return trigger_source
 
         def triggerPositionInfo(self) -> Tuple[float, float, float]:
             c_secMin = _typespec_ctypes.c_double()
@@ -1696,8 +1704,8 @@ class DigilentWaveformDevice:
             trigger_type_list = [trigger_type for trigger_type in TRIGTYPE if trigger_type_bitset & (1 << trigger_type.value)]
             return trigger_type_list
 
-        def triggerTypeSet(self, trigtype: TRIGTYPE) -> None:
-            result = self._device._dwf._lib.FDwfAnalogInTriggerTypeSet(self._device._hdwf, trigtype.value)
+        def triggerTypeSet(self, trigger_type: TRIGTYPE) -> None:
+            result = self._device._dwf._lib.FDwfAnalogInTriggerTypeSet(self._device._hdwf, trigger_type)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -1741,8 +1749,8 @@ class DigilentWaveformDevice:
             filter_list = [filter_ for filter_ in FILTER if filter_bitset & (1 << filter_.value)]
             return filter_list
 
-        def triggerFilterSet(self, filter: FILTER) -> None:
-            result = self._device._dwf._lib.FDwfAnalogInTriggerFilterSet(self._device._hdwf, filter.value)
+        def triggerFilterSet(self, filter_: FILTER) -> None:
+            result = self._device._dwf._lib.FDwfAnalogInTriggerFilterSet(self._device._hdwf, filter_)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -1814,7 +1822,7 @@ class DigilentWaveformDevice:
             return trigger_condition_list
 
         def triggerConditionSet(self, trigger_condition: DwfTriggerSlope) -> None:
-            result = self._device._dwf._lib.FDwfAnalogInTriggerConditionSet(self._device._hdwf, trigger_condition.value)
+            result = self._device._dwf._lib.FDwfAnalogInTriggerConditionSet(self._device._hdwf, trigger_condition)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -1860,63 +1868,63 @@ class DigilentWaveformDevice:
             triglen_list = [triglen for triglen in TRIGLEN if triglen_bitset & (1 << triglen.value)]
             return triglen_list
 
-        def triggerLengthConditionSet(self, triglen: TRIGLEN) -> None:
-            result = self._device._dwf._lib.FDwfAnalogInTriggerLengthConditionSet(self._device._hdwf, triglen.value)
+        def triggerLengthConditionSet(self, trigger_length: TRIGLEN) -> None:
+            result = self._device._dwf._lib.FDwfAnalogInTriggerLengthConditionSet(self._device._hdwf, trigger_length.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def triggerLengthConditionGet(self) -> TRIGLEN:
-            c_triglen = _typespec_ctypes.TRIGLEN()
-            result = self._device._dwf._lib.FDwfAnalogInTriggerLengthConditionGet(self._device._hdwf, c_triglen)
+            c_trigger_length = _typespec_ctypes.TRIGLEN()
+            result = self._device._dwf._lib.FDwfAnalogInTriggerLengthConditionGet(self._device._hdwf, c_trigger_length)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            triglen = TRIGLEN(c_triglen.value)
-            return triglen
+            trigger_length = TRIGLEN(c_trigger_length.value)
+            return trigger_length
 
-        def samplingSourceSet(self, trigsrc: TRIGSRC) -> None:
+        def samplingSourceSet(self, trigger_source: TRIGSRC) -> None:
             """Configure the AnalogIn acquisition data sampling source."""
-            result = self._device._dwf._lib.FDwfAnalogInSamplingSourceSet(self._device._hdwf, trigsrc.value)
+            result = self._device._dwf._lib.FDwfAnalogInSamplingSourceSet(self._device._hdwf, trigger_source)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def samplingSourceGet(self) -> TRIGSRC:
             """Return the configured sampling source."""
-            c_trigsrc = _typespec_ctypes.TRIGSRC()
-            result = self._device._dwf._lib.FDwfAnalogInSamplingSourceGet(self._device._hdwf, c_trigsrc)
+            c_trigger_source = _typespec_ctypes.TRIGSRC()
+            result = self._device._dwf._lib.FDwfAnalogInSamplingSourceGet(self._device._hdwf, c_trigger_source)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            trigsrc = TRIGSRC(c_trigsrc.value)
-            return trigsrc
+            trigger_source = TRIGSRC(c_trigger_source.value)
+            return trigger_source
 
-        def samplingSlopeSet(self, slope: DwfTriggerSlope) -> None:
+        def samplingSlopeSet(self, sampling_slope: DwfTriggerSlope) -> None:
             """Set the sampling slope for the instrument."""
-            result = self._device._dwf._lib.FDwfAnalogInSamplingSlopeSet(self._device._hdwf, slope.value)
+            result = self._device._dwf._lib.FDwfAnalogInSamplingSlopeSet(self._device._hdwf, sampling_slope)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def samplingSlopeGet(self) -> DwfTriggerSlope:
             """Return the sampling for the instrument."""
-            c_slope = _typespec_ctypes.DwfTriggerSlope()
-            result = self._device._dwf._lib.FDwfAnalogInSamplingSlopeGet(self._device._hdwf, c_slope)
+            c_sampling_slope = _typespec_ctypes.DwfTriggerSlope()
+            result = self._device._dwf._lib.FDwfAnalogInSamplingSlopeGet(self._device._hdwf, c_sampling_slope)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            slope = DwfTriggerSlope(c_slope.value)
-            return slope
+            sampling_slope = DwfTriggerSlope(c_sampling_slope.value)
+            return sampling_slope
 
-        def samplingDelaySet(self, sec: float) -> None:
+        def samplingDelaySet(self, sampling_delay: float) -> None:
             """Set the sampling delay for the instrument, in seconds."""
-            result = self._device._dwf._lib.FDwfAnalogInSamplingDelaySet(self._device._hdwf, sec)
+            result = self._device._dwf._lib.FDwfAnalogInSamplingDelaySet(self._device._hdwf, sampling_delay)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def samplingDelayGet(self) -> float:
             """Return the configured sampling delay, in seconds."""
-            c_sec = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogInSamplingDelayGet(self._device._hdwf, c_sec)
+            c_sampling_delay = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogInSamplingDelayGet(self._device._hdwf, c_sampling_delay)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            sec = c_sec.value
-            return sec
+            sampling_delay = c_sampling_delay.value
+            return sampling_delay
 
         def triggerSourceInfo(self) -> List[TRIGSRC]:
             """Get analog-in trigger source info.
@@ -1962,31 +1970,31 @@ class DigilentWaveformDevice:
             idxMaster = c_idxMaster.value
             return idxMaster
 
-        def triggerSourceSet(self, idxChannel: int, trigsrc: TRIGSRC) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutTriggerSourceSet(self._device._hdwf, idxChannel, trigsrc.value)
+        def triggerSourceSet(self, idxChannel: int, trigger_source: TRIGSRC) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutTriggerSourceSet(self._device._hdwf, idxChannel, trigger_source.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def triggerSourceGet(self, idxChannel: int) -> TRIGSRC:
-            c_trigsrc = _typespec_ctypes.TRIGSRC()
-            result = self._device._dwf._lib.FDwfAnalogOutTriggerSourceGet(self._device._hdwf, idxChannel, c_trigsrc)
+            c_trigger_source = _typespec_ctypes.TRIGSRC()
+            result = self._device._dwf._lib.FDwfAnalogOutTriggerSourceGet(self._device._hdwf, idxChannel, c_trigger_source)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            trigsrc = TRIGSRC(c_trigsrc.value)
-            return trigsrc
+            trigger_source = TRIGSRC(c_trigger_source.value)
+            return trigger_source
 
-        def triggerSlopeSet(self, idxChannel: int, slope: DwfTriggerSlope) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutTriggerSlopeSet(self._device._hdwf, idxChannel, slope.value)
+        def triggerSlopeSet(self, idxChannel: int, trigger_slope: DwfTriggerSlope) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutTriggerSlopeSet(self._device._hdwf, idxChannel, trigger_slope)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def triggerSlopeGet(self, idxChannel: int) -> DwfTriggerSlope:
-            c_slope = _typespec_ctypes.DwfTriggerSlope()
-            result = self._device._dwf._lib.FDwfAnalogOutTriggerSlopeGet(self._device._hdwf, idxChannel, c_slope)
+            c_trigger_slope = _typespec_ctypes.DwfTriggerSlope()
+            result = self._device._dwf._lib.FDwfAnalogOutTriggerSlopeGet(self._device._hdwf, idxChannel, c_trigger_slope)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            slope = DwfTriggerSlope(c_slope.value)
-            return slope
+            trigger_slope = DwfTriggerSlope(c_trigger_slope.value)
+            return trigger_slope
 
         def runInfo(self, idxChannel: int) -> Tuple[float, float]:
             c_secMin = _typespec_ctypes.c_double()
@@ -2110,7 +2118,7 @@ class DigilentWaveformDevice:
             return limit
 
         def modeSet(self, idxChannel: int, mode: DwfAnalogOutMode) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutModeSet(self._device._hdwf, idxChannel, mode.value)
+            result = self._device._dwf._lib.FDwfAnalogOutModeSet(self._device._hdwf, idxChannel, mode)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -2132,7 +2140,7 @@ class DigilentWaveformDevice:
             return idle_list
 
         def idleSet(self, idxChannel: int, idle: DwfAnalogOutIdle) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutIdleSet(self._device._hdwf, idxChannel, idle.value)
+            result = self._device._dwf._lib.FDwfAnalogOutIdleSet(self._device._hdwf, idxChannel, idle)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -2154,13 +2162,13 @@ class DigilentWaveformDevice:
             return node_list
 
         def nodeEnableSet(self, idxChannel: int, node: AnalogOutNode, enable: bool) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutNodeEnableSet(self._device._hdwf, idxChannel, node.value, enable)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeEnableSet(self._device._hdwf, idxChannel, node, enable)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def nodeEnableGet(self, idxChannel: int, node: AnalogOutNode) -> bool:
             c_enable = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeEnableGet(self._device._hdwf, idxChannel, node.value, c_enable)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeEnableGet(self._device._hdwf, idxChannel, node, c_enable)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             enable = bool(c_enable.value)
@@ -2168,7 +2176,7 @@ class DigilentWaveformDevice:
 
         def nodeFunctionInfo(self, idxChannel: int, node: AnalogOutNode) -> List[FUNC]:
             c_func_bitset = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeFunctionInfo(self._device._hdwf, idxChannel, node.value, c_func_bitset)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeFunctionInfo(self._device._hdwf, idxChannel, node, c_func_bitset)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             func_bitset = c_func_bitset.value
@@ -2176,13 +2184,13 @@ class DigilentWaveformDevice:
             return func_list
 
         def nodeFunctionSet(self, idxChannel: int, node: AnalogOutNode, func: FUNC) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutNodeFunctionSet(self._device._hdwf, idxChannel, node.value, func.value)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeFunctionSet(self._device._hdwf, idxChannel, node, func.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def nodeFunctionGet(self, idxChannel: int, node: AnalogOutNode) -> FUNC:
             c_func = _typespec_ctypes.FUNC()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeFunctionGet(self._device._hdwf, idxChannel, node.value, c_func)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeFunctionGet(self._device._hdwf, idxChannel, node, c_func)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             func = FUNC(c_func.value)
@@ -2191,7 +2199,7 @@ class DigilentWaveformDevice:
         def nodeFrequencyInfo(self, idxChannel: int, node: AnalogOutNode) -> Tuple[float, float]:
             c_hzMin = _typespec_ctypes.c_double()
             c_hzMax = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeFrequencyInfo(self._device._hdwf, idxChannel, node.value, c_hzMin, c_hzMax)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeFrequencyInfo(self._device._hdwf, idxChannel, node, c_hzMin, c_hzMax)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             hzMin = c_hzMin.value
@@ -2199,13 +2207,13 @@ class DigilentWaveformDevice:
             return (hzMin, hzMax)
 
         def nodeFrequencySet(self, idxChannel: int, node: AnalogOutNode, hzFrequency: float) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutNodeFrequencySet(self._device._hdwf, idxChannel, node.value, hzFrequency)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeFrequencySet(self._device._hdwf, idxChannel, node, hzFrequency)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def nodeFrequencyGet(self, idxChannel: int, node: AnalogOutNode) -> float:
             c_hzFrequency = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeFrequencyGet(self._device._hdwf, idxChannel, node.value, c_hzFrequency)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeFrequencyGet(self._device._hdwf, idxChannel, node, c_hzFrequency)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             hzFrequency = c_hzFrequency.value
@@ -2214,7 +2222,7 @@ class DigilentWaveformDevice:
         def nodeAmplitudeInfo(self, idxChannel: int, node: AnalogOutNode) -> Tuple[float, float]:
             c_min = _typespec_ctypes.c_double()
             c_max = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeAmplitudeInfo(self._device._hdwf, idxChannel, node.value, c_min, c_max)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeAmplitudeInfo(self._device._hdwf, idxChannel, node, c_min, c_max)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             min_ = c_min.value
@@ -2222,13 +2230,13 @@ class DigilentWaveformDevice:
             return (min_, max_)
 
         def nodeAmplitudeSet(self, idxChannel: int, node: AnalogOutNode, vAmplitude: float) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutNodeAmplitudeSet(self._device._hdwf, idxChannel, node.value, vAmplitude)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeAmplitudeSet(self._device._hdwf, idxChannel, node, vAmplitude)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def nodeAmplitudeGet(self, idxChannel: int, node: AnalogOutNode) -> float:
             c_vAmplitude = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeAmplitudeGet(self._device._hdwf, idxChannel, node.value, c_vAmplitude)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeAmplitudeGet(self._device._hdwf, idxChannel, node, c_vAmplitude)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             vAmplitude = c_vAmplitude.value
@@ -2237,7 +2245,7 @@ class DigilentWaveformDevice:
         def nodeOffsetInfo(self, idxChannel: int, node: AnalogOutNode) -> Tuple[float, float]:
             c_min = _typespec_ctypes.c_double()
             c_max = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeOffsetInfo(self._device._hdwf, idxChannel, node.value, c_min, c_max)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeOffsetInfo(self._device._hdwf, idxChannel, node, c_min, c_max)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             min_ = c_min.value
@@ -2245,13 +2253,13 @@ class DigilentWaveformDevice:
             return (min_, max_)
 
         def nodeOffsetSet(self, idxChannel: int, node: AnalogOutNode, vOffset: float) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutNodeOffsetSet(self._device._hdwf, idxChannel, node.value, vOffset)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeOffsetSet(self._device._hdwf, idxChannel, node, vOffset)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def nodeOffsetGet(self, idxChannel: int, node: AnalogOutNode) -> float:
             c_vOffset = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeOffsetGet(self._device._hdwf, idxChannel, node.value, c_vOffset)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeOffsetGet(self._device._hdwf, idxChannel, node, c_vOffset)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             vOffset = c_vOffset.value
@@ -2260,7 +2268,7 @@ class DigilentWaveformDevice:
         def nodeSymmetryInfo(self, idxChannel: int, node: AnalogOutNode) -> Tuple[float, float]:
             c_percentageMin = _typespec_ctypes.c_double()
             c_percentageMax = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeSymmetryInfo(self._device._hdwf, idxChannel, node.value, c_percentageMin, c_percentageMax)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeSymmetryInfo(self._device._hdwf, idxChannel, node, c_percentageMin, c_percentageMax)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             percentageMin = c_percentageMin.value
@@ -2268,13 +2276,13 @@ class DigilentWaveformDevice:
             return (percentageMin, percentageMax)
 
         def nodeSymmetrySet(self, idxChannel: int, node: AnalogOutNode, percentageSymmetry: float) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutNodeSymmetrySet(self._device._hdwf, idxChannel, node.value, percentageSymmetry)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeSymmetrySet(self._device._hdwf, idxChannel, node, percentageSymmetry)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def nodeSymmetryGet(self, idxChannel: int, node: AnalogOutNode) -> float:
             c_percentageSymmetry = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeSymmetryGet(self._device._hdwf, idxChannel, node.value, c_percentageSymmetry)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeSymmetryGet(self._device._hdwf, idxChannel, node, c_percentageSymmetry)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             percentageSymmetry = c_percentageSymmetry.value
@@ -2283,7 +2291,7 @@ class DigilentWaveformDevice:
         def nodePhaseInfo(self, idxChannel: int, node: AnalogOutNode) -> Tuple[float, float]:
             c_degreeMin = _typespec_ctypes.c_double()
             c_degreeMax = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodePhaseInfo(self._device._hdwf, idxChannel, node.value, c_degreeMin, c_degreeMax)
+            result = self._device._dwf._lib.FDwfAnalogOutNodePhaseInfo(self._device._hdwf, idxChannel, node, c_degreeMin, c_degreeMax)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             degreeMin = c_degreeMin.value
@@ -2291,13 +2299,13 @@ class DigilentWaveformDevice:
             return (degreeMin, degreeMax)
 
         def nodePhaseSet(self, idxChannel: int, node: AnalogOutNode, degreePhase: float) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutNodePhaseSet(self._device._hdwf, idxChannel, node.value, degreePhase)
+            result = self._device._dwf._lib.FDwfAnalogOutNodePhaseSet(self._device._hdwf, idxChannel, node, degreePhase)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def nodePhaseGet(self, idxChannel: int, node: AnalogOutNode) -> float:
             c_degreePhase = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodePhaseGet(self._device._hdwf, idxChannel, node.value, c_degreePhase)
+            result = self._device._dwf._lib.FDwfAnalogOutNodePhaseGet(self._device._hdwf, idxChannel, node, c_degreePhase)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             degreePhase = c_degreePhase.value
@@ -2306,7 +2314,7 @@ class DigilentWaveformDevice:
         def nodeDataInfo(self, idxChannel: int, node: AnalogOutNode) -> Tuple[float, float]:
             c_samplesMin = _typespec_ctypes.c_int()
             c_samplesMax = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeDataInfo(self._device._hdwf, idxChannel, node.value, c_samplesMin, c_samplesMax)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeDataInfo(self._device._hdwf, idxChannel, node, c_samplesMin, c_samplesMax)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             samplesMin = c_samplesMin.value
@@ -2317,7 +2325,7 @@ class DigilentWaveformDevice:
 
             double_data = data.astype(np.float64)
 
-            result = self._device._dwf._lib.FDwfAnalogOutNodeDataSet(self._device._hdwf, idxChannel, node.value, double_data.ctypes.data_as(_typespec_ctypes.c_double_ptr), len(double_data))
+            result = self._device._dwf._lib.FDwfAnalogOutNodeDataSet(self._device._hdwf, idxChannel, node, double_data.ctypes.data_as(_typespec_ctypes.c_double_ptr), len(double_data))
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -2356,7 +2364,7 @@ class DigilentWaveformDevice:
             c_dataFree = _typespec_ctypes.c_int()
             c_dataLost = _typespec_ctypes.c_int()
             c_dataCorrupted = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutNodePlayStatus(self._device._hdwf, idxChannel, node.value, c_dataFree, c_dataLost, c_dataCorrupted)
+            result = self._device._dwf._lib.FDwfAnalogOutNodePlayStatus(self._device._hdwf, idxChannel, node, c_dataFree, c_dataLost, c_dataCorrupted)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             dataFree = c_dataFree.value
@@ -2365,7 +2373,7 @@ class DigilentWaveformDevice:
             return (dataFree, dataLost, dataCorrupted)
 
         def nodePlayData(self, idxChannel:int,  node: AnalogOutNode, data: np.ndarray) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutNodePlayData(self._device._hdwf, idxChannel, node.value, data.ctypes.data_as(_typespec_ctypes.c_double_ptr), len(data))
+            result = self._device._dwf._lib.FDwfAnalogOutNodePlayData(self._device._hdwf, idxChannel, node, data.ctypes.data_as(_typespec_ctypes.c_double_ptr), len(data))
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -2423,7 +2431,7 @@ class DigilentWaveformDevice:
 
             This function is OBSOLETE. Use `nodeFunctionSet` instead.
             """
-            result = self._device._dwf._lib.FDwfAnalogOutFunctionSet(self._device._hdwf, idxChannel, func.value)
+            result = self._device._dwf._lib.FDwfAnalogOutFunctionSet(self._device._hdwf, idxChannel, func)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -3153,7 +3161,7 @@ class DigilentWaveformDevice:
             return clock_source_list
 
         def clockSourceSet(self, clock_source: DwfDigitalInClockSource) -> None:
-            result = self._device._dwf._lib.FDwfDigitalInClockSourceSet(self._device._hdwf, clock_source.value)
+            result = self._device._dwf._lib.FDwfDigitalInClockSourceSet(self._device._hdwf, clock_source)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -3251,7 +3259,7 @@ class DigilentWaveformDevice:
             return sample_mode_list
 
         def sampleModeSet(self, sample_mode: DwfDigitalInSampleMode) -> None:
-            result = self._device._dwf._lib.FDwfDigitalInSampleModeSet(self._device._hdwf, sample_mode.value)
+            result = self._device._dwf._lib.FDwfDigitalInSampleModeSet(self._device._hdwf, sample_mode)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -3286,46 +3294,46 @@ class DigilentWaveformDevice:
             acquisition_mode_list = [acquisition_mode for acquisition_mode in ACQMODE if acquisiton_mode_bitset & (1 << acquisition_mode.value)]
             return acquisition_mode_list
 
-        def acquisitionModeSet(self, acqmode: ACQMODE) -> None:
-            result = self._device._dwf._lib.FDwfDigitalInAcquisitionModeSet(self._device._hdwf, acqmode.value)
+        def acquisitionModeSet(self, acquisition_mode: ACQMODE) -> None:
+            result = self._device._dwf._lib.FDwfDigitalInAcquisitionModeSet(self._device._hdwf, acquisition_mode)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def acquisitionModeGet(self) -> ACQMODE:
-            c_acqmode = _typespec_ctypes.ACQMODE()
-            result = self._device._dwf._lib.FDwfDigitalInAcquisitionModeGet(self._device._hdwf, c_acqmode)
+            c_acquisition_mode = _typespec_ctypes.ACQMODE()
+            result = self._device._dwf._lib.FDwfDigitalInAcquisitionModeGet(self._device._hdwf, c_acquisition_mode)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            acqmode = ACQMODE(c_acqmode.value)
-            return acqmode
+            acquisition_mode = ACQMODE(c_acquisition_mode.value)
+            return acquisition_mode
 
         # Trigger functions:
 
-        def triggerSourceSet(self, trigsrc: TRIGSRC) -> None:
-            result = self._device._dwf._lib.FDwfDigitalInTriggerSourceSet(self._device._hdwf, trigsrc.value)
+        def triggerSourceSet(self, trigger_source: TRIGSRC) -> None:
+            result = self._device._dwf._lib.FDwfDigitalInTriggerSourceSet(self._device._hdwf, trigger_source)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def triggerSourceGet(self) -> TRIGSRC:
-            c_trigsrc = _typespec_ctypes.TRIGSRC()
-            result = self._device._dwf._lib.FDwfDigitalInTriggerSourceGet(self._device._hdwf, c_trigsrc)
+            c_trigger_source = _typespec_ctypes.TRIGSRC()
+            result = self._device._dwf._lib.FDwfDigitalInTriggerSourceGet(self._device._hdwf, c_trigger_source)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            trigsrc = TRIGSRC(c_trigsrc.value)
-            return trigsrc
+            trigger_source = TRIGSRC(c_trigger_source.value)
+            return trigger_source
 
-        def triggerSlopeSet(self, slope: DwfTriggerSlope) -> None:
-            result = self._device._dwf._lib.FDwfDigitalInTriggerSlopeSet(self._device._hdwf, slope.value)
+        def triggerSlopeSet(self, trigger_slope: DwfTriggerSlope) -> None:
+            result = self._device._dwf._lib.FDwfDigitalInTriggerSlopeSet(self._device._hdwf, trigger_slope)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def triggerSlopeGet(self) -> DwfTriggerSlope:
-            c_slope = _typespec_ctypes.DwfTriggerSlope()
-            result = self._device._dwf._lib.FDwfDigitalInTriggerSlopeGet(self._device._hdwf, c_slope)
+            c_trigger_slope = _typespec_ctypes.DwfTriggerSlope()
+            result = self._device._dwf._lib.FDwfDigitalInTriggerSlopeGet(self._device._hdwf, c_trigger_slope)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            slope = DwfTriggerSlope(c_slope.value)
-            return slope
+            trigger_slope = DwfTriggerSlope(c_trigger_slope.value)
+            return trigger_slope
 
         def triggerPositionInfo(self) -> int:
             c_max_samples_after_trigger = _typespec_ctypes.c_unsigned_int()
@@ -3501,20 +3509,20 @@ class DigilentWaveformDevice:
             frequency_hz = c_frequency_hz.value
             return frequency_hz
 
-        def triggerSourceSet(self, trigsrc: TRIGSRC) -> None:
+        def triggerSourceSet(self, trigger_source: TRIGSRC) -> None:
             """Sets the trigger source."""
-            result = self._device._dwf._lib.FDwfDigitalOutTriggerSourceSet(self._device._hdwf, trigsrc.value)
+            result = self._device._dwf._lib.FDwfDigitalOutTriggerSourceSet(self._device._hdwf, trigger_source)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def triggerSourceGet(self) -> TRIGSRC:
             """Gets the currently active trigger source."""
-            c_trigsrc = _typespec_ctypes.TRIGSRC()
-            result = self._device._dwf._lib.FDwfDigitalOutTriggerSourceGet(self._device._hdwf, c_trigsrc)
+            c_trigger_source = _typespec_ctypes.TRIGSRC()
+            result = self._device._dwf._lib.FDwfDigitalOutTriggerSourceGet(self._device._hdwf, c_trigger_source)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            trigsrc = TRIGSRC(c_trigsrc.value)
-            return trigsrc
+            trigger_source = TRIGSRC(c_trigger_source.value)
+            return trigger_source
 
         def runInfo(self) -> Tuple[float, float]:
             """Gets minimal and maximal duration for a single digital-out pulse sequence run.
@@ -3639,20 +3647,20 @@ class DigilentWaveformDevice:
             repeat_status = c_repeat_status.value
             return repeat_status
 
-        def triggerSlopeSet(self, slope: DwfTriggerSlope) -> None:
+        def triggerSlopeSet(self, trigger_slope: DwfTriggerSlope) -> None:
             """Sets the slope for the digital-out trigger."""
-            result = self._device._dwf._lib.FDwfDigitalOutTriggerSlopeSet(self._device._hdwf, slope.value)
+            result = self._device._dwf._lib.FDwfDigitalOutTriggerSlopeSet(self._device._hdwf, trigger_slope)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def triggerSlopeGet(self) -> DwfTriggerSlope:
             """Gets the slope for the digital-out trigger."""
-            c_slope = _typespec_ctypes.DwfTriggerSlope()
-            result = self._device._dwf._lib.FDwfDigitalOutTriggerSlopeGet(self._device._hdwf, c_slope)
+            c_trigger_slope = _typespec_ctypes.DwfTriggerSlope()
+            result = self._device._dwf._lib.FDwfDigitalOutTriggerSlopeGet(self._device._hdwf, c_trigger_slope)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            slope = DwfTriggerSlope(c_slope.value)
-            return slope
+            trigger_slope = DwfTriggerSlope(c_trigger_slope.value)
+            return trigger_slope
 
         def repeatTriggerSet(self, repeatTrigger: bool) -> None:
             """Specify if each pulse sequence run should wait for its own trigger."""
@@ -3702,8 +3710,8 @@ class DigilentWaveformDevice:
             output_list = [output for output in DwfDigitalOutOutput if output_bitset & (1 << output.value)]
             return output_list
 
-        def outputSet(self, idxChannel: int, v: DwfDigitalOutOutput) -> None:
-            result = self._device._dwf._lib.FDwfDigitalOutOutputSet(self._device._hdwf, idxChannel, v.value)
+        def outputSet(self, idxChannel: int, output_value: DwfDigitalOutOutput) -> None:
+            result = self._device._dwf._lib.FDwfDigitalOutOutputSet(self._device._hdwf, idxChannel, output_value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -3724,18 +3732,18 @@ class DigilentWaveformDevice:
             type_list = [type_ for type_ in DwfDigitalOutType if type_bitset & (1 << type_.value)]
             return type_list
 
-        def typeSet(self, idxChannel: int, v: DwfDigitalOutType) -> None:
-            result = self._device._dwf._lib.FDwfDigitalOutTypeSet(self._device._hdwf, idxChannel, v.value)
+        def typeSet(self, idxChannel: int, output_type: DwfDigitalOutType) -> None:
+            result = self._device._dwf._lib.FDwfDigitalOutTypeSet(self._device._hdwf, idxChannel, output_type)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def typeGet(self, idxChannel: int) -> DwfDigitalOutType:
-            c_v = _typespec_ctypes.DwfDigitalOutType()
-            result = self._device._dwf._lib.FDwfDigitalOutTypeGet(self._device._hdwf, idxChannel, c_v)
+            c_output_type = _typespec_ctypes.DwfDigitalOutType()
+            result = self._device._dwf._lib.FDwfDigitalOutTypeGet(self._device._hdwf, idxChannel, c_output_type)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            v = DwfDigitalOutType(c_v.value)
-            return v
+            output_type = DwfDigitalOutType(c_output_type.value)
+            return output_type
 
         def idleInfo(self, idxChannel: int) -> List[DwfDigitalOutIdle]:
             c_idle_bitset = _typespec_ctypes.c_int()
@@ -3747,7 +3755,7 @@ class DigilentWaveformDevice:
             return idle_list
 
         def idleSet(self, idxChannel: int, idle_mode: DwfDigitalOutIdle) -> None:
-            result = self._device._dwf._lib.FDwfDigitalOutIdleSet(self._device._hdwf, idxChannel, idle_mode.value)
+            result = self._device._dwf._lib.FDwfDigitalOutIdleSet(self._device._hdwf, idxChannel, idle_mode)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -4528,13 +4536,3 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
             value = c_value.value
             return value
-
-
-# Not implemented yet:
-#
-# DigitalInAPI (4)
-#
-#     statusData(idxChannel: int, cdData: int) -> np.ndarray
-#     statusData2(idxChannel: int, idxData: int, cdData: int) -> np.ndarray
-#     statusNoise2(idxChannel: int, idxData: int, cdData: int) -> np.ndarray
-#     statusRecord(idxChannel: int, idxData: int, cdData: int) -> np.ndarray
