@@ -3094,41 +3094,45 @@ class DigilentWaveformDevice:
             auto = bool(c_auto.value)
             return auto
 
-        def statusData(self, idxChannel: int, cdData: int) -> np.ndarray:
+        def statusData(self, count_bytes: int) -> np.ndarray:
             """Retrieve the acquired data samples from the specified idxChannel on the DigitalIn instrument.
-
             It copies the data samples to the provided buffer.
             """
-            #samples = np.empty(cdData, dtype=np.float64)
-            #result = self._device._dwf._lib.FDwfDigitalInStatusData(self._device._hdwf, idxChannel, samples.ctypes.data_as(_double_ptr), cdData)
-            #if result != _RESULT_SUCCESS:
-            #    raise self._device._dwf._exception()
-            #return samples
+            samples = np.empty(count_bytes, dtype='B')
+            result = self._device._dwf._lib.FDwfDigitalInStatusData(self._device._hdwf, samples.ctypes.data_as(_typespec_ctypes.c_unsigned_char_ptr), count_bytes)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            return samples
 
-            #    ('FDwfDigitalInStatusData', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('rgData', typespec.c_void_ptr), ('countOfDataBytes', typespec.c_int) ], False),
-            raise NotImplementedError()
-
-        def statusData2(self, idxChannel: int, idxData: int, cdData: int) -> np.ndarray:
+        def statusData2(self, first_sample: int, count_bytes: int) -> np.ndarray:
             """Retrieve the acquired data samples from the specified idxChannel on the DigitalIn instrument.
-
-            It copies the data samples to the provided buffer.
             """
-            #samples = np.empty(cdData, dtype=np.float64)
-            #result = self._device._dwf._lib.FDwfDigitalInStatusData2(self._device._hdwf, idxChannel, samples.ctypes.data_as(_double_ptr), idxData, cdData)
-            #if result != _RESULT_SUCCESS:
-            #    raise self._device._dwf._exception()
-            #return samples
 
-            #    ('FDwfDigitalInStatusData2', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('rgData', typespec.c_void_ptr), ('idxSample', typespec.c_int), ('countOfDataBytes', typespec.c_int) ], False),
-            raise NotImplementedError()
+            samples = np.empty(count_bytes, dtype='B')
+            result = self._device._dwf._lib.FDwfDigitalInStatusData2(self._device._hdwf, samples.ctypes.data_as(_typespec_ctypes.c_unsigned_char_ptr), first_sample, count_bytes)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            return samples
 
-        def statusNoise2(self, idxChannel: int, idxData: int, cdData: int) -> np.ndarray:
-            #    ('FDwfDigitalInStatusNoise2', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('rgData', typespec.c_void_ptr), ('idxSample', typespec.c_int), ('countOfDataBytes', typespec.c_int) ], False),
-            raise NotImplementedError()
+        def statusNoise2(self, first_sample: int, count_bytes: int) -> np.ndarray:
+            noise = np.empty(count_bytes, dtype='B')
+            result = self._device._dwf._lib.FDwfDigitalInStatusNoise2(self._device._hdwf, noise.ctypes.data_as(_typespec_ctypes.c_unsigned_char_ptr), first_sample, count_bytes)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            return noise
 
-        def statusRecord(self, idxChannel: int, idxData: int, cdData: int) -> np.ndarray:
-            #    ('FDwfDigitalInStatusRecord', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pcdDataAvailable', typespec.c_int_ptr), ('pcdDataLost', typespec.c_int_ptr), ('pcdDataCorrupt', typespec.c_int_ptr) ], False),
-            raise NotImplementedError()
+        def statusRecord(self) -> Tuple[int, int, int]:
+
+            c_data_available = _typespec_ctypes.c_int()
+            c_data_lost = _typespec_ctypes.c_int()
+            c_data_corrupt = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfDigitalInStatusRecord(self._device._hdwf, c_data_available, c_data_lost, c_data_corrupt)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            data_free = c_data_available.value
+            data_lost = c_data_lost.value
+            data_corrupt = c_data_corrupt.value
+            return (data_free, data_lost, data_corrupt)
 
         def internalClockInfo(self) -> float:
             c_hzFreq = _typespec_ctypes.c_double()
@@ -4186,45 +4190,113 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def clear(self) -> None:
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalI2cClear(HDWF hdwf, int *pfFree);
+        def clear(self) -> int:
+            c_bus_free = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfDigitalI2cClear(self._device._hdwf, c_bus_free)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            bus_free = c_bus_free.value
+            return bus_free
 
-        def stretchSet(self) -> None:
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalI2cStretchSet(HDWF hdwf, int fEnable);
+        def stretchSet(self, stretch_enable: int) -> None:
+            result = self._device._dwf._lib.FDwfDigitalI2cStretchSet(self._device._hdwf, stretch_enable)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def rateSet(self) -> None:
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalI2cRateSet(HDWF hdwf, double hz);
+        def rateSet(self, rate: float) -> None:
+            result = self._device._dwf._lib.FDwfDigitalI2cRateSet(self._device._hdwf, rate)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def readNakSet(self) -> None:
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalI2cReadNakSet(HDWF hdwf, int fNakLastReadByte);
+        def readNakSet(self, nak_last_read_byte: int) -> None:
+            result = self._device._dwf._lib.FDwfDigitalI2cReadNakSet(self._device._hdwf, nak_last_read_byte)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def sclSet(self) -> None:
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalI2cSclSet(HDWF hdwf, int idxChannel);
+        def sclSet(self, channel_index: int) -> None:
+            result = self._device._dwf._lib.FDwfDigitalI2cSclSet(self._device._hdwf, channel_index)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def sdaSet(self) -> None:
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalI2cSdaSet(HDWF hdwf, int idxChannel);
+        def sdaSet(self, channel_index: int) -> None:
+            result = self._device._dwf._lib.FDwfDigitalI2cSdaSet(self._device._hdwf, channel_index)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
 
-        def writeRead(self) -> None:
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalI2cWriteRead(HDWF hdwf, unsigned char adr8bits, unsigned char *rgbTx, int cTx, unsigned char *rgRx, int cRx, int *pNak);
+        def writeRead(self, address: int, tx: List[int], number_of_rx_bytes: int) -> None:
 
-        def read(self) -> None:
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalI2cRead(HDWF hdwf, unsigned char adr8bits, unsigned char *rgbRx, int cRx, int *pNak);
+            c_nak = _typespec_ctypes.c_int()
 
-        def write(self) -> None:
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalI2cWrite(HDWF hdwf, unsigned char adr8bits, unsigned char *rgbTx, int cTx, int *pNak);
+            tx_list = list(tx)
 
-        def writeOne(self) -> None:
-            raise NotImplementedError()
-            #DWFAPI BOOL FDwfDigitalI2cWriteOne(HDWF hdwf, unsigned char adr8bits, unsigned char bTx, int *pNak);
+            number_of_tx_bytes = len(tx_list)
+
+            tx_buffer_type = _typespec_ctypes.c_unsigned_char * number_of_tx_bytes
+            rx_buffer_type = _typespec_ctypes.c_unsigned_char * number_of_rx_bytes
+
+            tx_buffer = tx_buffer_type(*tx_list)
+            rx_buffer = rx_buffer_type()
+
+            result = self._device._dwf._lib.FDwfDigitalI2cWriteRead(self._device._hdwf, address, tx_buffer, number_of_tx_bytes, rx_buffer, number_of_rx_bytes, c_nak)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+            nak = c_nak.value
+
+            rx_list = list(rx_buffer)
+
+            return (nak, rx_list)
+
+        def read(self, address: int, number_of_words: int) -> Tuple[int, List[int]]:
+
+            c_nak = _typespec_ctypes.c_int()
+
+            buffer_type = _typespec_ctypes.c_unsigned_char * number_of_words
+
+            rx_buffer = buffer_type()
+
+            result = self._device._dwf._lib.FDwfDigitalI2cRead(self._device._hdwf, address, rx_buffer, number_of_words, c_nak)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+            nak = c_nak.value
+
+            rx_list = list(rx_buffer)
+
+            return (nak, rx_list)
+
+        def write(self, address: int, tx: List[int]) -> int:
+
+            c_nak = _typespec_ctypes.c_int()
+
+            tx_list = list(tx)
+
+            number_of_words = len(tx_list)
+
+            buffer_type = _typespec_ctypes.c_unsigned_char * number_of_words
+
+            tx_buffer = buffer_type(*tx_list)
+
+            result = self._device._dwf._lib.FDwfDigitalI2cWrite(self._device._hdwf, address, tx_buffer, number_of_words, c_nak)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+            nak = c_nak.value
+
+            return nak
+
+        def writeOne(self, address: int, tx: int) -> None:
+
+            c_nak = _typespec_ctypes.c_int()
+
+            result = self._device._dwf._lib.FDwfDigitalI2cWriteOne(self._device._hdwf, address, tx, c_nak)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+            nak = c_nak.value
+
+            return nak
+
 
     class DigitalCanAPI:
         """Provides wrappers for the 'FDwfDigitalCan' API functions.
@@ -4466,16 +4538,3 @@ class DigilentWaveformDevice:
 #     statusData2(idxChannel: int, idxData: int, cdData: int) -> np.ndarray
 #     statusNoise2(idxChannel: int, idxData: int, cdData: int) -> np.ndarray
 #     statusRecord(idxChannel: int, idxData: int, cdData: int) -> np.ndarray
-#
-#  DigitalI2cAPI (10)
-#
-#     clear()
-#     stretchSet()
-#     rateSet()
-#     readNakSet()
-#     sclSet()
-#     sdaSet()
-#     writeRead()
-#     read()
-#     write()
-#     writeOne()
