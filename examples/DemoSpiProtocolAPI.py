@@ -7,6 +7,11 @@ import contextlib
 from pydwf import DigilentWaveformLibrary
 from demo_utilities import open_demo_device, OpenDemoDeviceError
 
+def set_positive_supply_voltage(analogIO, voltage: float):
+    analogIO.channelNodeSet(0, 0, 1)
+    analogIO.channelNodeSet(0, 1, 3.3)
+    analogIO.enableSet(1)
+
 def demo_spi_protocol_api(spi):
     """Demonstrate the SPI protocol functionality.
 
@@ -59,9 +64,11 @@ def demo_spi_protocol_api(spi):
         response = spi.writeRead16(SPI_TRANSFERTYPE_MOSI_MISO, SPI_BITS_PER_WORD, [0xc0 + 50, 0, 0, 0, 0, 0, 0])
         spi.select(SPI_CSn, 1)   # Set chip-select to 1
 
-        ax = (response[1] * 256 + response[2] + 32768) % 65536 - 32768
-        ay = (response[3] * 256 + response[4] + 32768) % 65536 - 32768
-        az = (response[5] * 256 + response[6] + 32768) % 65536 - 32768
+        axisdata = response[1:7]
+
+        ax = (axisdata[0] + axisdata[1] * 256 + 32768) % 65536 - 32768
+        ay = (axisdata[2] + axisdata[3] * 256 + 32768) % 65536 - 32768
+        az = (axisdata[4] + axisdata[5] * 256 + 32768) % 65536 - 32768
 
         print("{:6} {:6} {:6}".format(ax, ay, az))
 
@@ -75,6 +82,7 @@ def main():
     try:
         dwf = DigilentWaveformLibrary()
         with contextlib.closing(open_demo_device(dwf, args.serial_number)) as device:
+            set_positive_supply_voltage(device.analogIO, 3.3)
             demo_spi_protocol_api(device.digitalSpi)
     except OpenDemoDeviceError:
         print("Could not open demo device, exiting.")
