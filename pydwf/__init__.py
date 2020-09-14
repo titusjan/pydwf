@@ -1,6 +1,7 @@
 """Python binding for the DWF (Digilent Waveforms) shared library.
 
-This binding is based on the C header file "dwf.h", version 3.12.2 (size = 47009 bytes; md5sum = 670fc8ba690cbe0f848444c6f1458682).
+This binding is based on the C header file "dwf.h", version 3.14.3, as extracted from the Linux package;
+size = 48046 bytes; md5sum = cdc0e93efaf1d82d7a1a8c1d5a4e68a0670fc8ba690cbe0f848444c6f1458682.
 
 Open issues:
 
@@ -394,7 +395,7 @@ class DigilentWaveformLibraryError(RuntimeError):
 class DigilentWaveformLibrary:
     """Provides access to the DWF shared library functions.
 
-    Version 3.12.2 of the DWF library has 5 miscellaneous functions, none of which are obsolete, that are
+    Version 3.14.3 of the DWF library has 5 miscellaneous functions, none of which are obsolete, that are
     wrapped as DigilentWaveformLibrary methods:
 
         FDwfGetLastError, FDwfGetLastErrorMsg, FDwfGetVersion, FDwfParamSet, and FDwfParamGet.
@@ -435,9 +436,13 @@ class DigilentWaveformLibrary:
 
         for (name, restype, argtypes, obsolete_flag) in function_signatures:
             argtypes = [argtype for (argname, argtype) in argtypes]
-            func = getattr(lib, name)
-            func.restype = restype
-            func.argtypes = argtypes
+            try:
+                func = getattr(lib, name)
+                func.restype = restype
+                func.argtypes = argtypes
+            except AttributeError:
+                # Ignore functions that cannot be found.
+                pass
 
     def _exception(self) -> DigilentWaveformLibraryError:
         """Returns an exception describing the most recent error.
@@ -489,7 +494,7 @@ class DigilentWaveformLibrary:
         """Returns the library version string.
 
         Returns:
-            Version string, composed of major, minor, and build numbers (e.g., "3.12.2").
+            Version string, composed of major, minor, and build numbers (e.g., "3.14.3").
 
         Raises:
             DigilentWaveformLibraryError: the library version string cannot be retrieved.
@@ -553,7 +558,7 @@ class DigilentWaveformLibrary:
     class EnumAPI:
         """Encapsulates the 'FDwfEnum' API calls.
 
-        Version 3.12.2 of the DWF library has 12 'FDwfEnum' functions, 4 of which are obsolete.
+        Version 3.14.3 of the DWF library has 12 'FDwfEnum' functions, 4 of which are obsolete.
 
         These functions are used to discover all connected, compatible devices.
         """
@@ -837,7 +842,7 @@ class DigilentWaveformLibrary:
     class DeviceAPI:
         """Implements the 'FDwfDevice' API calls.
 
-        Version 3.12.2 of the DWF library has 15 'FDwfDevice' functions, none of which are obsolete.
+        Version 3.14.3 of the DWF library has 15 'FDwfDevice' functions, none of which are obsolete.
 
         The 'open' and 'closeAll' methods are implemented here, since they are not associated to a specific previously opened device.
         The 12 remaining library functions are implemented as methods of the DigilentWaveformDevice class.
@@ -1156,7 +1161,7 @@ class DigilentWaveformDevice:
     class AnalogInAPI:
         """Provides wrappers for the 'FDwfAnalogIn' API calls.
 
-        Version 3.12.2 of the DWF library has 88 'FDwfAnalogIn' functions, 1 of which (FDwfAnalogInTriggerSourceInfo) is obsolete.
+        Version 3.14.3 of the DWF library has 93 'FDwfAnalogIn' functions, 1 of which (FDwfAnalogInTriggerSourceInfo) is obsolete.
         """
 
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
@@ -1204,6 +1209,19 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
             samplesLeft = c_samplesLeft.value
             return samplesLeft
+
+        def statusTime(self) -> Tuple[int, int, int]:
+            """Retrieve timestamp of status."""
+            c_sec_utc = _typespec_ctypes.c_uint()
+            c_tick = _typespec_ctypes.c_uint()
+            c_ticks_per_second = _typespec_ctypes.c_uint()
+            result = self._device._dwf._lib.FDwfAnalogInStatusTime(self._device._hdwf, c_sec_utc, c_tick, c_ticks_per_second)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            sec_utc = c_sec_utc.value
+            tick = c_tick.value
+            ticks_per_second = c_ticks_per_second.value
+            return (sec_utc, tick, ticks_per_second)
 
         def statusSamplesValid(self) -> int:
             """Retrieve the number of valid/acquired data samples."""
@@ -1596,6 +1614,32 @@ class DigilentWaveformDevice:
             attenuation = c_attenuation.value
             return attenuation
 
+        def channelBandwidthSet(self, idxChannel: int, bandwidth: float) -> None:
+            result = self._device._dwf._lib.FDwfAnalogInChannelBandwidthSet(self._device._hdwf, idxChannel, bandwidth)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+        def channelBandwidthGet(self, idxChannel: int) -> float:
+            c_bandwidth = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogInChannelBandwidthGet(self._device._hdwf, idxChannel, c_bandwidth)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            bandwidth = c_bandwidth.value
+            return bandwidth
+
+        def channelImpedanceSet(self, idxChannel: int, impedance: float) -> None:
+            result = self._device._dwf._lib.FDwfAnalogInChannelImpedanceSet(self._device._hdwf, idxChannel, impedance)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+        def channelImpedanceGet(self, idxChannel: int) -> float:
+            c_impedance = _typespec_ctypes.c_double()
+            result = self._device._dwf._lib.FDwfAnalogInChanneImpedanceGet(self._device._hdwf, idxChannel, c_impedance)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            impedance = c_impedance.value
+            return impedance
+
         # Trigger configuration:
 
         def triggerSourceSet(self, trigger_source: TRIGSRC) -> None:
@@ -1943,7 +1987,7 @@ class DigilentWaveformDevice:
     class AnalogOutAPI:
         """Provides wrappers for the 'FDwfAnalogOut' API functions.
 
-        Version 3.12.2 of the DWF library has 83 'FDwfAnalogOut' functions, 25 of which are obsolete.
+        Version 3.14.3 of the DWF library has 83 'FDwfAnalogOut' functions, 25 of which are obsolete.
         """
 
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
@@ -2674,7 +2718,7 @@ class DigilentWaveformDevice:
 
         """Provides wrappers for the 'FDwfAnalogIO' API functions.
 
-        Version 3.12.2 of the DWF library has 17 'FDwfAnalogIO' functions, none of which are obsolete.
+        Version 3.14.3 of the DWF library has 17 'FDwfAnalogIO' functions, none of which are obsolete.
 
         The AnalogIO functions are used to control the power supplies, reference voltage supplies, voltmeters, ammeters,
         thermometers, and any other sensors on the device. These are organized into channels which contain a number of
@@ -2854,7 +2898,7 @@ class DigilentWaveformDevice:
     class DigitalIOAPI:
         """Provides wrappers for the 'FDwfDigitalIO' API functions.
 
-        Version 3.12.2 of the DWF library has 19 'FDwfDigitalIO' functions, none of which are obsolete.
+        Version 3.14.3 of the DWF library has 19 'FDwfDigitalIO' functions, none of which are obsolete.
 
         There are 3 generic functions (reset, configure, and status), and 8 functions that come in 32- and 64-bits variants.
         """
@@ -3039,7 +3083,7 @@ class DigilentWaveformDevice:
     class DigitalInAPI:
         """Provides wrappers for the 'FDwfDigitalIn' API functions.
 
-        Version 3.12.2 of the DWF library has 54 'FDwfDigitalIn' functions, 2 of which (FDwfDigitalInMixedSet, FDwfDigitalInTriggerSourceInfo) are obsolete.
+        Version 3.14.3 of the DWF library has 55 'FDwfDigitalIn' functions, 2 of which (FDwfDigitalInMixedSet, FDwfDigitalInTriggerSourceInfo) are obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
@@ -3142,6 +3186,19 @@ class DigilentWaveformDevice:
             data_corrupt = c_data_corrupt.value
             return (data_free, data_lost, data_corrupt)
 
+        def statusTime(self) -> Tuple[int, int, int]:
+            """Retrieve timestamp of status."""
+            c_sec_utc = _typespec_ctypes.c_uint()
+            c_tick = _typespec_ctypes.c_uint()
+            c_ticks_per_second = _typespec_ctypes.c_uint()
+            result = self._device._dwf._lib.FDwfAnalogInStatusTime(self._device._hdwf, c_sec_utc, c_tick, c_ticks_per_second)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+            sec_utc = c_sec_utc.value
+            tick = c_tick.value
+            ticks_per_second = c_ticks_per_second.value
+            return (sec_utc, tick, ticks_per_second)
+
         def internalClockInfo(self) -> float:
             c_hzFreq = _typespec_ctypes.c_double()
             result = self._device._dwf._lib.FDwfDigitalInInternalClockInfo(self._device._hdwf, c_hzFreq)
@@ -3166,7 +3223,6 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def clockSourceGet(self) -> DwfDigitalInClockSource:
-            #('FDwfDigitalInClockSourceGet', typespec.BOOL, [ ('hdwf', typespec.HDWF), ('pv', typespec.DwfDigitalInClockSource_ptr) ], False),
             c_clock_source = _typespec_ctypes.DwfDigitalInClockSource()
             result = self._device._dwf._lib.FDwfDigitalInClockSourceGet(self._device._hdwf, c_clock_source)
             if result != _RESULT_SUCCESS:
@@ -3471,7 +3527,7 @@ class DigilentWaveformDevice:
     class DigitalOutAPI:
         """Provides wrappers for the 'FDwfDigitalOut' API functions.
 
-        Version 3.12.2 of the DWF library has 46 'FDwfDigitalOut' functions, 1 of which (FDwfDigitalOutTriggerSourceInfo) is obsolete.
+        Version 3.14.3 of the DWF library has 48 'FDwfDigitalOut' functions, 1 of which (FDwfDigitalOutTriggerSourceInfo) is obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
@@ -3873,6 +3929,16 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
+        def playDataSet(self, rg_bits: int, bits_per_sample: int, count_of_samples: int) -> None:
+            result = self._device._dwf._lib.FDwfDigitalOutPlayDataSet(self._device._hdwf, rg_bits, bits_per_sample, count_of_samples)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+        def playRateSet(self, rate_hz: float) -> None:
+            result = self._device._dwf._lib.FDwfDigitalOutPlayRateSet(self._device._hdwf, rate_hz)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
         def triggerSourceInfo(self) -> List[TRIGSRC]:
             """Get digital-out trigger source info.
 
@@ -3889,7 +3955,7 @@ class DigilentWaveformDevice:
     class DigitalUartAPI:
         """Provides wrappers for the 'FDwfDigitalUart' API functions.
 
-        Version 3.12.2 of the DWF library has 9 'FDwfDigitalUart' functions, none of which are obsolete.
+        Version 3.14.3 of the DWF library has 9 'FDwfDigitalUart' functions, none of which are obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
@@ -3952,7 +4018,7 @@ class DigilentWaveformDevice:
     class DigitalSpiAPI:
         """Provides wrappers for the 'FDwfDigitalSpi' API functions.
 
-        Version 3.12.2 of the DWF library has 18 'FDwfDigitalSpi' functions, none of which are obsolete.
+        Version 3.14.3 of the DWF library has 18 'FDwfDigitalSpi' functions, none of which are obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
@@ -3983,6 +4049,12 @@ class DigilentWaveformDevice:
                 3 = DQ3
             """
             result = self._device._dwf._lib.FDwfDigitalSpiDataSet(self._device._hdwf, data_select, channel_index)
+            if result != _RESULT_SUCCESS:
+                raise self._device._dwf._exception()
+
+        def idleSet(self, idx_dq: int, idle_mode: DwfDigitalOutIdle) -> None:
+            """Set idle behavior."""
+            result = self._device._dwf._lib.FDwfDigitalSpiIdleSet(self._device._hdwf, idx_dq, idle_mode.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -4187,7 +4259,7 @@ class DigilentWaveformDevice:
     class DigitalI2cAPI:
         """Provides wrappers for the 'FDwfDigitalI2c' API functions.
 
-        Version 3.12.2 of the DWF library has 11 'FDwfDigitalI2c' functions, none of which are obsolete.
+        Version 3.14.3 of the DWF library has 11 'FDwfDigitalI2c' functions, none of which are obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
@@ -4309,7 +4381,7 @@ class DigilentWaveformDevice:
     class DigitalCanAPI:
         """Provides wrappers for the 'FDwfDigitalCan' API functions.
 
-        Version 3.12.2 of the DWF library has 7 'FDwfDigitalCan' functions, none of which are obsolete.
+        Version 3.14.3 of the DWF library has 7 'FDwfDigitalCan' functions, none of which are obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
@@ -4375,7 +4447,7 @@ class DigilentWaveformDevice:
     class AnalogImpedanceAPI:
         """Provides wrappers for the 'FDwfAnalogImpedance' API functions.
 
-        Version 3.12.2 of the DWF library has 22 'FDwfAnalogImpedance' functions, none of which are obsolete.
+        Version 3.14.3 of the DWF library has 22 'FDwfAnalogImpedance' functions, none of which are obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
