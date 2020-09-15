@@ -4,7 +4,7 @@ AnalogIn Instrument API
 
 The AnalogIn instrument implements multiple channels of analog input on devices that support it, such as the Analog Discovery and the Analog Discovery 2.
 
-To use the AnalogIn instrument you first need to ininitialize a DigitalWaveformLibrary instance.
+To use the AnalogIn instrument you first need to initialize a DigitalWaveformLibrary instance.
 Next, you open a specific device.
 The device's AnalogIn instrument API can now be accessed via its *analogIn* attribute, which is an instance of the AnalogInAPI class.
 
@@ -80,7 +80,7 @@ Per-channel settings (14)
 Trigger settings methods (37)
 -----------------------------
 
-| [3] triggerSource            TRIGSRC          [-]       Info            Set        Get                         Note: triggerSourceInfo() is OBSOLETE.
+| [3] triggerSource            TRIGSRC          [-]       Info            Set        Get                         Note: triggerSourceInfo() is marked OBSOLETE.
 | [4] triggerPosition          float            [s]       Info            Set        Get       Status
 | [3] triggerAutoTimeout       float            [s]       Info            Set        Get
 | [3] triggerHoldOff           float            [s]       Info            Set        Get
