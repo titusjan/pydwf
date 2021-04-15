@@ -1212,9 +1212,9 @@ class DigilentWaveformDevice:
 
         def statusTime(self) -> Tuple[int, int, int]:
             """Retrieve timestamp of status."""
-            c_sec_utc = _typespec_ctypes.c_uint()
-            c_tick = _typespec_ctypes.c_uint()
-            c_ticks_per_second = _typespec_ctypes.c_uint()
+            c_sec_utc = _typespec_ctypes.c_unsigned_int()
+            c_tick = _typespec_ctypes.c_unsigned_int()
+            c_ticks_per_second = _typespec_ctypes.c_unsigned_int()
             result = self._device._dwf._lib.FDwfAnalogInStatusTime(self._device._hdwf, c_sec_utc, c_tick, c_ticks_per_second)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
@@ -3188,9 +3188,9 @@ class DigilentWaveformDevice:
 
         def statusTime(self) -> Tuple[int, int, int]:
             """Retrieve timestamp of status."""
-            c_sec_utc = _typespec_ctypes.c_uint()
-            c_tick = _typespec_ctypes.c_uint()
-            c_ticks_per_second = _typespec_ctypes.c_uint()
+            c_sec_utc = _typespec_ctypes.c_unsigned_int()
+            c_tick = _typespec_ctypes.c_unsigned_int()
+            c_ticks_per_second = _typespec_ctypes.c_unsigned_int()
             result = self._device._dwf._lib.FDwfAnalogInStatusTime(self._device._hdwf, c_sec_utc, c_tick, c_ticks_per_second)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
