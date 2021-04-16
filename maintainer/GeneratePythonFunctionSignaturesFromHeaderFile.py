@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import re
+from hashlib import md5
 from contextlib import redirect_stdout
 
 class TypeSpec:
@@ -116,33 +117,45 @@ def parse_funcspec(s: str, obsolete_flag: bool) -> FuncSpec:
 
     return FuncSpec(funcname, returntype, parspecs, obsolete_flag)
 
-def parse_dwf_header_file(filename):
+def parse_dwf_header_file(dwf_header_file):
+
     funcspecs = []
-    with open(filename) as f:
-        obsolete_flag = False  # At the end of the header file, there are some functions that are declared 'obsolete'.
-        for line in f:
-            if "OBSOLETE" in line:
-                obsolete_flag = True
-            if line.startswith("DWFAPI"):
-                funcspec = parse_funcspec(line, obsolete_flag)
-                funcspecs.append(funcspec)
+    obsolete_flag = False  # At the end of the header file, there are some functions that are declared 'obsolete'.
+
+    for line in dwf_header_file.split("\n"):
+        if "OBSOLETE" in line:
+            obsolete_flag = True
+        if line.startswith("DWFAPI"):
+            funcspec = parse_funcspec(line, obsolete_flag)
+            funcspecs.append(funcspec)
 
     return funcspecs
 
 def main():
 
     input_filename = 'dwf.h'
-    funcspecs = parse_dwf_header_file(input_filename)
+
+    with open(input_filename, "rb") as fi:
+        dwf_header_file_binary_contents = fi.read()
+
+    dwf_header_file = dwf_header_file_binary_contents.decode("ascii")
+
+    funcspecs = parse_dwf_header_file(dwf_header_file)
 
     output_filename = "dwf_function_signatures.py"
 
     with open(output_filename, "w") as fo:
         with redirect_stdout(fo):
-            print("# This is generated code, do not edit by hand!")
+            print("# This file was generated from the Digilent Waveforms C header file '{}' (md5sum: {})".format(input_filename, md5(dwf_header_file_binary_contents).hexdigest()))
+            print("# by the 'GeneratePythonFunctionSignaturesFromHeaderFile.py' script.")
+            print("#")
+            print("# *** This is generated code, do not edit by hand! ***")
             print()
             print("from typing import List, Tuple, Any")
             print()
             print("def dwf_function_signatures(typespec: Any) -> List[Tuple[str, Any, List[Tuple[str, Any]], bool]]:")
+            print()
+            print("    \"\"\"Returns type information for the {} functions in the DWF API.\"\"\"".format(len(funcspecs)))
             print()
             print("    return [")
             print( ",\n".join("        " + funcspec.emit() for funcspec in funcspecs))
