@@ -1,18 +1,28 @@
 """Python binding for the DWF (Digilent Waveforms) shared library.
 
-This binding is based on the C header file "dwf.h", version 3.14.3, as extracted from the Linux package;
-size = 48046 bytes; md5sum = cdc0e93efaf1d82d7a1a8c1d5a4e68a0670fc8ba690cbe0f848444c6f1458682.
+This module is based on the C header file "dwf.h", version 3.16.3, as extracted from the Linux package;
+size = 48191 bytes; md5sum = c77ad106f85cbad3aef5d61872351754.
 
-Open issues:
+Open issues, header file:
 
-- In dwf.h, function FDwfDigitalInInputOrderSet, parameter 'fDioFirst' is a bool. This doesn't exist in C.
+- In dwf.h, function FDwfDigitalInInputOrderSet, parameter 'fDioFirst' is a bool. This type doesn't exist in C, unless 'stdbool.h' is included.
 - There's a bunch of lines in dwf.h with trailing spaces.
-- The DEVVER enum type has 2 values with integer 2, is that intentional?
-- The DwfState enum type has 2 values with integer 3, is that intentional?
-- FDwfAnalogInTriggerForce not documented in the PDF?
-- FDwfAnalogInTriggerHoldOffInfo: parameter is called 'pnStep' rather than 'pnSteps'.
+- The comment on the line describing the "dwfercUnknownError" constant is incorrect.
+- In the definition of the DwfAnalogImpedance type constants, Admittance, Conductance, and Susceptance are commented as having unit 'Siemen',
+    which should be "Siemens".
+- The DEVVER enum type has 2 values with integer value 2 (devverEExplorerC and devverDiscoveryB), is that intentional?
+- The DwfState enum type has 2 values with integer value 3 (DwfStateTriggered and DwfStateRunning), is that intentional?
+- The function 'FDwfAnalogInTriggerForce' is not documented in the PDF?
+- The function 'FDwfAnalogInTriggerHoldOffInfo' has a parameter that is called 'pnStep' rather than 'pnSteps'.
 
-(Some of these were addressed in an email response; cross-reference.)
+Open issues, dwfsdk.pdf:
+
+- Section 1.2 "the standard c-type bool". "bool" is not a standard C type, Bool_t is.
+- Section 2 "FDwfGetLastError: bad description of "dwfercUnknownError".
+- Section 2 "FDwfParamSet": not all DwfParam values found in the header file are described here.
+- Section 4: not documented: FDwfDeviceEnableSet, FDwfDeviceParamGet, FDwfDebiceParamSet.
+- Section 4: TRIGSRC values High and Low are not documented.
+
 """
 
 import sys
@@ -44,6 +54,7 @@ class DEVID(enum.Enum):
     Discovery  = 2
     Discovery2 = 3
     DDiscovery = 4
+    ADP3X50    = 6
 
 # Note: enum values are not unique.
 class DEVVER(enum.Enum):
@@ -125,6 +136,7 @@ class TRIGTYPE(enum.Enum):
     Edge       = 0
     Pulse      = 1
     Transition = 2
+    Window     = 3
 
 @enum.unique
 class DwfTriggerSlope(enum.Enum):
@@ -144,7 +156,7 @@ class TRIGLEN(enum.Enum):
 class DWFERC(enum.Enum):
     """Error codes for DWF public API, represented as type 'int'."""
     NoErc             = 0     # No error occurred
-    UnknownError      = 1     # Unknown error
+    UnknownError      = 1     # Unknown error (NOTE: header file has a bad description)
     ApiLockTimeout    = 2     # API waiting on pending API timed out
     AlreadyOpened     = 3     # Device already opened
     NotSupported      = 4     # Device not supported
@@ -207,8 +219,9 @@ class DwfAnalogOutIdle(enum.Enum):
 @enum.unique
 class DwfDigitalInClockSource(enum.Enum):
     """Digital In clock source, represented as type 'int'."""
-    Internal = 0
-    External = 1
+    Internal  = 0
+    External  = 1
+    External2 = 2
 
 @enum.unique
 class DwfDigitalInSampleMode(enum.Enum):
@@ -233,6 +246,8 @@ class DwfDigitalOutType(enum.Enum):
     Custom = 1
     Random = 2
     ROM    = 3
+    State  = 4
+    Play   = 5
 
 @enum.unique
 class DwfDigitalOutIdle(enum.Enum):
@@ -240,7 +255,7 @@ class DwfDigitalOutIdle(enum.Enum):
     Init = 0
     Low  = 1
     High = 2
-    Zet  = 3
+    Zet  = 3 # High impedance
 
 @enum.unique
 class DwfAnalogImpedance(enum.Enum):
@@ -268,12 +283,16 @@ class DwfParam(enum.Enum):
     OnClose       = 4 # 0 continue, 1 stop, 2 shutdown
     AudioOut      = 5 # 0 disable / 1 enable audio output, Analog Discovery 1, 2
     UsbLimit      = 6 # 0..1000 mA USB power limit, -1 no limit, Analog Discovery 1, 2
+    AnalogOut     = 7 # 0 disable / 1 enable
+    Frequency     = 8 # MHz
 
+# Note, the obsolete types TRIGCOND and STS have not been defined here.
+# TRIGCOND has been replaced by DwfTriggerSlope; STS has been replaced by DwfState.
 
 class _typespec_ctypes:
     """The class members given below map the type specifications as given in the 'dwf_function_signatures' variable to ctypes types."""
 
-    c_bool                      = ctypes.c_bool  # Note: use of type 'bool' in dwf.h is probably not intentional.
+    c_bool                      = ctypes.c_bool  # Note: the use of type 'bool' in dwf.h is probably not intentional.
 
     c_char                      = ctypes.c_char
     c_char_ptr                  = ctypes.POINTER(c_char)
@@ -393,9 +412,9 @@ class DigilentWaveformLibraryError(RuntimeError):
 
 
 class DigilentWaveformLibrary:
-    """Provides access to the DWF shared library functions.
+    """Provide access to the DWF shared library functions.
 
-    Version 3.14.3 of the DWF library has 5 miscellaneous functions, none of which are obsolete, that are
+    Version 3.16.3 of the DWF library has 5 miscellaneous functions, none of which are obsolete, that are
     wrapped as DigilentWaveformLibrary methods:
 
         FDwfGetLastError, FDwfGetLastErrorMsg, FDwfGetVersion, FDwfParamSet, and FDwfParamGet.
@@ -409,7 +428,7 @@ class DigilentWaveformLibrary:
 
     """
     def __init__(self) -> None:
-        """Initializes a DigilentWaveformLibrary instance.
+        """Initialize a DigilentWaveformLibrary instance.
 
         This function instantiates a ctypes library, type-annotates its functions, and instantiates 'enum' and 'device' fields
         that can be used to access the device enumeration and device functions of the API.
@@ -430,7 +449,7 @@ class DigilentWaveformLibrary:
 
     @staticmethod
     def _annotate_function_signatures(lib: ctypes.CDLL) -> None:
-        """Adds 'ctype' return type and parameter type annotations for all known functions in the DWF shared library."""
+        """Add 'ctype' return type and parameter type annotations for all known functions in the DWF shared library."""
 
         function_signatures = dwf_function_signatures(_typespec_ctypes)
 
@@ -441,11 +460,12 @@ class DigilentWaveformLibrary:
                 func.restype = restype
                 func.argtypes = argtypes
             except AttributeError:
-                # Ignore functions that cannot be found.
+                # Do not annotate functions that are not present in the shared library.
+                # This can happen, for example, when the Python binding is used with an older version of the shared library.
                 pass
 
     def _exception(self) -> DigilentWaveformLibraryError:
-        """Returns an exception describing the most recent error.
+        """Return an exception describing the most recent error.
 
         This function is used by the Python API to make an informative `DigilentWaveformLibraryError` exception in case a DWF library function fails.
 
@@ -455,7 +475,7 @@ class DigilentWaveformLibrary:
         return DigilentWaveformLibraryError(self.getLastError(), self.getLastErrorMsg())
 
     def getLastError(self) -> DWFERC:
-        """Returns the last error code in the calling process.
+        """Retrieve the last error code in the calling process.
 
         The error code is cleared when other API functions are called and is only set when an API function fails during execution.
 
@@ -474,7 +494,7 @@ class DigilentWaveformLibrary:
         return dwferc
 
     def getLastErrorMsg(self) -> str:
-        """Returns the last error message.
+        """Retrieve the last error message.
 
         Returns:
             Error message of the last API call.
@@ -486,15 +506,15 @@ class DigilentWaveformLibrary:
         c_error_message = ctypes.create_string_buffer(512)
         result = self._lib.FDwfGetLastErrorMsg(c_error_message)
         if result != _RESULT_SUCCESS:
-            raise DigilentWaveformLibraryError(None, None)
+            raise DigilentWaveformLibraryError(None, "FDwfGetLastErrorMsg() failed.")
         error_message = c_error_message.value.decode()
         return error_message
 
     def getVersion(self) -> str:
-        """Returns the library version string.
+        """Retrieve the library version string.
 
         Returns:
-            Version string, composed of major, minor, and build numbers (e.g., "3.14.3").
+            Version string, composed of major, minor, and build numbers (e.g., "3.16.3").
 
         Raises:
             DigilentWaveformLibraryError: the library version string cannot be retrieved.
@@ -507,7 +527,7 @@ class DigilentWaveformLibrary:
         return version
 
     def paramSet(self, parameter: DwfParam, value: int) -> None:
-        """Sets a default parameter value.
+        """Configure a default parameter value.
 
         Parameters are settings of a specific DigilentWaveformsDevice.
         Different DigilentWaveformsDevice instances can have different values for each of the possible DwfParam parameters.
@@ -531,7 +551,7 @@ class DigilentWaveformLibrary:
             raise self._exception()
 
     def paramGet(self, parameter: DwfParam) -> int:
-        """Returns a default parameter value.
+        """Return a default parameter value.
 
         Parameters are settings of a specific DigilentWaveformsDevice.
         Different DigilentWaveformsDevice instances can have different values for each of the possible DwfParam parameters.
@@ -556,9 +576,9 @@ class DigilentWaveformLibrary:
         return value
 
     class EnumAPI:
-        """Encapsulates the 'FDwfEnum' API calls.
+        """Encapsulate the 'FDwfEnum' API calls.
 
-        Version 3.14.3 of the DWF library has 12 'FDwfEnum' functions, 4 of which are obsolete.
+        Version 3.16.3 of the DWF library has 12 'FDwfEnum' functions, 4 of which are obsolete.
 
         These functions are used to discover all connected, compatible devices.
         """
@@ -567,7 +587,7 @@ class DigilentWaveformLibrary:
             self._dwf = dwf
 
         def count(self, enumfilter: Optional[ENUMFILTER]=None) -> int:
-            """Builds an internal list of detected devices filtered by the 'enumfilter' argument, and return the count of detected devices.
+            """Build an internal list of detected devices filtered by the 'enumfilter' argument, and return the count of detected devices.
 
             This function must be called before using other enum functions because they obtain information about enumerated devices from this list,
             indexed by the device index.
@@ -595,11 +615,11 @@ class DigilentWaveformLibrary:
             return device_count
 
         def deviceType(self, device_index: int)-> Tuple[DEVID, DEVVER]:
-            """Returns the device ID and version ID of the selected device.
+            """Return the device ID and version ID of the selected device.
 
             The DEVVER value 2 is unfortunately used for two different enum values: EExplorerC and DiscoveryB.
             We try to remove the ambiguity by returning EExplorerC if DEVID is EExplorer, and DiscoveryB otherwise.
-            Unfortunately, this doesn't work due to the way Python Enums work.
+            Unfortunately, this doesn't work as desired due to the way Python Enums work.
 
             Args:
                 device_index: Zero-based index of the previously enumerated device (see the EnumAPI.count() method).
@@ -628,7 +648,7 @@ class DigilentWaveformLibrary:
             return (device_id, device_revision)
 
         def deviceIsOpened(self, device_index: int) -> bool:
-            """Checks if the specified device is already opened by this or any other process.
+            """Check if the specified device is already opened by this or any other process.
 
             Args:
                 device_index: Zero-based index of the previously enumerated device (see the EnumAPI.count() method).
@@ -647,13 +667,13 @@ class DigilentWaveformLibrary:
             return is_used
 
         def userName(self, device_index: int) -> str:
-            """Retrieves the username of the selected device.
+            """Retrieve the user name of the selected device.
 
             Args:
                 device_index: Zero-based index of the previously enumerated device (see the EnumAPI.count() method).
 
             Returns:
-                Username of the device, which is a short name denoting the device type (e.g., "Discovery2", "DDiscovery").
+                User name of the device, which is a short name denoting the device type (e.g., "Discovery2", "DDiscovery").
 
             Raises:
                 DigilentWaveformLibraryError: the user name of the device cannot be retrieved.
@@ -666,7 +686,7 @@ class DigilentWaveformLibrary:
             return username
 
         def deviceName(self, device_index: int) -> str:
-            """Retrieves the devicename of the selected device.
+            """Retrieve the device name of the selected device.
 
             Args:
                 device_index: Zero-based index of the previously enumerated device (see the EnumAPI.count() method).
@@ -685,7 +705,7 @@ class DigilentWaveformLibrary:
             return devicename
 
         def serialNumber(self, device_index: int) -> str:
-            """Retrieves the 12-digit, unique serial number of the enumerated device.
+            """Retrieve the 12-digit, unique serial number of the enumerated device.
 
             Args:
                 device_index: Zero-based index of the previously enumerated device (see the EnumAPI.count() method).
@@ -710,7 +730,7 @@ class DigilentWaveformLibrary:
             return serial
 
         def configCount(self, device_index: int) -> int:
-            """Builds an internal list of detected configurations for the selected device.
+            """Build an internal list of detected configurations for the selected device.
 
             This function must be called before using other FDwfEnumConfigInfo functions because they obtain information about
             configurations from the list, as indexed by the configuration index.
@@ -732,7 +752,7 @@ class DigilentWaveformLibrary:
             return config_count
 
         def configInfo(self, config_index: int, info: DwfEnumConfigInfo) -> int:
-            """Returns information about the configuration.
+            """Return information about the configuration.
 
             Args:
                 config_index: Zero-based index of the previously enumerated configuration (see the EnumAPI.configCount() method).
@@ -752,7 +772,7 @@ class DigilentWaveformLibrary:
             return configuration_parameter_value
 
         def analogInChannels(self, device_index: int) -> int:
-            """Counts analog input channels of the selected device.
+            """Count analog input channels of the selected device.
 
             Args:
                 device_index: Zero-based index of the previously enumerated device (see the EnumAPI.count() method).
@@ -840,17 +860,18 @@ class DigilentWaveformLibrary:
             return sample_frequency
 
     class DeviceAPI:
-        """Implements the 'FDwfDevice' API calls.
+        """Implement the 'FDwfDevice' API calls.
 
-        Version 3.14.3 of the DWF library has 15 'FDwfDevice' functions, none of which are obsolete.
+        Version 3.16.3 of the DWF library has 15 'FDwfDevice' functions, none of which are obsolete.
 
         The 'open' and 'closeAll' methods are implemented here, since they are not associated to a specific previously opened device.
-        The 12 remaining library functions are implemented as methods of the DigilentWaveformDevice class.
 
         The 'open' method wraps two different library calls: 'FDwfDeviceOpen' and 'FDwfDeviceConfigOpen'.
         These API calls open either the default configuration, or an explicitly specified configuration of the device.
         In the open() method defined below, the decision on which underlying library function to call is made based
         on the value of the'config_index' parameter.
+
+        The 12 remaining library functions are implemented as methods of the DigilentWaveformDevice class.
 
         The DeviceAPI class also provides the openBySerialNumber() convenience method.
         This the recommended way to open a specific device.
@@ -860,7 +881,7 @@ class DigilentWaveformLibrary:
             self._dwf = dwf
 
         def open(self, device_index: int, config_index: Optional[int]=None) -> 'DigilentWaveformDevice':
-            """Opens a device identified by the enumeration index and retrieve a handle.
+            """Open a device identified by the enumeration index and retrieve a handle.
 
             Note:
                 This method takes approximately 2 seconds to complete.
@@ -887,7 +908,7 @@ class DigilentWaveformLibrary:
             return DigilentWaveformDevice(self._dwf, hdwf)
 
         def closeAll(self) -> None:
-            """Closes all opened devices by the calling process.
+            """Close all devices opened by the calling process.
 
             Note that this function does not close all devices across all processes.
 
@@ -898,8 +919,8 @@ class DigilentWaveformLibrary:
             if result != _RESULT_SUCCESS:
                 raise self._dwf._exception()
 
-        def openBySerialNumber(self, serial_number_sought: str) -> 'DigilentWaveformDevice':
-            """Opens a device identified by its serial number.
+        def openBySerialNumber(self, serial_number_sought: str, config_index: Optional[int]=None) -> 'DigilentWaveformDevice':
+            """Open a device identified by its serial number.
 
             Note:
                 This is a convenience method that doesn't directly encapsulate a single function call of the library.
@@ -916,7 +937,7 @@ class DigilentWaveformLibrary:
 
             Raises:
                 DigilentWaveformLibraryError: an error occurred in the underlying API.
-                ValueError: the serial number specified was not found or it was found more than once (unlikely).
+                ValueError: the serial number specified was not found (likely) or it was found more than once (unlikely).
             """
             num_devices = self._dwf.enum.count()  # Perform a device enumeration.
             candidates = [device_index for device_index in range(num_devices) if self._dwf.enum.serialNumber(device_index) == serial_number_sought]
@@ -926,7 +947,7 @@ class DigilentWaveformLibrary:
 
             # We found a unique candidate. Open it.
             device_index = candidates[0]
-            return self.open(device_index)
+            return self.open(device_index, config_index)
 
 
 class DigilentWaveformDevice:
@@ -973,7 +994,7 @@ class DigilentWaveformDevice:
         self.analogImpedance = DigilentWaveformDevice.AnalogImpedanceAPI(self)
 
     def close(self) -> None:
-        """Closes an interface handle when access to the device is no longer needed.
+        """Close an interface handle when access to the device is no longer needed.
 
         Once this function returns, the DigilentWaveformDevice can no longer be used to access the device.
 
@@ -985,7 +1006,7 @@ class DigilentWaveformDevice:
             raise self._dwf._exception()
 
     def autoConfigureSet(self, auto_configure: int) -> None:
-        """Enables or disables the AutoConfig setting for a specific device.
+        """Enable or disable the AutoConfig setting for a specific device.
 
         When this setting is enabled, the device is automatically configured every time an instrument parameter is set.
         For example, when AutoConfigure is enabled, FDwfAnalogOutConfigure does not need to be called after FDwfAnalogOutRunSet.
@@ -1003,7 +1024,7 @@ class DigilentWaveformDevice:
             raise self._dwf._exception()
 
     def autoConfigureGet(self) -> int:
-        """Returns the AutoConfig setting of the device.
+        """Return the AutoConfig setting of the device.
 
         Returns:
             The auto-configure setting; 0: disable, 1: enable, 3: dynamic.
@@ -1020,7 +1041,7 @@ class DigilentWaveformDevice:
         return auto_configure
 
     def reset(self) -> None:
-        """Resets and configures (by default, having auto configure enabled) all device and instrument parameters to default values.
+        """Reset and configure (by default, having auto configure enabled) all device and instrument parameters to default values.
 
         Raises:
             DigilentWaveformLibraryError: the device cannot be reset.
@@ -1030,7 +1051,7 @@ class DigilentWaveformDevice:
             raise self._dwf._exception()
 
     def enableSet(self, enable: bool) -> None:
-        """Enables or disables the device.
+        """Enable or disable the device.
 
         Args:
             enable: True for enable, False for disable.
@@ -1043,7 +1064,7 @@ class DigilentWaveformDevice:
             raise self._dwf._exception()
 
     def triggerInfo(self) -> List[TRIGSRC]:
-        """Returns the supported trigger source options for the global trigger bus.
+        """Return the supported trigger source options for the global trigger bus.
 
         Returns:
             A list of available trigger sources.
@@ -1060,7 +1081,7 @@ class DigilentWaveformDevice:
         return trigger_source_list
 
     def triggerSet(self, pin_index: int, trigger_source: TRIGSRC) -> None:
-        """Configures the trigger I/O pin with a specific trigger source option.
+        """Configure the trigger I/O pin with a specific trigger source option.
 
         Args:
             pin_index: The pin_index to configure.
@@ -1074,7 +1095,7 @@ class DigilentWaveformDevice:
             raise self._dwf._exception()
 
     def triggerGet(self, pin_index: int) -> TRIGSRC:
-        """Returns the selected trigger source for a trigger I/O pin.
+        """Return the selected trigger source for a trigger I/O pin.
 
         The trigger source can be "none", an internal instrument, or an external trigger.
 
@@ -1095,7 +1116,7 @@ class DigilentWaveformDevice:
         return trigger_source
 
     def triggerPC(self) -> None:
-        """Generates one pulse on the PC trigger line.
+        """Generate one pulse on the PC trigger line.
 
         Raises:
             DigilentWaveformLibraryError: the PC trigger line cannot be pulsed.
@@ -1105,7 +1126,7 @@ class DigilentWaveformDevice:
             raise self._dwf._exception()
 
     def triggerSlopeInfo(self) -> List[DwfTriggerSlope]:
-        """Returns the supported trigger slope options.
+        """Return the supported trigger slope options.
 
         Returns:
             A list of possible TriggerSlope values.
@@ -1125,7 +1146,7 @@ class DigilentWaveformDevice:
         return slope_list
 
     def paramSet(self, parameter: DwfParam, value: int) -> None:
-        """Configures a device parameter.
+        """Configure a device parameter.
 
         Args:
             parameter: The device parameter to configure.
@@ -1139,7 +1160,7 @@ class DigilentWaveformDevice:
             raise self._dwf._exception()
 
     def paramGet(self, parameter: DwfParam) -> int:
-        """Retrieves a device parameter.
+        """Retrieve a device parameter.
 
         Args:
             parameter: The device parameter to query.
@@ -1161,14 +1182,14 @@ class DigilentWaveformDevice:
     class AnalogInAPI:
         """Provides wrappers for the 'FDwfAnalogIn' API calls.
 
-        Version 3.14.3 of the DWF library has 93 'FDwfAnalogIn' functions, 1 of which (FDwfAnalogInTriggerSourceInfo) is obsolete.
+        Version 3.16.3 of the DWF library has 93 'FDwfAnalogIn' functions, 1 of which (FDwfAnalogInTriggerSourceInfo) is obsolete.
         """
 
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
 
         def reset(self) -> None:
-            """Resets and configures (by default, having auto configure enabled) all AnalogIn instrument parameters to default values."""
+            """Reset and configure (by default, having auto configure enabled) all AnalogIn instrument parameters to default values."""
             result = self._device._dwf._lib.FDwfAnalogInReset(self._device._hdwf)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
@@ -1276,6 +1297,10 @@ class DigilentWaveformDevice:
             return samples
 
         def statusData16(self, idxChannel: int, idxData: int, cdData: int) -> np.ndarray:
+            """Retrieve the acquired data samples from the specified idxChannel on the AnalogIn instrument.
+
+            It copies the data samples to the provided buffer.
+            """
             samples = np.empty(cdData, dtype=np.int16)
             result = self._device._dwf._lib.FDwfAnalogInStatusData16(self._device._hdwf, idxChannel, samples.ctypes.data_as(_typespec_ctypes.c_short_ptr), idxData, cdData)
             if result != _RESULT_SUCCESS:
@@ -1356,7 +1381,7 @@ class DigilentWaveformDevice:
         # Acquisition configuration:
 
         def frequencyInfo(self) -> Tuple[float, float]:
-            """Retreive the minimum and maximum (ADC frequency) settable sample frequency."""
+            """Retrieve the minimum and maximum (ADC frequency) settable sample frequency."""
             c_hzMin = _typespec_ctypes.c_double()
             c_hzMax = _typespec_ctypes.c_double()
             result = self._device._dwf._lib.FDwfAnalogInFrequencyInfo(self._device._hdwf, c_hzMin, c_hzMax)
@@ -1421,7 +1446,7 @@ class DigilentWaveformDevice:
             return nSize
 
         def noiseSizeInfo(self) -> int:
-            """Return the maximum noise buffer size for the instrument."""
+            """Return the maximum noise buffer size for the AnalogIn instrument."""
             c_nSizeMax = _typespec_ctypes.c_int()
             result = self._device._dwf._lib.FDwfAnalogInNoiseSizeInfo(self._device._hdwf, c_nSizeMax)
             if result != _RESULT_SUCCESS:
@@ -1430,12 +1455,13 @@ class DigilentWaveformDevice:
             return nSizeMax
 
         def noiseSizeSet(self, nSize: int) -> None:
+            """Set the noise buffer size for the AnalogIn instrument."""
             result = self._device._dwf._lib.FDwfAnalogInNoiseSizeSet(self._device._hdwf, nSize)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def noiseSizeGet(self) -> int:
-            """Return the used AnalogIn noise buffer size.
+            """Return the used noise buffer size for the AnalogIn instrument.
 
             This is automatically adjusted according to the sample buffer size. For instance, having maximum buffer
             size of 8192 and noise buffer size of 512, setting the sample buffer size to 4096 the noise buffer size will be 256.
@@ -1448,7 +1474,7 @@ class DigilentWaveformDevice:
             return nSize
 
         def acquisitionModeInfo(self) -> List[ACQMODE]:
-            """Returns the supported AnalogIn acquisition modes.
+            """Return the supported AnalogIn acquisition modes.
 
             Single : Perform a single buffer acquisition and rearm the instrument for next capture after the data is fetched
                      to host using the `status` function.
@@ -1987,7 +2013,7 @@ class DigilentWaveformDevice:
     class AnalogOutAPI:
         """Provides wrappers for the 'FDwfAnalogOut' API functions.
 
-        Version 3.14.3 of the DWF library has 83 'FDwfAnalogOut' functions, 25 of which are obsolete.
+        Version 3.16.3 of the DWF library has 83 'FDwfAnalogOut' functions, 25 of which are obsolete.
         """
 
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
@@ -2219,7 +2245,7 @@ class DigilentWaveformDevice:
             return enable
 
         def nodeFunctionInfo(self, idxChannel: int, node: AnalogOutNode) -> List[FUNC]:
-            c_func_bitset = _typespec_ctypes.c_int()
+            c_func_bitset = _typespec_ctypes.c_unsigned_int()
             result = self._device._dwf._lib.FDwfAnalogOutNodeFunctionInfo(self._device._hdwf, idxChannel, node.value, c_func_bitset)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
@@ -2462,7 +2488,7 @@ class DigilentWaveformDevice:
 
             This function is OBSOLETE. Use `nodeFunctionInfo` instead.
             """
-            c_function_bitset = _typespec_ctypes.c_int()
+            c_function_bitset = _typespec_ctypes.c_unsigned_int()
             result = self._device._dwf._lib.FDwfAnalogOutFunctionInfo(self._device._hdwf, idxChannel, c_function_bitset)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
@@ -2718,7 +2744,7 @@ class DigilentWaveformDevice:
 
         """Provides wrappers for the 'FDwfAnalogIO' API functions.
 
-        Version 3.14.3 of the DWF library has 17 'FDwfAnalogIO' functions, none of which are obsolete.
+        Version 3.16.3 of the DWF library has 17 'FDwfAnalogIO' functions, none of which are obsolete.
 
         The AnalogIO functions are used to control the power supplies, reference voltage supplies, voltmeters, ammeters,
         thermometers, and any other sensors on the device. These are organized into channels which contain a number of
@@ -2730,13 +2756,13 @@ class DigilentWaveformDevice:
             self._device = device
 
         def reset(self) -> None:
-            """Resets and configures (by default, having auto configure enabled) all AnalogIO instrument parameters to default values."""
+            """Reset and configure (by default, having auto configure enabled) all AnalogIO instrument parameters to default values."""
             result = self._device._dwf._lib.FDwfAnalogIOReset(self._device._hdwf)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def configure(self) -> None:
-            """Configures the AnalogIO instrument."""
+            """Configure the AnalogIO instrument."""
             result = self._device._dwf._lib.FDwfAnalogIOConfigure(self._device._hdwf)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
@@ -2750,7 +2776,7 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def enableInfo(self) -> Tuple[bool, bool]:
-            """Verifies if Master Enable Setting and/or Master Enable Status are supported for the AnalogIO instrument.
+            """Verify if Master Enable Setting and/or Master Enable Status are supported for the AnalogIO instrument.
 
             The Master Enable setting is essentially a software switch that "enables" or "turns on" the AnalogIO channels.
             If supported, the status of this Master Enable switch (Enabled/Disabled) can be queried by calling FDwfAnalogIOEnableStatus.
@@ -2765,13 +2791,13 @@ class DigilentWaveformDevice:
             return (set_supported, status_supported)
 
         def enableSet(self, master_enable: bool) -> None:
-            """Sets the master enable switch."""
+            """Set the master enable switch."""
             result = self._device._dwf._lib.FDwfAnalogIOEnableSet(self._device._hdwf, master_enable)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def enableGet(self) -> bool:
-            """Returns the current state of the master enable switch. This is not obtained from the device."""
+            """Return the current state of the master enable switch. This is not obtained from the device."""
             c_master_enable = _typespec_ctypes.c_int()
             result = self._device._dwf._lib.FDwfAnalogIOEnableGet(self._device._hdwf, c_master_enable)
             if result != _RESULT_SUCCESS:
@@ -2780,7 +2806,7 @@ class DigilentWaveformDevice:
             return master_enable
 
         def enableStatus(self) -> bool:
-            """Returns the master enable status (if the device supports it).
+            """Return the master enable status (if the device supports it).
 
             This can be a switch on the board or an overcurrent protection circuit state."""
             c_master_enable_status = _typespec_ctypes.c_int()
@@ -2791,7 +2817,7 @@ class DigilentWaveformDevice:
             return master_enable_status
 
         def channelCount(self) -> int:
-            """Returns the number of AnalogIO channels available on the device."""
+            """Return the number of AnalogIO channels available on the device."""
             c_channel_count = _typespec_ctypes.c_int()
             result = self._device._dwf._lib.FDwfAnalogIOChannelCount(self._device._hdwf, c_channel_count)
             if result != _RESULT_SUCCESS:
@@ -2800,7 +2826,7 @@ class DigilentWaveformDevice:
             return channel_count
 
         def channelName(self, channel_index: int) -> Tuple[str, str]:
-            """Returns the name (long text) and label (short text, printed on the device) for a channel."""
+            """Return the name (long text) and label (short text, printed on the device) for a channel."""
             c_channel_name = ctypes.create_string_buffer(32)
             c_channel_label = ctypes.create_string_buffer(16)
             result = self._device._dwf._lib.FDwfAnalogIOChannelName(self._device._hdwf, channel_index, c_channel_name, c_channel_label)
@@ -2811,7 +2837,7 @@ class DigilentWaveformDevice:
             return (channel_name, channel_label)
 
         def channelInfo(self, channel_index: int) -> int:
-            """Returns the number of nodes associated with the specified channel."""
+            """Return the number of nodes associated with the specified channel."""
             c_node_count = _typespec_ctypes.c_int()
             result = self._device._dwf._lib.FDwfAnalogIOChannelInfo(self._device._hdwf, channel_index, c_node_count)
             if result != _RESULT_SUCCESS:
@@ -2819,7 +2845,7 @@ class DigilentWaveformDevice:
             return c_node_count.value
 
         def channelNodeName(self, channel_index: int, node_index: int) -> Tuple[str, str]:
-            """Returns the node name ("Voltage", "Current", ...) and units ("V", "A") for an Analog I/O node."""
+            """Return the node name ("Voltage", "Current", ...) and units ("V", "A") for an Analog I/O node."""
             c_node_name = ctypes.create_string_buffer(32)
             c_node_units = ctypes.create_string_buffer(16)
             result = self._device._dwf._lib.FDwfAnalogIOChannelNodeName(self._device._hdwf, channel_index, node_index, c_node_name, c_node_units)
@@ -2830,7 +2856,7 @@ class DigilentWaveformDevice:
             return (node_name, node_units)
 
         def channelNodeInfo(self, channel_index: int, node_index: int) -> ANALOGIO:
-            """Returns the supported channel node modes."""
+            """Return the supported channel node modes."""
             c_analog_io = _typespec_ctypes.ANALOGIO()
             result = self._device._dwf._lib.FDwfAnalogIOChannelNodeInfo(self._device._hdwf, channel_index, node_index, c_analog_io)
             if result != _RESULT_SUCCESS:
@@ -2839,7 +2865,7 @@ class DigilentWaveformDevice:
             return analog_io
 
         def channelNodeSetInfo(self, channel_index: int, node_index: int) -> Tuple[float, float, int]:
-            """Returns node value limits.
+            """Return node value limits.
 
             Since a Node can represent many things (Power supply, Temperature sensor, etc.), the Minimum, Maximum, and Steps parameters also represent different types of values.
 
@@ -2859,13 +2885,13 @@ class DigilentWaveformDevice:
             return (min_value, max_value, num_steps)
 
         def channelNodeSet(self, channel_index: int, node_index: int, node_value: float) -> None:
-            """Sets the node value for the specified node on the specified channel."""
+            """Set the node value for the specified node on the specified channel."""
             result = self._device._dwf._lib.FDwfAnalogIOChannelNodeSet(self._device._hdwf, channel_index, node_index, node_value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def channelNodeGet(self, channel_index: int, node_index: int) -> float:
-            """Returns the currently set value of the node on the specified channel."""
+            """Return the currently set value of the node on the specified channel."""
             c_node_value = _typespec_ctypes.c_double()
             result = self._device._dwf._lib.FDwfAnalogIOChannelNodeGet(self._device._hdwf, channel_index, node_index, c_node_value)
             if result != _RESULT_SUCCESS:
@@ -2874,7 +2900,7 @@ class DigilentWaveformDevice:
             return node_value
 
         def channelNodeStatusInfo(self, channel_index: int, node_index: int) -> Tuple[float, float, int]:
-            """Returns node the range of reading values available for the specified node on the specified channel."""
+            """Return the range of reading values available for the specified node on the specified channel."""
             c_min_value = _typespec_ctypes.c_double()
             c_max_value = _typespec_ctypes.c_double()
             c_num_steps = _typespec_ctypes.c_int()
@@ -2887,7 +2913,7 @@ class DigilentWaveformDevice:
             return (min_value, max_value, num_steps)
 
         def channelNodeStatus(self, channel_index: int, node_index: int) -> float:
-            """Returns the value reading of the node."""
+            """Return the value reading of the node."""
             c_node_status = _typespec_ctypes.c_double()
             result = self._device._dwf._lib.FDwfAnalogIOChannelNodeStatus(self._device._hdwf, channel_index, node_index, c_node_status)
             if result != _RESULT_SUCCESS:
@@ -2896,9 +2922,9 @@ class DigilentWaveformDevice:
             return node_status
 
     class DigitalIOAPI:
-        """Provides wrappers for the 'FDwfDigitalIO' API functions.
+        """Provide wrappers for the 'FDwfDigitalIO' API functions.
 
-        Version 3.14.3 of the DWF library has 19 'FDwfDigitalIO' functions, none of which are obsolete.
+        Version 3.16.3 of the DWF library has 19 'FDwfDigitalIO' functions, none of which are obsolete.
 
         There are 3 generic functions (reset, configure, and status), and 8 functions that come in 32- and 64-bits variants.
         """
@@ -2907,7 +2933,7 @@ class DigilentWaveformDevice:
             self._device = device
 
         def reset(self) -> None:
-            """Resets and configures (by default, having auto configure enabled) all DigitalIO instrument parameters to default values.
+            """Reset and configure (by default, having auto configure enabled) all DigitalIO instrument parameters to default values.
 
             It sets the output enables to zero (tri-state), output value to zero, and configures the DigitalIO instrument.
             """
@@ -2916,13 +2942,13 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def configure(self) -> None:
-            """Configures the DigitalIO instrument. This doesn’t have to be used if AutoConfiguration is enabled."""
+            """Configure the DigitalIO instrument. This doesn’t have to be used if AutoConfiguration is enabled."""
             result = self._device._dwf._lib.FDwfDigitalIOConfigure(self._device._hdwf)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def status(self) -> None:
-            """Reads the status and input values, of the device DigitalIO to the PC.
+            """Read the status and input values, of the device DigitalIO to the PC.
 
             The status and values are accessed from the FDwfDigitalIOInputStatus function.
             """
@@ -2931,7 +2957,7 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def outputEnableInfo(self) -> int:
-            """Returns the output enable mask (bit set) that can be used on this device.
+            """Return the output enable mask (bit set) that can be used on this device.
 
             These are the pins that can be used as outputs on the device.
             """
@@ -2943,7 +2969,7 @@ class DigilentWaveformDevice:
             return output_enable_mask
 
         def outputEnableSet(self, output_enable: int) -> None:
-            """Enables specific pins for output.
+            """Enable specific pins for output.
 
             This is done by setting bits in the fsOutEnable bit field (1 for enabled, 0 for disabled).
             """
@@ -2952,7 +2978,7 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def outputEnableGet(self) -> int:
-            """Returns a bit field that specifies which output pins have been enabled."""
+            """Return a bit field that specifies which output pins have been enabled."""
             c_output_enable = _typespec_ctypes.c_unsigned_int()
             result = self._device._dwf._lib.FDwfDigitalIOOutputEnableGet(self._device._hdwf, c_output_enable)
             if result != _RESULT_SUCCESS:
@@ -2961,7 +2987,7 @@ class DigilentWaveformDevice:
             return output_enable
 
         def outputInfo(self) -> int:
-            """Returns the settable output value mask (bit set) that can be used on this device."""
+            """Return the settable output value mask (bit set) that can be used on this device."""
             c_output_mask = _typespec_ctypes.c_unsigned_int()
             result = self._device._dwf._lib.FDwfDigitalIOOutputInfo(self._device._hdwf, c_output_mask)
             if result != _RESULT_SUCCESS:
@@ -2970,13 +2996,13 @@ class DigilentWaveformDevice:
             return output_mask
 
         def outputSet(self, output: int) -> None:
-            """Sets the output logic value on all output pins."""
+            """Set the output logic value on all output pins."""
             result = self._device._dwf._lib.FDwfDigitalIOOutputSet(self._device._hdwf, output)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def outputGet(self) -> int:
-            """Returns the currently set output values across all output pins."""
+            """Return the currently set output values across all output pins."""
             c_output = _typespec_ctypes.c_unsigned_int()
             result = self._device._dwf._lib.FDwfDigitalIOOutputGet(self._device._hdwf, c_output)
             if result != _RESULT_SUCCESS:
@@ -2985,7 +3011,7 @@ class DigilentWaveformDevice:
             return output
 
         def inputInfo(self) -> int:
-            """Returns the readable input value mask (bit set) that can be used on the device."""
+            """Return the readable input value mask (bit set) that can be used on the device."""
             c_input_mask = _typespec_ctypes.c_unsigned_int()
             result = self._device._dwf._lib.FDwfDigitalIOInputInfo(self._device._hdwf, c_input_mask)
             if result != _RESULT_SUCCESS:
@@ -2994,7 +3020,7 @@ class DigilentWaveformDevice:
             return input_mask
 
         def inputStatus(self) -> int:
-            """Returns the input states of all I/O pins.
+            """Return the input states of all I/O pins.
 
             Before calling this method, call the `status` method to read the Digital I/O states from the device.
             """
@@ -3006,7 +3032,7 @@ class DigilentWaveformDevice:
             return input_
 
         def outputEnableInfo64(self) -> int:
-            """Returns the output enable mask (bit set) that can be used on this device.
+            """Return the output enable mask (bit set) that can be used on this device.
 
             These are the pins that can be used as outputs on the device.
             """
@@ -3018,7 +3044,7 @@ class DigilentWaveformDevice:
             return output_enable_mask
 
         def outputEnableSet64(self, output_enable: int) -> None:
-            """Enables specific pins for output.
+            """Enable specific pins for output.
 
             This is done by setting bits in the fsOutEnable bit field (1 for enabled, 0 for disabled).
             """
@@ -3027,7 +3053,7 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
         def outputEnableGet64(self) -> int:
-            """Returns a bit field that specifies which output pins have been enabled."""
+            """Return a bit field that specifies which output pins have been enabled."""
             c_output_enable = _typespec_ctypes.c_unsigned_long_long()
             result = self._device._dwf._lib.FDwfDigitalIOOutputEnableGet64(self._device._hdwf, c_output_enable)
             if result != _RESULT_SUCCESS:
@@ -3036,7 +3062,7 @@ class DigilentWaveformDevice:
             return output_enable
 
         def outputInfo64(self) -> int:
-            """Returns the settable output value mask (bit set) that can be used on this device."""
+            """Return the settable output value mask (bit set) that can be used on this device."""
             c_output_mask = _typespec_ctypes.c_unsigned_long_long()
             result = self._device._dwf._lib.FDwfDigitalIOOutputInfo64(self._device._hdwf, c_output_mask)
             if result != _RESULT_SUCCESS:
@@ -3045,13 +3071,13 @@ class DigilentWaveformDevice:
             return output_mask
 
         def outputSet64(self, output: int) -> None:
-            """Sets the output logic value on all output pins."""
+            """Set the output logic value on all output pins."""
             result = self._device._dwf._lib.FDwfDigitalIOOutputSet64(self._device._hdwf, output)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def outputGet64(self) -> int:
-            """Returns the currently set output values across all output pins."""
+            """Return the currently set output values across all output pins."""
             c_output = _typespec_ctypes.c_unsigned_long_long()
             result = self._device._dwf._lib.FDwfDigitalIOOutputGet64(self._device._hdwf, c_output)
             if result != _RESULT_SUCCESS:
@@ -3060,7 +3086,7 @@ class DigilentWaveformDevice:
             return output
 
         def inputInfo64(self) -> int:
-            """Returns the readable input value mask (bit set) that can be used on the device."""
+            """Return the readable input value mask (bit set) that can be used on the device."""
             c_input_mask = _typespec_ctypes.c_unsigned_long_long()
             result = self._device._dwf._lib.FDwfDigitalIOInputInfo64(self._device._hdwf, c_input_mask)
             if result != _RESULT_SUCCESS:
@@ -3069,7 +3095,7 @@ class DigilentWaveformDevice:
             return input_mask
 
         def inputStatus64(self) -> int:
-            """Returns the input states of all I/O pins.
+            """Return the input states of all I/O pins.
 
             Before calling this method, call the `status` method to read the Digital I/O states from the device.
             """
@@ -3081,9 +3107,9 @@ class DigilentWaveformDevice:
             return input_
 
     class DigitalInAPI:
-        """Provides wrappers for the 'FDwfDigitalIn' API functions.
+        """Provide wrappers for the 'FDwfDigitalIn' API functions.
 
-        Version 3.14.3 of the DWF library has 55 'FDwfDigitalIn' functions, 2 of which (FDwfDigitalInMixedSet, FDwfDigitalInTriggerSourceInfo) are obsolete.
+        Version 3.16.3 of the DWF library has 55 'FDwfDigitalIn' functions, 2 of which (FDwfDigitalInMixedSet, FDwfDigitalInTriggerSourceInfo) are obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
@@ -3191,7 +3217,7 @@ class DigilentWaveformDevice:
             c_sec_utc = _typespec_ctypes.c_unsigned_int()
             c_tick = _typespec_ctypes.c_unsigned_int()
             c_ticks_per_second = _typespec_ctypes.c_unsigned_int()
-            result = self._device._dwf._lib.FDwfAnalogInStatusTime(self._device._hdwf, c_sec_utc, c_tick, c_ticks_per_second)
+            result = self._device._dwf._lib.FDwfDigitalInStatusTime(self._device._hdwf, c_sec_utc, c_tick, c_ticks_per_second)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             sec_utc = c_sec_utc.value
@@ -3273,7 +3299,7 @@ class DigilentWaveformDevice:
             return nBits
 
         def inputOrderSet(self, dioFirst: bool) -> None:
-            """Configures the order of values stored in the sampling array.
+            """Configure the order of values stored in the sampling array.
 
             If dioFirst is True, DIO 24..39 are placed at the beginning of the array followed by DIN 0..23.
             If dioFirst is False, DIN 0..23 are placed at the beginning followed by DIO 24..31.
@@ -3527,7 +3553,7 @@ class DigilentWaveformDevice:
     class DigitalOutAPI:
         """Provides wrappers for the 'FDwfDigitalOut' API functions.
 
-        Version 3.14.3 of the DWF library has 48 'FDwfDigitalOut' functions, 1 of which (FDwfDigitalOutTriggerSourceInfo) is obsolete.
+        Version 3.16.3 of the DWF library has 48 'FDwfDigitalOut' functions, 1 of which (FDwfDigitalOutTriggerSourceInfo) is obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
@@ -3955,7 +3981,7 @@ class DigilentWaveformDevice:
     class DigitalUartAPI:
         """Provides wrappers for the 'FDwfDigitalUart' API functions.
 
-        Version 3.14.3 of the DWF library has 9 'FDwfDigitalUart' functions, none of which are obsolete.
+        Version 3.16.3 of the DWF library has 9 'FDwfDigitalUart' functions, none of which are obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
@@ -4018,7 +4044,7 @@ class DigilentWaveformDevice:
     class DigitalSpiAPI:
         """Provides wrappers for the 'FDwfDigitalSpi' API functions.
 
-        Version 3.14.3 of the DWF library has 18 'FDwfDigitalSpi' functions, none of which are obsolete.
+        Version 3.16.3 of the DWF library has 19 'FDwfDigitalSpi' functions, none of which are obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
@@ -4257,9 +4283,9 @@ class DigilentWaveformDevice:
                 raise self._device._dwf._exception()
 
     class DigitalI2cAPI:
-        """Provides wrappers for the 'FDwfDigitalI2c' API functions.
+        """Provide wrappers for the 'FDwfDigitalI2c' API functions.
 
-        Version 3.14.3 of the DWF library has 11 'FDwfDigitalI2c' functions, none of which are obsolete.
+        Version 3.16.3 of the DWF library has 11 'FDwfDigitalI2c' functions, none of which are obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
@@ -4381,7 +4407,7 @@ class DigilentWaveformDevice:
     class DigitalCanAPI:
         """Provides wrappers for the 'FDwfDigitalCan' API functions.
 
-        Version 3.14.3 of the DWF library has 7 'FDwfDigitalCan' functions, none of which are obsolete.
+        Version 3.16.3 of the DWF library has 7 'FDwfDigitalCan' functions, none of which are obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
@@ -4412,17 +4438,17 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
+
         def tx(self, vID: int, extended: bool, remote: bool, data: bytes) -> None:
             if len(data) > 8:
                 raise RuntimeError("CAN message too long.")
-            result = self._device._dwf._lib.FDwfDigitalCanTx(self._device._hdwf, vID, extended, remote, len(data), ctypes.cast(data, _typespec_ctypes.c_unsigned_char_ptr))
+            result = self._device._dwf._lib.FDwfDigitalCanTx(self._device._hdwf, vID, extended, remote, len(data), data)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def rx(self, size:int=8) -> Tuple[int, bool, bool, bytes, int]:
+        def rx(self, size:int = 8) -> Tuple[int, bool, bool, bytes, int]:
             """Returns a tuple (vID, extended, remote, data, status)
             """
-            # DWFAPI BOOL FDwfDigitalCanRx(HDWF hdwf, int *pvID, int *pfExtended, int *pfRemote, int *pcDLC, unsigned char *rgRX, int cRX, int *pvStatus);
 
             c_vID      = _typespec_ctypes.c_int()
             c_extended = _typespec_ctypes.c_int()
@@ -4447,7 +4473,7 @@ class DigilentWaveformDevice:
     class AnalogImpedanceAPI:
         """Provides wrappers for the 'FDwfAnalogImpedance' API functions.
 
-        Version 3.14.3 of the DWF library has 22 'FDwfAnalogImpedance' functions, none of which are obsolete.
+        Version 3.16.3 of the DWF library has 22 'FDwfAnalogImpedance' functions, none of which are obsolete.
         """
         def __init__(self, device: 'DigilentWaveformDevice') -> None:
             self._device = device
