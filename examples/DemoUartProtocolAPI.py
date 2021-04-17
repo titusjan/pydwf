@@ -5,7 +5,7 @@ import argparse
 import contextlib
 
 from pydwf import DigilentWaveformLibrary
-from demo_utilities import open_demo_device, OpenDemoDeviceError
+from demo_utilities import find_demo_device, DemoDeviceNotFoundError
 
 def demo_uart_protocol_api(uart):
     """Demonstrate the UART protocol functionality.
@@ -51,12 +51,12 @@ def main():
 
     args = parser.parse_args()
 
+    dwf = DigilentWaveformLibrary()
     try:
-        dwf = DigilentWaveformLibrary()
-        with contextlib.closing(open_demo_device(dwf, args.serial_number)) as device:
+        with find_demo_device(dwf, args.serial_number) as device:
             demo_uart_protocol_api(device.digitalUart)
-    except OpenDemoDeviceError:
-        print("Could not open demo device, exiting.")
+    except DemoDeviceNotFoundError:
+        print("Could not find demo device, exiting.")
 
 if __name__ == "__main__":
     main()
