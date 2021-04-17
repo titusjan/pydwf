@@ -34,7 +34,7 @@ from typing import Optional, Tuple, List
 from .dwf_function_signatures import dwf_function_signatures
 
 
-HDWF_NONE = 0  # HDWF value representing a bad device handle.
+_HDWF_NONE = 0  # HDWF value representing a bad device handle.
 
 _RESULT_SUCCESS = 1  # This value is returned by all API calls in case of success. (This used to be a boolean in earlier versions of the library).
 
