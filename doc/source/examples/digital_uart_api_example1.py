@@ -29,7 +29,7 @@ try:
     # Assign the TX and RX pins.
     # If they are the same (as below), we create a loopback without the need for a physical wire.
 
-    uart.txSet(0)         # Put TX signal on digital pin #0
+    uart.txSet(0)         # Put TX signal on digital pin #0.
     uart.rxSet(0)         # Get RX signal from digital pin #0.
 
     # Initialize the receiver.

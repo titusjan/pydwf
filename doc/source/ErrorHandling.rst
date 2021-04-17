@@ -5,9 +5,9 @@ Error Handling
 Error handling in the C API
 ---------------------------
 
-Each function in the C API returns an integer, indicating its success or error status. A value of 0 indicates an error, while a value of 1 indictates success. Note that this is different from most other C libraries, where a 0 return value indicates success.
+Each function in the C API returns an integer, indicating its success or error status. A value of 0 indicates an error, while a value of 1 indicates success. Note that this is different from the convention used in most C libraries, where a 0 return value indicates success.
 
-In case a function return 0, indicating some kind of failure, the C API provides two functions to inquire the reason of failure. The 'getLastError()' function returns a value of enum type DWFERC indicating the cause of the last error, while function 'getLastErrorMsg()' returns a string describing the error.
+In case a function return 0, indicating some kind of failure, the C API provides two functions to inquire the reason of the failure. The 'getLastError()' function returns a value of enum type DWFERC indicating the cause of the last error, while function 'getLastErrorMsg()' returns a string describing the error.
 
 Error handling in the pydwf module
 ----------------------------------
