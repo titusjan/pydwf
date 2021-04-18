@@ -6,22 +6,24 @@ Overview of examples to demonstrate the useage of the API:
 * Device enumeration             see file scripts/pydwf_tool.py, function `enumerate_dwf_devices`.
 
 * Primary instruments:
-  - AnalogIn instrument:         see files examples/DemoAnalogInSimple.py, reverse_engineering/UnderstandAnalogInRecordMode.py
+  - AnalogIn instrument:         see files examples/DemoAnalogInSimple.py,     (*** Example done ***)
+                                           reverse_engineering/UnderstandAnalogInRecordMode.py
   - AnalogOut instrument:        see file examples/DemoAnalogOutputContinuousPlayback.py
   - DigitalIn instrument:        see file examples/DemoDigitalIn.py
   - DigitalOut instrument:       see file examples/DemoDigitalOut.py
 
-    Note: we need to figure out how the "ROM" functionality of the DigitalOut works.
+    Note: we need to figure out and document how the "ROM" functionality of the DigitalOut instrument works.
+    We need to document how device Parameters work.
 
 * Secondary instruments:
-  - AnalogIO instrument:         see file examples/DemoAnalogIoAPI.py
-  - DigitalIO instrument:        see file examples/DemoDigitalIoAPI.py
+  - AnalogIO instrument:         see file examples/DemoAnalogIoAPI.py     (*** Example done ***)
+  - DigitalIO instrument:        see file examples/DemoDigitalIoAPI.py    (*** Example done ***)
 
 * Protocols:
-  - UART protocol                see file examples/DemoUartProtocolAPI.py
-  - CAN protocol                 see file examples/DemoCanProtocolAPI.py
-  - SPI protocol                 see file examples/DemoSpiProtocolAPI.py
-  - I2C protocol
+  - UART protocol                see file examples/DemoUartProtocolAPI.py (*** Example done ***)
+  - CAN protocol                 see file examples/DemoCanProtocolAPI.py  (*** Example done ***)
+  - SPI protocol                 see file examples/DemoSpiProtocolAPI.py  (*** Example done ***)
+  - I2C protocol                 see file examples/DemoI2cProtocolAPI.py  (*** Example done ***)
 
 * Measurement support:
   - Analog Impedance measurement

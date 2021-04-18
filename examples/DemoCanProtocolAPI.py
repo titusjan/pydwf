@@ -2,10 +2,9 @@
 
 import time
 import argparse
-import contextlib
 
 from pydwf import DigilentWaveformLibrary
-from demo_utilities import open_demo_device, OpenDemoDeviceError
+from demo_utilities import find_demo_device, DemoDeviceNotFoundError
 
 def demo_can_protocol_api(can) -> None:
     """Demonstrate the CAN protocol functionality.
@@ -36,7 +35,7 @@ def demo_can_protocol_api(can) -> None:
     # Before starting to receive, we must initialize reception by calling the rx() method with size 0.
     (vID, extended, remote, data, status) = can.rx(0)
 
-    # Repeatedly send and receive messages.
+    # Loop until interrupted: repeatedly send and receive messages.
     i = 0
     while True:
         message = "CAN_{:04x}".format(i % 0x10000).encode()
@@ -55,10 +54,12 @@ def main():
 
     try:
         dwf = DigilentWaveformLibrary()
-        with contextlib.closing(open_demo_device(dwf, args.serial_number)) as device:
+        with find_demo_device(dwf, args.serial_number) as device:
             demo_can_protocol_api(device.digitalCan)
-    except OpenDemoDeviceError:
-        print("Could not open demo device, exiting.")
+    except DemoDeviceNotFoundError:
+        print("Could not find demo device, exiting.")
+    except KeyboardInterrupt:
+        print("Keyboard interrupt, ending demo.")
 
 if __name__ == "__main__":
     main()

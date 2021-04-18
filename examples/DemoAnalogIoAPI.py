@@ -5,7 +5,7 @@ import argparse
 import contextlib
 
 from pydwf import DigilentWaveformLibrary
-from demo_utilities import open_demo_device, OpenDemoDeviceError
+from demo_utilities import find_demo_device, DemoDeviceNotFoundError
 
 def demo_analog_io_api(analogIO) -> None:
     """Demonstrates the Analog I/O functionality.
@@ -95,18 +95,14 @@ def demo_analog_io_continuous_readout(analogIO) -> None:
     print("Monitoring USB voltage, current, and temperature ...")
     print()
 
-    try:
-        while True:
-            analogIO.status()  # Request status update
-            usb_volts = analogIO.channelNodeStatus(channel_index, 0)
-            usb_amps  = analogIO.channelNodeStatus(channel_index, 1)
-            temp      = analogIO.channelNodeStatus(channel_index, 2)
-            print("{}: {:.6f} [V] {:.3f} [mA] {:.2f} [°C]".format(channel_name, usb_volts, usb_amps * 1000.0, temp))
-            time.sleep(0.500)
-    except KeyboardInterrupt:
-        print()
-        print("Monitoring terminated.")
-        print()
+    # Loop until interrupted.
+    while True:
+        analogIO.status()  # Request status update
+        usb_volts = analogIO.channelNodeStatus(channel_index, 0)
+        usb_amps  = analogIO.channelNodeStatus(channel_index, 1)
+        temp      = analogIO.channelNodeStatus(channel_index, 2)
+        print("{}: {:.6f} [V] {:.3f} [mA] {:.2f} [°C]".format(channel_name, usb_volts, usb_amps * 1000.0, temp))
+        time.sleep(0.500)
 
 def main():
 
@@ -116,11 +112,13 @@ def main():
 
     try:
         dwf = DigilentWaveformLibrary()
-        with contextlib.closing(open_demo_device(dwf, args.serial_number)) as device:
+        with find_demo_device(dwf, args.serial_number) as device:
             demo_analog_io_api(device.analogIO)
             demo_analog_io_continuous_readout(device.analogIO)
-    except OpenDemoDeviceError:
-        print("Could not open demo device, exiting.")
+    except DemoDeviceNotFoundError:
+        print("Could not find demo device, exiting.")
+    except KeyboardInterrupt:
+        print("Keyboard interrupt, ending demo.")
 
 if __name__ == "__main__":
     main()

@@ -2,11 +2,10 @@
 
 import time
 import argparse
-import contextlib
 import random
 
 from pydwf import DigilentWaveformLibrary
-from demo_utilities import open_demo_device, OpenDemoDeviceError
+from demo_utilities import find_demo_device, DemoDeviceNotFoundError
 
 def demo_digital_io_api(digitalIO) -> None:
     """Demonstrate the Digital I/O functionality.
@@ -19,7 +18,7 @@ def demo_digital_io_api(digitalIO) -> None:
     - configure()
     - status()
 
-    Eight methods representing 32 pins:
+    Eight methods that work on 32 pins:
 
     - outputEnableInfo() -> int
     - outputEnableSet(output_enable: int)
@@ -30,7 +29,7 @@ def demo_digital_io_api(digitalIO) -> None:
     - inputInfo() -> int
     - inputStatus() -> int
 
-     Eight method representing 64 pins:
+     Eight methods that work on 64 pins:
 
     - outputEnableInfo64() -> int
     - outputEnableSet64(output_enable: int)
@@ -80,30 +79,38 @@ def demo_digital_io_api(digitalIO) -> None:
     print("  inputStatus (64 bit) ........... : {}0b{:064b}".format( 0 * " ", digitalIO.inputStatus64()))
     print()
 
-    # Enable outputs
-    digitalIO.outputEnableSet(0xff)
+    save_output_bits = digitalIO.outputEnableGet64()
+    all_bits = digitalIO.outputInfo64()
 
-    for i in range(100):
-        random_value = random.randrange(256)
-        digitalIO.outputSet64(random_value)
-        print("  outputGet (64 bit) ............. : {}0b{:064b}".format( 0 * " ", digitalIO.outputGet64()))
-        readback = digitalIO.inputStatus()
-        print("  inputStatus (64 bit) ........... : {}0b{:064b}".format( 0 * " ", digitalIO.inputStatus64()))
-        print()
-        time.sleep(0.500)
+    # Enable all outputs
+    digitalIO.outputEnableSet64(all_bits)
+    try:
+        for i in range(100):
+            random_bits = random.randrange(0, 2 ** 64) & all_bits
+            digitalIO.outputSet64(random_bits)
+            print("  outputGet (64 bit) ............. : {}0b{:064b}".format( 0 * " ", digitalIO.outputGet64()))
+            readback = digitalIO.inputStatus()
+            print("  inputStatus (64 bit) ........... : {}0b{:064b}".format( 0 * " ", digitalIO.inputStatus64()))
+            print()
+            time.sleep(0.500)
+    finally:
+        digitalIO.outputEnableSet64(save_output_bits)
 
 def main():
 
     parser = argparse.ArgumentParser(description="Demonstrate usage of the DigitalIO functionality.")
     parser.add_argument('serial_number', nargs='?', help="serial number of the Digilent device")
+
     args = parser.parse_args()
 
     try:
         dwf = DigilentWaveformLibrary()
-        with contextlib.closing(open_demo_device(dwf, args.serial_number)) as device:
+        with find_demo_device(dwf, args.serial_number) as device:
             demo_digital_io_api(device.digitalIO)
-    except OpenDemoDeviceError:
-        print("Could not open demo device, exiting.")
+    except DemoDeviceNotFoundError:
+        print("Could not find demo device, exiting.")
+    except KeyboardInterrupt:
+        print("Keyboard interrupt, ending demo.")
 
 if __name__ == "__main__":
     main()

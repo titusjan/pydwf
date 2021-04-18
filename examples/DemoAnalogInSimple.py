@@ -1,11 +1,10 @@
 #! /usr/bin/env python3
 
 import argparse
-import contextlib
 import time
 
 from pydwf import DigilentWaveformLibrary
-from demo_utilities import open_demo_device, OpenDemoDeviceError
+from demo_utilities import find_demo_device, DemoDeviceNotFoundError
 
 
 def demo_analog_input_instrument_api_simple(analogIn):
@@ -15,7 +14,7 @@ def demo_analog_input_instrument_api_simple(analogIn):
     Even though the 'readData' argument is false, the status update requested from the instrument does return up-to-date voltage levels of each
     of the channels.
 
-    This very simple way of querying the current AnalogIn voltages may be sufficient for very simple applications that have no strict requirement
+    This straightforward way of querying the current AnalogIn voltages may be sufficient for simple applications that have no strict requirement
     on sample timing and triggering.
     """
 
@@ -40,10 +39,12 @@ def main():
 
     try:
         dwf = DigilentWaveformLibrary()
-        with contextlib.closing(open_demo_device(dwf, args.serial_number)) as device:
+        with find_demo_device(dwf, args.serial_number) as device:
             demo_analog_input_instrument_api_simple(device.analogIn)
-    except OpenDemoDeviceError:
-        print("Could not open demo device, exiting.")
+    except DemoDeviceNotFoundError:
+        print("Could not find demo device, exiting.")
+    except KeyboardInterrupt:
+        print("Keyboard interrupt, ending demo.")
 
 if __name__ == "__main__":
     main()
