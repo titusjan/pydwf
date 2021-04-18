@@ -979,6 +979,7 @@ class DigilentWaveformDevice:
             dwf: The DigilentWaveformLibrary instance used to make calls to the underlying library.
             hdwf: the device to open.
         """
+
         self._dwf = dwf
         self._hdwf = hdwf
         self.analogIn = DigilentWaveformDevice.AnalogInAPI(self)
@@ -992,6 +993,12 @@ class DigilentWaveformDevice:
         self.digitalI2c = DigilentWaveformDevice.DigitalI2cAPI(self)
         self.digitalCan = DigilentWaveformDevice.DigitalCanAPI(self)
         self.analogImpedance = DigilentWaveformDevice.AnalogImpedanceAPI(self)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *dummy):
+        self.close()
 
     def close(self) -> None:
         """Close an interface handle when access to the device is no longer needed.
@@ -4078,9 +4085,17 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def idleSet(self, idx_dq: int, idle_mode: DwfDigitalOutIdle) -> None:
-            """Set idle behavior."""
-            result = self._device._dwf._lib.FDwfDigitalSpiIdleSet(self._device._hdwf, idx_dq, idle_mode.value)
+        def idleSet(self, data_select: int, idle_mode: DwfDigitalOutIdle) -> None:
+            """Set idle behavior for an SPI function (data_select).
+
+            data_select:
+                0 = DQ0 / MOSI
+                1 = DQ1 / MISO
+                2 = DQ2
+                3 = DQ3
+            """
+
+            result = self._device._dwf._lib.FDwfDigitalSpiIdleSet(self._device._hdwf, data_select, idle_mode.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -4438,11 +4453,10 @@ class DigilentWaveformDevice:
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-
         def tx(self, vID: int, extended: bool, remote: bool, data: bytes) -> None:
             if len(data) > 8:
                 raise RuntimeError("CAN message too long.")
-            result = self._device._dwf._lib.FDwfDigitalCanTx(self._device._hdwf, vID, extended, remote, len(data), data)
+            result = self._device._dwf._lib.FDwfDigitalCanTx(self._device._hdwf, vID, extended, remote, len(data), ctypes.cast(data, _typespec_ctypes.c_unsigned_char_ptr))
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
