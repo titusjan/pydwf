@@ -2,7 +2,7 @@
 
 import argparse
 
-from pydwf import DigilentWaveformLibrary, DwfEnumConfigInfo
+from pydwf import DigilentWaveformsLibrary, DwfEnumConfigInfo
 
 def deploy_help_directory():
     pass
@@ -19,7 +19,7 @@ def summarize_api():
 
 def enumerate_dwf_devices(use_obsolete_api: bool, list_configurations: bool):
 
-    dwf = DigilentWaveformLibrary()
+    dwf = DigilentWaveformsLibrary()
 
     num_devices = dwf.enum.count()
 

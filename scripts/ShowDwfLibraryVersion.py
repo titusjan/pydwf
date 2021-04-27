@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
-from pydwf import DigilentWaveformLibrary
+from pydwf import DigilentWaveformsLibrary
 
-dwf = DigilentWaveformLibrary()
+dwf = DigilentWaveformsLibrary()
 
 print("DWF library version: {!r}".format(dwf.getVersion()))
