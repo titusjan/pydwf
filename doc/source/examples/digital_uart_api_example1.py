@@ -1,11 +1,11 @@
 #! /usr/bin/env python3
 
 import time
-from pydwf import DigilentWaveformLibrary
+from pydwf import DigilentWaveformsLibrary
 
 # Initialize a DigilentWaveformLibrary instance.
 
-dwf = DigilentWaveformLibrary()
+dwf = DigilentWaveformLsibrary()
 
 # Open first available device.
 

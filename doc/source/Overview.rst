@@ -2,7 +2,7 @@
 Digilent Waveforms Overview
 ===========================
 
-Digilent provides the Digilent Waveforms library to control their line of *Discovery* devices. The library is available as a DLL on Microsoft Windows, a shared object ("so") library in Linux, and a framework in Apple's macOS. The provided library is accompanied by a C header file; together with the shared library file itself, this allows access to the functionality provided from the C and C++ programming languages.
+Digilent provides the Digilent Waveforms library to control their line of *Discovery* devices. The library is available as a DLL on Microsoft Windows, a shared object ("so") library on Linux, and a framework on Apple's macOS. The provided library is accompanied by a C header file; together with the shared library file itself, this allows access to the functionality provided from the C and C++ programming languages.
 
 Most popular programming languages provide a mechanism to access functions in shared libraries. In Python, such a mechanism is provided by the *ctypes* module that is part of the standard Python library.
 
@@ -59,17 +59,17 @@ Overview of the pydwf module API
 
 The *pydwf* library organizes the functionality offered by the underlying C library in two main classes.
 
-Class `DigilentWaveformLibrary` represents the loaded DWF library itself, and provides functions that are not specific to a particular device, such as querying the library version, device enumeration, and opening a device for use.
+Class `DigilentWaveformsLibrary` represents the loaded DWF library itself, and provides functions that are not specific to a particular device, such as querying the library version, device enumeration, and opening a device for use.
 
-* class DigilentWaveformLibrary:
+* class DigilentWaveformsLibrary:
 
    * miscellaneous library functions
    * enum: EnumAPI
    * device: DeviceAPI
 
-Class `DigilentWaveformDevice` represents a specific DWF-compatible hardware device, such as an Analog Discovery 2 or a Digital Discovery. The functionality of a DigilentWaveformDevice is offered in a number of sub-modules, each representing an *instrument*, *protocol*, or *measurement type*.
+Class `DigilentWaveformsDevice` represents a specific DWF-compatible hardware device, such as an Analog Discovery 2 or a Digital Discovery. The functionality of a DigilentWaveformsDevice is offered in a number of sub-modules, each representing an *instrument*, *protocol*, or *measurement type*.
 
-* class DigilentWaveformDevice:
+* class DigilentWaveformsDevice:
 
    * miscellaneous device functions
    * analogIn: AnalogInAPI
