@@ -24,11 +24,16 @@ def set_positive_supply_voltage(analogIO, voltage: float):
     analogIO.channelNodeSet(0, 1, voltage)
     analogIO.enableSet(1)
 
-def demo_i2c_protocol_api(i2c, i2c_address: int):
+def demo_i2c_protocol_api(i2c, use_alt_address: bool):
     """Demonstrate the SPI protocol functionality.
 
     The Digital I2C protocol API has 11 methods.
     """
+
+    if use_alt_address:
+        i2c_address = 0x53
+    else:
+        i2c_address = 0x1d
 
     I2C_SCL = 0 # Digital pin #0
     I2C_SDA = 1 # Digital pin #1
@@ -53,6 +58,12 @@ def demo_i2c_protocol_api(i2c, i2c_address: int):
 
     if device_id != 0xe5:
         print("No ADXL345 found on I2C address 0x{:02x}!".format(i2c_address))
+        print()
+        if use_alt_address:
+            print("Try running without the --use-alt-address option?")
+        else:
+            print("Try running with the --use-alt-address option?")
+
         return
 
     print("ADXL345 found on I2C address 0x{:02x}; enabling measurements.".format(i2c_address))
@@ -83,16 +94,11 @@ def main():
 
     args = parser.parse_args()
 
-    if args.use_alt_address:
-        i2c_address = 0x53
-    else:
-        i2c_address = 0x1d
-
     try:
         dwf = DigilentWaveformsLibrary()
         with find_demo_device(dwf, args.serial_number) as device:
             set_positive_supply_voltage(device.analogIO, 3.3)
-            demo_i2c_protocol_api(device.digitalI2c, i2c_address)
+            demo_i2c_protocol_api(device.digitalI2c, args.use_alt_address)
     except DemoDeviceNotFoundError:
         print("Could not find demo device, exiting.")
     except KeyboardInterrupt:
