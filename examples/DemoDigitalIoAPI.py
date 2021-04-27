@@ -4,7 +4,7 @@ import time
 import argparse
 import random
 
-from pydwf import DigilentWaveformLibrary
+from pydwf import DigilentWaveformsLibrary
 from demo_utilities import find_demo_device, DemoDeviceNotFoundError
 
 def demo_digital_io_api(digitalIO) -> None:
@@ -104,7 +104,7 @@ def main():
     args = parser.parse_args()
 
     try:
-        dwf = DigilentWaveformLibrary()
+        dwf = DigilentWaveformsLibrary()
         with find_demo_device(dwf, args.serial_number) as device:
             demo_digital_io_api(device.digitalIO)
     except DemoDeviceNotFoundError:

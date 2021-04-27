@@ -3,7 +3,7 @@
 import time
 import argparse
 
-from pydwf import DigilentWaveformLibrary
+from pydwf import DigilentWaveformsLibrary
 from demo_utilities import find_demo_device, DemoDeviceNotFoundError
 
 def demo_uart_protocol_api(uart):
@@ -51,7 +51,7 @@ def main():
     args = parser.parse_args()
 
     try:
-        dwf = DigilentWaveformLibrary()
+        dwf = DigilentWaveformsLibrary()
         with find_demo_device(dwf, args.serial_number) as device:
             demo_uart_protocol_api(device.digitalUart)
     except DemoDeviceNotFoundError:

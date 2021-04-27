@@ -10,13 +10,13 @@ To run this demo program, hook up an ADXL345 to the Analog Discovery as follows:
    (NC)   ------ INT2
    DIO3   -----> SDO
    DIO2   -----> SDA
-   DIO1  ------> SCL
+   DIO1   -----> SCL
 """
 
 import time
 import argparse
 
-from pydwf import DigilentWaveformLibrary, DwfDigitalOutIdle
+from pydwf import DigilentWaveformsLibrary, DwfDigitalOutIdle
 from demo_utilities import find_demo_device, DemoDeviceNotFoundError
 
 def set_positive_supply_voltage(analogIO, voltage: float):
@@ -98,7 +98,7 @@ def main():
     args = parser.parse_args()
 
     try:
-        dwf = DigilentWaveformLibrary()
+        dwf = DigilentWaveformsLibrary()
         with find_demo_device(dwf, args.serial_number) as device:
             set_positive_supply_voltage(device.analogIO, 3.3)
             demo_spi_protocol_api(device.digitalSpi)

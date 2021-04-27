@@ -4,8 +4,8 @@ import argparse
 import contextlib
 import time
 import numpy as np
-from pydwf import DigilentWaveformLibrary, AnalogOutNode, FUNC
-from demo_utilities import open_demo_device, OpenDemoDeviceError
+from pydwf import DigilentWaveformsLibrary, AnalogOutNode, FUNC
+from demo_utilities import find_demo_device, DemoDeviceNotFoundError
 
 
 class sampler:
@@ -220,11 +220,11 @@ def main():
     args = parser.parse_args()
 
     try:
-        dwf = DigilentWaveformLibrary()
-        with contextlib.closing(open_demo_device(dwf, args.serial_number)) as device:
+        dwf = DigilentWaveformsLibrary()
+        with find_demo_device(dwf, args.serial_number) as device:
             demo_analog_output_instrument_api(device.analogOut)
-    except OpenDemoDeviceError:
-        print("Could not open demo device, exiting.")
+    except DemoDeviceNotFoundError:
+        print("Could not find demo device, exiting.")
 
 if __name__ == "__main__":
     main()

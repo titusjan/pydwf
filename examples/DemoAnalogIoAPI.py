@@ -2,9 +2,8 @@
 
 import time
 import argparse
-import contextlib
 
-from pydwf import DigilentWaveformLibrary
+from pydwf import DigilentWaveformsLibrary
 from demo_utilities import find_demo_device, DemoDeviceNotFoundError
 
 def demo_analog_io_api(analogIO) -> None:
@@ -111,7 +110,7 @@ def main():
     args = parser.parse_args()
 
     try:
-        dwf = DigilentWaveformLibrary()
+        dwf = DigilentWaveformsLibrary()
         with find_demo_device(dwf, args.serial_number) as device:
             demo_analog_io_api(device.analogIO)
             demo_analog_io_continuous_readout(device.analogIO)

@@ -16,7 +16,7 @@ To run this demo program, hook up an ADXL345 to the Analog Discovery as follows:
 import time
 import argparse
 
-from pydwf import DigilentWaveformLibrary, DwfParam
+from pydwf import DigilentWaveformsLibrary, DwfParam
 from demo_utilities import find_demo_device, DemoDeviceNotFoundError
 
 def set_positive_supply_voltage(analogIO, voltage: float):
@@ -89,7 +89,7 @@ def main():
         i2c_address = 0x1d
 
     try:
-        dwf = DigilentWaveformLibrary()
+        dwf = DigilentWaveformsLibrary()
         with find_demo_device(dwf, args.serial_number) as device:
             set_positive_supply_voltage(device.analogIO, 3.3)
             demo_i2c_protocol_api(device.digitalI2c, i2c_address)

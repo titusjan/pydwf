@@ -3,7 +3,7 @@
 import argparse
 import time
 
-from pydwf import DigilentWaveformLibrary
+from pydwf import DigilentWaveformsLibrary
 from demo_utilities import find_demo_device, DemoDeviceNotFoundError
 
 
@@ -28,17 +28,17 @@ def demo_analog_input_instrument_api_simple(analogIn):
     while True:
         analogIn.status(False)
         print("analog input", ", ".join("channel {}: {:25.20f} [V]".format(channel_index, analogIn.statusSample(channel_index)) for channel_index in range(channel_count)))
-        time.sleep(0.100)
+        time.sleep(0.010)
 
 def main():
 
-    parser = argparse.ArgumentParser(description="Demonstrate simplest possible AnalogIn usage.")
+    parser = argparse.ArgumentParser(description="Demonstrate simplest possible AnalogIn instrument usage.")
     parser.add_argument('serial_number', nargs='?', help="serial number of the Digilent device")
 
     args = parser.parse_args()
 
     try:
-        dwf = DigilentWaveformLibrary()
+        dwf = DigilentWaveformsLibrary()
         with find_demo_device(dwf, args.serial_number) as device:
             demo_analog_input_instrument_api_simple(device.analogIn)
     except DemoDeviceNotFoundError:
