@@ -63,8 +63,8 @@ from demo_utilities import find_demo_device, DemoDeviceNotFoundError
 def configure_analog_output(analogOut, analog_out_frequency, analog_out_amplitude, analog_out_offset):
     """Configure a cosine signal on channel 1, and a sine signal on channel 2."""
 
-    CH1 = 0 # This channel will carry a 'cosine' (i.e., precede channel 2 by 90 degrees)
-    CH2 = 1 # This channel will carry a 'sine',
+    CH1 = 0 # This channel will carry a 'cosine' (i.e., precede channel 2 by 90 degrees).
+    CH2 = 1 # This channel will carry a 'sine'.
 
     node = AnalogOutNode.Carrier
 
@@ -95,7 +95,7 @@ def run_demo(analogIn, sample_frequency, record_length, trigger_flag, signal_fre
     """Set up analog output, configure the analog input, and perform repeated acquisitions and present them graphically."""
 
     if trigger_flag:
-        trigger_position = -0.5 * record_length # Position of first sample relative to the trigger. Setting it to -0.5 * record_length effectively puts the trigger halfway the capture window.
+        trigger_position = -0.5 * record_length # Position of first sample relative to the trigger. Setting it to -0.5 * record_length puts the trigger halfway the capture window.
         trigger_level    = 0.0                  # Trigger level in Volts.
 
     # Configure analog input instrument acquisition.
@@ -129,8 +129,8 @@ def run_demo(analogIn, sample_frequency, record_length, trigger_flag, signal_fre
     num_samples = round(sample_frequency * record_length)
 
     # Outer loop: perform repeated acquisitions.
-
     acquisition_nr = 0
+
     while True: 
 
         acquisition_nr += 1 # Increment acquisition number.
