@@ -3,3 +3,6 @@ __pycache__
 dwfsdk.py
 dwf.h
 .mypy_cache
+build
+dist
+pydwf.egg-info
