@@ -9,6 +9,8 @@
 
 from typing import List, Tuple, Any
 
+dwf_version = "3.16.3" # The version of the DWF library from which the function signatures below were extracted.
+
 def dwf_function_signatures(typespec: Any) -> List[Tuple[str, Any, List[Tuple[str, Any]], bool]]:
 
     """Returns type information for the 415 functions in the DWF API."""

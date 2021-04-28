@@ -31,7 +31,7 @@ import enum
 import numpy as np
 from typing import Optional, Tuple, List
 
-from .dwf_function_signatures import dwf_function_signatures
+from .dwf_function_signatures import dwf_function_signatures, dwf_version as expected_dwf_version
 
 
 _HDWF_NONE = 0  # HDWF value representing a bad device handle.
@@ -425,9 +425,9 @@ class DigilentWaveformsLibrary:
 
     - The _annotate_function_signatures static method.
     - The _exception() method.
-
     """
-    def __init__(self) -> None:
+
+    def __init__(self, check_library_version: bool=True) -> None:
         """Initialize a DigilentWaveformsLibrary instance.
 
         This function instantiates a ctypes library, type-annotates its functions, and instantiates 'enum' and 'device' fields
@@ -439,6 +439,16 @@ class DigilentWaveformsLibrary:
             lib = ctypes.cdll.LoadLibrary("/Library/Frameworks/dwf.framework/dwf")
         else:
             lib = ctypes.cdll.LoadLibrary("libdwf.so")
+
+        if check_library_version:
+            # Note that the 'FDwfGetVersion' function has not been type-annotated yet.
+            c_version = ctypes.create_string_buffer(32)
+            result = lib.FDwfGetVersion(c_version)
+            if result != _RESULT_SUCCESS:
+                raise RuntimeError("Unable to verify library version")
+            actual_dwf_version = c_version.value.decode()
+            if actual_dwf_version != expected_dwf_version:
+                raise RuntimeError("DWF library version mismatch: pydwf module expects {}, but actual library is version {}".format(expected_dwf_version, actual_dwf_version))
 
         self._annotate_function_signatures(lib)
 

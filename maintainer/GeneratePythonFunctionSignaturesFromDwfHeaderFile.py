@@ -1,12 +1,13 @@
 #! /usr/bin/env python3
 
+import os
 import argparse
 import re
 from hashlib import md5
 from contextlib import redirect_stdout
 
 class TypeSpec:
-    """Represents a C type."""
+    """Represent a C type."""
     def __init__(self, basetype, ptrflag, arraysize):
 
         assert (ptrflag is False) or (arraysize is None)
@@ -34,7 +35,7 @@ class TypeSpec:
         return f"typespec.{fulltype}"
 
 class ParSpec:
-    """Represents a parameter."""
+    """Represent a function parameter (name and type)."""
     def __init__(self, name, type_):
         self.name = name
         self.type_ = type_
@@ -46,6 +47,7 @@ class ParSpec:
         return f"({self.name!r}, {self.type_.emit()})"
 
 class FuncSpec:
+    """Represent a function declaration (return type, parameters, and whether the function is considered obsolete)."""
     def __init__(self, name, returntype, parspecs, obsolete_flag):
         self.name = name
         self.returntype = returntype
@@ -142,8 +144,7 @@ def main():
     args = parser.parse_args()
 
     if args.version is None:
-        print("WARNING: no version specified. Use of the --version argument to specify a version of the DWF header file is recommended.")
-        args.version ="(not specified)"
+        print("WARNING: no version specified. Use of the --version argument to specify a version of the DWF header file is strongly recommended.")
 
     with open(args.filename, "rb") as fi:
         dwf_header_file_binary_contents = fi.read()
@@ -162,13 +163,21 @@ def main():
             print("#")
             print("# Generated from the Digilent Waveforms C header file:")
             print("#")
-            print("#     file ......... :", args.filename)
+            print("#     file ......... :", os.path.basename(args.filename))
             print("#     size ......... :", len(dwf_header_file_binary_contents), "bytes")
             print("#     md5sum ....... :", md5(dwf_header_file_binary_contents).hexdigest())
-            print("#     version ...... :", args.version)
+
+            if args.version is not None:
+                print("#     version ...... :", args.version)
+
             print()
             print("from typing import List, Tuple, Any")
             print()
+
+            if args.version is not None:
+                print("dwf_version = \"{}\" # The version of the DWF library from which the function signatures below were extracted.".format(args.version))
+                print()
+
             print("def dwf_function_signatures(typespec: Any) -> List[Tuple[str, Any, List[Tuple[str, Any]], bool]]:")
             print()
             print("    \"\"\"Returns type information for the {} functions in the DWF API.\"\"\"".format(len(funcspecs)))
