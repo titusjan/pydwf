@@ -2086,423 +2086,423 @@ class DigilentWaveformsDevice:
             cChannel = c_cChannel.value
             return cChannel
 
-        def masterSet(self, idxChannel: int, idxMaster: int) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutMasterSet(self._device._hdwf, idxChannel, idxMaster)
+        def masterSet(self, channel_index: int, idxMaster: int) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutMasterSet(self._device._hdwf, channel_index, idxMaster)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def masterGet(self, idxChannel: int) -> int:
+        def masterGet(self, channel_index: int) -> int:
             c_idxMaster = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutMasterGet(self._device._hdwf, idxChannel, c_idxMaster)
+            result = self._device._dwf._lib.FDwfAnalogOutMasterGet(self._device._hdwf, channel_index, c_idxMaster)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             idxMaster = c_idxMaster.value
             return idxMaster
 
-        def triggerSourceSet(self, idxChannel: int, trigger_source: TRIGSRC) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutTriggerSourceSet(self._device._hdwf, idxChannel, trigger_source.value)
+        def triggerSourceSet(self, channel_index: int, trigger_source: TRIGSRC) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutTriggerSourceSet(self._device._hdwf, channel_index, trigger_source.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def triggerSourceGet(self, idxChannel: int) -> TRIGSRC:
+        def triggerSourceGet(self, channel_index: int) -> TRIGSRC:
             c_trigger_source = _typespec_ctypes.TRIGSRC()
-            result = self._device._dwf._lib.FDwfAnalogOutTriggerSourceGet(self._device._hdwf, idxChannel, c_trigger_source)
+            result = self._device._dwf._lib.FDwfAnalogOutTriggerSourceGet(self._device._hdwf, channel_index, c_trigger_source)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             trigger_source = TRIGSRC(c_trigger_source.value)
             return trigger_source
 
-        def triggerSlopeSet(self, idxChannel: int, trigger_slope: DwfTriggerSlope) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutTriggerSlopeSet(self._device._hdwf, idxChannel, trigger_slope.value)
+        def triggerSlopeSet(self, channel_index: int, trigger_slope: DwfTriggerSlope) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutTriggerSlopeSet(self._device._hdwf, channel_index, trigger_slope.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def triggerSlopeGet(self, idxChannel: int) -> DwfTriggerSlope:
+        def triggerSlopeGet(self, channel_index: int) -> DwfTriggerSlope:
             c_trigger_slope = _typespec_ctypes.DwfTriggerSlope()
-            result = self._device._dwf._lib.FDwfAnalogOutTriggerSlopeGet(self._device._hdwf, idxChannel, c_trigger_slope)
+            result = self._device._dwf._lib.FDwfAnalogOutTriggerSlopeGet(self._device._hdwf, channel_index, c_trigger_slope)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             trigger_slope = DwfTriggerSlope(c_trigger_slope.value)
             return trigger_slope
 
-        def runInfo(self, idxChannel: int) -> Tuple[float, float]:
+        def runInfo(self, channel_index: int) -> Tuple[float, float]:
             c_secMin = _typespec_ctypes.c_double()
             c_secMax = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutRunInfo(self._device._hdwf, idxChannel, c_secMin, c_secMax)
+            result = self._device._dwf._lib.FDwfAnalogOutRunInfo(self._device._hdwf, channel_index, c_secMin, c_secMax)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             secMin = c_secMin.value
             secMax = c_secMax.value
             return (secMin, secMax)
 
-        def runSet(self, idxChannel: int, secRun: float) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutRunSet(self._device._hdwf, idxChannel, secRun)
+        def runSet(self, channel_index: int, secRun: float) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutRunSet(self._device._hdwf, channel_index, secRun)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def runGet(self, idxChannel: int) -> float:
+        def runGet(self, channel_index: int) -> float:
             c_secRun = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutRunGet(self._device._hdwf, idxChannel, c_secRun)
+            result = self._device._dwf._lib.FDwfAnalogOutRunGet(self._device._hdwf, channel_index, c_secRun)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             secRun = c_secRun.value
             return secRun
 
-        def runStatus(self, idxChannel: int) -> float:
+        def runStatus(self, channel_index: int) -> float:
             c_secRun = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutRunStatus(self._device._hdwf, idxChannel, c_secRun)
+            result = self._device._dwf._lib.FDwfAnalogOutRunStatus(self._device._hdwf, channel_index, c_secRun)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             secRun = c_secRun.value
             return secRun
 
-        def waitInfo(self, idxChannel: int) -> Tuple[float, float]:
+        def waitInfo(self, channel_index: int) -> Tuple[float, float]:
             c_secMin = _typespec_ctypes.c_double()
             c_secMax = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutWaitInfo(self._device._hdwf, idxChannel, c_secMin, c_secMax)
+            result = self._device._dwf._lib.FDwfAnalogOutWaitInfo(self._device._hdwf, channel_index, c_secMin, c_secMax)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             secMin = c_secMin.value
             secMax = c_secMax.value
             return (secMin, secMax)
 
-        def waitSet(self, idxChannel: int, secWait: float) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutWaitSet(self._device._hdwf, idxChannel, secWait)
+        def waitSet(self, channel_index: int, secWait: float) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutWaitSet(self._device._hdwf, channel_index, secWait)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def waitGet(self, idxChannel: int) -> float:
+        def waitGet(self, channel_index: int) -> float:
             c_secWait = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutWaitGet(self._device._hdwf, idxChannel, c_secWait)
+            result = self._device._dwf._lib.FDwfAnalogOutWaitGet(self._device._hdwf, channel_index, c_secWait)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             secWait = c_secWait.value
             return secWait
 
-        def repeatInfo(self, idxChannel: int) -> Tuple[int, int]:
+        def repeatInfo(self, channel_index: int) -> Tuple[int, int]:
             c_nMin = _typespec_ctypes.c_int()
             c_nMax = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutRepeatInfo(self._device._hdwf, idxChannel, c_nMin, c_nMax)
+            result = self._device._dwf._lib.FDwfAnalogOutRepeatInfo(self._device._hdwf, channel_index, c_nMin, c_nMax)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             nMin = c_nMin.value
             nMax = c_nMax.value
             return (nMin, nMax)
 
-        def repeatSet(self, idxChannel: int, repeat: int) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutRepeatSet(self._device._hdwf, idxChannel, repeat)
+        def repeatSet(self, channel_index: int, repeat: int) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutRepeatSet(self._device._hdwf, channel_index, repeat)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def repeatGet(self, idxChannel: int) -> int:
+        def repeatGet(self, channel_index: int) -> int:
             c_repeat = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutRepeatGet(self._device._hdwf, idxChannel, c_repeat)
+            result = self._device._dwf._lib.FDwfAnalogOutRepeatGet(self._device._hdwf, channel_index, c_repeat)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             repeat = c_repeat.value
             return repeat
 
-        def repeatStatus(self, idxChannel: int) -> int:
+        def repeatStatus(self, channel_index: int) -> int:
             c_repeat_status = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutRepeatStatus(self._device._hdwf, idxChannel, c_repeat_status)
+            result = self._device._dwf._lib.FDwfAnalogOutRepeatStatus(self._device._hdwf, channel_index, c_repeat_status)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             repeat_status = c_repeat_status.value
             return repeat_status
 
-        def repeatTriggerSet(self, idxChannel: int, repeatTrigger: bool) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutRepeatTriggerSet(self._device._hdwf, idxChannel, repeatTrigger)
+        def repeatTriggerSet(self, channel_index: int, repeatTrigger: bool) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutRepeatTriggerSet(self._device._hdwf, channel_index, repeatTrigger)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def repeatTriggerGet(self, idxChannel: int) -> bool:
+        def repeatTriggerGet(self, channel_index: int) -> bool:
             c_repeatTrigger = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutRepeatTriggerGet(self._device._hdwf, idxChannel, c_repeatTrigger)
+            result = self._device._dwf._lib.FDwfAnalogOutRepeatTriggerGet(self._device._hdwf, channel_index, c_repeatTrigger)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             repeatTrigger = bool(c_repeatTrigger.value)
             return repeatTrigger
 
-        def limitationInfo(self, idxChannel: int) -> Tuple[float, float]:
+        def limitationInfo(self, channel_index: int) -> Tuple[float, float]:
             c_min = _typespec_ctypes.c_double()
             c_max = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutLimitationInfo(self._device._hdwf, idxChannel, c_min, c_max)
+            result = self._device._dwf._lib.FDwfAnalogOutLimitationInfo(self._device._hdwf, channel_index, c_min, c_max)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             min_ = c_min.value
             max_ = c_max.value
             return (min_, max_)
 
-        def limitationSet(self, idxChannel: int, limit: float) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutLimitationSet(self._device._hdwf, idxChannel, limit)
+        def limitationSet(self, channel_index: int, limit: float) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutLimitationSet(self._device._hdwf, channel_index, limit)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def limitationGet(self, idxChannel: int) -> float:
+        def limitationGet(self, channel_index: int) -> float:
             c_limit = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutLimitationGet(self._device._hdwf, idxChannel, c_limit)
+            result = self._device._dwf._lib.FDwfAnalogOutLimitationGet(self._device._hdwf, channel_index, c_limit)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             limit = c_limit.value
             return limit
 
-        def modeSet(self, idxChannel: int, mode: DwfAnalogOutMode) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutModeSet(self._device._hdwf, idxChannel, mode.value)
+        def modeSet(self, channel_index: int, mode: DwfAnalogOutMode) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutModeSet(self._device._hdwf, channel_index, mode.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def modeGet(self, idxChannel: int) -> DwfAnalogOutMode:
+        def modeGet(self, channel_index: int) -> DwfAnalogOutMode:
             c_mode = _typespec_ctypes.DwfAnalogOutMode()
-            result = self._device._dwf._lib.FDwfAnalogOutModeGet(self._device._hdwf, idxChannel, c_mode)
+            result = self._device._dwf._lib.FDwfAnalogOutModeGet(self._device._hdwf, channel_index, c_mode)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             mode = DwfAnalogOutMode(c_mode.value)
             return mode
 
-        def idleInfo(self, idxChannel: int) -> List[DwfAnalogOutIdle]:
+        def idleInfo(self, channel_index: int) -> List[DwfAnalogOutIdle]:
             c_idle_bitset = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutIdleInfo(self._device._hdwf, idxChannel, c_idle_bitset)
+            result = self._device._dwf._lib.FDwfAnalogOutIdleInfo(self._device._hdwf, channel_index, c_idle_bitset)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             idle_bitset = c_idle_bitset.value
             idle_list = [idle for idle in DwfAnalogOutIdle if idle_bitset & (1 << idle.value)]
             return idle_list
 
-        def idleSet(self, idxChannel: int, idle: DwfAnalogOutIdle) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutIdleSet(self._device._hdwf, idxChannel, idle.value)
+        def idleSet(self, channel_index: int, idle: DwfAnalogOutIdle) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutIdleSet(self._device._hdwf, channel_index, idle.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def idleGet(self, idxChannel: int) -> DwfAnalogOutIdle:
+        def idleGet(self, channel_index: int) -> DwfAnalogOutIdle:
             c_idle = _typespec_ctypes.DwfAnalogOutIdle()
-            result = self._device._dwf._lib.FDwfAnalogOutIdleGet(self._device._hdwf, idxChannel, c_idle)
+            result = self._device._dwf._lib.FDwfAnalogOutIdleGet(self._device._hdwf, channel_index, c_idle)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             idle = DwfAnalogOutIdle(c_idle.value)
             return idle
 
-        def nodeInfo(self, idxChannel: int) -> List[AnalogOutNode]:
+        def nodeInfo(self, channel_index: int) -> List[AnalogOutNode]:
             c_node_bitset = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeInfo(self._device._hdwf, idxChannel, c_node_bitset)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeInfo(self._device._hdwf, channel_index, c_node_bitset)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             node_bitset = c_node_bitset.value
             node_list = [node for node in AnalogOutNode if node_bitset & (1 << node.value)]
             return node_list
 
-        def nodeEnableSet(self, idxChannel: int, node: AnalogOutNode, enable: bool) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutNodeEnableSet(self._device._hdwf, idxChannel, node.value, enable)
+        def nodeEnableSet(self, channel_index: int, node: AnalogOutNode, enable: bool) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutNodeEnableSet(self._device._hdwf, channel_index, node.value, enable)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def nodeEnableGet(self, idxChannel: int, node: AnalogOutNode) -> bool:
+        def nodeEnableGet(self, channel_index: int, node: AnalogOutNode) -> bool:
             c_enable = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeEnableGet(self._device._hdwf, idxChannel, node.value, c_enable)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeEnableGet(self._device._hdwf, channel_index, node.value, c_enable)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             enable = bool(c_enable.value)
             return enable
 
-        def nodeFunctionInfo(self, idxChannel: int, node: AnalogOutNode) -> List[FUNC]:
+        def nodeFunctionInfo(self, channel_index: int, node: AnalogOutNode) -> List[FUNC]:
             c_func_bitset = _typespec_ctypes.c_unsigned_int()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeFunctionInfo(self._device._hdwf, idxChannel, node.value, c_func_bitset)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeFunctionInfo(self._device._hdwf, channel_index, node.value, c_func_bitset)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             func_bitset = c_func_bitset.value
             func_list = [func for func in FUNC if func_bitset & (1 << func.value)]
             return func_list
 
-        def nodeFunctionSet(self, idxChannel: int, node: AnalogOutNode, func: FUNC) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutNodeFunctionSet(self._device._hdwf, idxChannel, node.value, func.value)
+        def nodeFunctionSet(self, channel_index: int, node: AnalogOutNode, func: FUNC) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutNodeFunctionSet(self._device._hdwf, channel_index, node.value, func.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def nodeFunctionGet(self, idxChannel: int, node: AnalogOutNode) -> FUNC:
+        def nodeFunctionGet(self, channel_index: int, node: AnalogOutNode) -> FUNC:
             c_func = _typespec_ctypes.FUNC()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeFunctionGet(self._device._hdwf, idxChannel, node.value, c_func)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeFunctionGet(self._device._hdwf, channel_index, node.value, c_func)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             func = FUNC(c_func.value)
             return func
 
-        def nodeFrequencyInfo(self, idxChannel: int, node: AnalogOutNode) -> Tuple[float, float]:
+        def nodeFrequencyInfo(self, channel_index: int, node: AnalogOutNode) -> Tuple[float, float]:
             c_hzMin = _typespec_ctypes.c_double()
             c_hzMax = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeFrequencyInfo(self._device._hdwf, idxChannel, node.value, c_hzMin, c_hzMax)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeFrequencyInfo(self._device._hdwf, channel_index, node.value, c_hzMin, c_hzMax)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             hzMin = c_hzMin.value
             hzMax = c_hzMax.value
             return (hzMin, hzMax)
 
-        def nodeFrequencySet(self, idxChannel: int, node: AnalogOutNode, hzFrequency: float) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutNodeFrequencySet(self._device._hdwf, idxChannel, node.value, hzFrequency)
+        def nodeFrequencySet(self, channel_index: int, node: AnalogOutNode, hzFrequency: float) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutNodeFrequencySet(self._device._hdwf, channel_index, node.value, hzFrequency)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def nodeFrequencyGet(self, idxChannel: int, node: AnalogOutNode) -> float:
+        def nodeFrequencyGet(self, channel_index: int, node: AnalogOutNode) -> float:
             c_hzFrequency = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeFrequencyGet(self._device._hdwf, idxChannel, node.value, c_hzFrequency)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeFrequencyGet(self._device._hdwf, channel_index, node.value, c_hzFrequency)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             hzFrequency = c_hzFrequency.value
             return hzFrequency
 
-        def nodeAmplitudeInfo(self, idxChannel: int, node: AnalogOutNode) -> Tuple[float, float]:
+        def nodeAmplitudeInfo(self, channel_index: int, node: AnalogOutNode) -> Tuple[float, float]:
             c_min = _typespec_ctypes.c_double()
             c_max = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeAmplitudeInfo(self._device._hdwf, idxChannel, node.value, c_min, c_max)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeAmplitudeInfo(self._device._hdwf, channel_index, node.value, c_min, c_max)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             min_ = c_min.value
             max_ = c_max.value
             return (min_, max_)
 
-        def nodeAmplitudeSet(self, idxChannel: int, node: AnalogOutNode, vAmplitude: float) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutNodeAmplitudeSet(self._device._hdwf, idxChannel, node.value, vAmplitude)
+        def nodeAmplitudeSet(self, channel_index: int, node: AnalogOutNode, vAmplitude: float) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutNodeAmplitudeSet(self._device._hdwf, channel_index, node.value, vAmplitude)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def nodeAmplitudeGet(self, idxChannel: int, node: AnalogOutNode) -> float:
+        def nodeAmplitudeGet(self, channel_index: int, node: AnalogOutNode) -> float:
             c_vAmplitude = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeAmplitudeGet(self._device._hdwf, idxChannel, node.value, c_vAmplitude)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeAmplitudeGet(self._device._hdwf, channel_index, node.value, c_vAmplitude)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             vAmplitude = c_vAmplitude.value
             return vAmplitude
 
-        def nodeOffsetInfo(self, idxChannel: int, node: AnalogOutNode) -> Tuple[float, float]:
+        def nodeOffsetInfo(self, channel_index: int, node: AnalogOutNode) -> Tuple[float, float]:
             c_min = _typespec_ctypes.c_double()
             c_max = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeOffsetInfo(self._device._hdwf, idxChannel, node.value, c_min, c_max)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeOffsetInfo(self._device._hdwf, channel_index, node.value, c_min, c_max)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             min_ = c_min.value
             max_ = c_max.value
             return (min_, max_)
 
-        def nodeOffsetSet(self, idxChannel: int, node: AnalogOutNode, vOffset: float) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutNodeOffsetSet(self._device._hdwf, idxChannel, node.value, vOffset)
+        def nodeOffsetSet(self, channel_index: int, node: AnalogOutNode, vOffset: float) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutNodeOffsetSet(self._device._hdwf, channel_index, node.value, vOffset)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def nodeOffsetGet(self, idxChannel: int, node: AnalogOutNode) -> float:
+        def nodeOffsetGet(self, channel_index: int, node: AnalogOutNode) -> float:
             c_vOffset = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeOffsetGet(self._device._hdwf, idxChannel, node.value, c_vOffset)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeOffsetGet(self._device._hdwf, channel_index, node.value, c_vOffset)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             vOffset = c_vOffset.value
             return vOffset
 
-        def nodeSymmetryInfo(self, idxChannel: int, node: AnalogOutNode) -> Tuple[float, float]:
+        def nodeSymmetryInfo(self, channel_index: int, node: AnalogOutNode) -> Tuple[float, float]:
             c_percentageMin = _typespec_ctypes.c_double()
             c_percentageMax = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeSymmetryInfo(self._device._hdwf, idxChannel, node.value, c_percentageMin, c_percentageMax)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeSymmetryInfo(self._device._hdwf, channel_index, node.value, c_percentageMin, c_percentageMax)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             percentageMin = c_percentageMin.value
             percentageMax = c_percentageMax.value
             return (percentageMin, percentageMax)
 
-        def nodeSymmetrySet(self, idxChannel: int, node: AnalogOutNode, percentageSymmetry: float) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutNodeSymmetrySet(self._device._hdwf, idxChannel, node.value, percentageSymmetry)
+        def nodeSymmetrySet(self, channel_index: int, node: AnalogOutNode, percentageSymmetry: float) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutNodeSymmetrySet(self._device._hdwf, channel_index, node.value, percentageSymmetry)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def nodeSymmetryGet(self, idxChannel: int, node: AnalogOutNode) -> float:
+        def nodeSymmetryGet(self, channel_index: int, node: AnalogOutNode) -> float:
             c_percentageSymmetry = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeSymmetryGet(self._device._hdwf, idxChannel, node.value, c_percentageSymmetry)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeSymmetryGet(self._device._hdwf, channel_index, node.value, c_percentageSymmetry)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             percentageSymmetry = c_percentageSymmetry.value
             return percentageSymmetry
 
-        def nodePhaseInfo(self, idxChannel: int, node: AnalogOutNode) -> Tuple[float, float]:
+        def nodePhaseInfo(self, channel_index: int, node: AnalogOutNode) -> Tuple[float, float]:
             c_degreeMin = _typespec_ctypes.c_double()
             c_degreeMax = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodePhaseInfo(self._device._hdwf, idxChannel, node.value, c_degreeMin, c_degreeMax)
+            result = self._device._dwf._lib.FDwfAnalogOutNodePhaseInfo(self._device._hdwf, channel_index, node.value, c_degreeMin, c_degreeMax)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             degreeMin = c_degreeMin.value
             degreeMax = c_degreeMax.value
             return (degreeMin, degreeMax)
 
-        def nodePhaseSet(self, idxChannel: int, node: AnalogOutNode, degreePhase: float) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutNodePhaseSet(self._device._hdwf, idxChannel, node.value, degreePhase)
+        def nodePhaseSet(self, channel_index: int, node: AnalogOutNode, degreePhase: float) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutNodePhaseSet(self._device._hdwf, channel_index, node.value, degreePhase)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def nodePhaseGet(self, idxChannel: int, node: AnalogOutNode) -> float:
+        def nodePhaseGet(self, channel_index: int, node: AnalogOutNode) -> float:
             c_degreePhase = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutNodePhaseGet(self._device._hdwf, idxChannel, node.value, c_degreePhase)
+            result = self._device._dwf._lib.FDwfAnalogOutNodePhaseGet(self._device._hdwf, channel_index, node.value, c_degreePhase)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             degreePhase = c_degreePhase.value
             return degreePhase
 
-        def nodeDataInfo(self, idxChannel: int, node: AnalogOutNode) -> Tuple[float, float]:
+        def nodeDataInfo(self, channel_index: int, node: AnalogOutNode) -> Tuple[float, float]:
             c_samplesMin = _typespec_ctypes.c_int()
             c_samplesMax = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutNodeDataInfo(self._device._hdwf, idxChannel, node.value, c_samplesMin, c_samplesMax)
+            result = self._device._dwf._lib.FDwfAnalogOutNodeDataInfo(self._device._hdwf, channel_index, node.value, c_samplesMin, c_samplesMax)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             samplesMin = c_samplesMin.value
             samplesMax = c_samplesMax.value
             return (samplesMin, samplesMax)
 
-        def nodeDataSet(self, idxChannel: int, node: AnalogOutNode, data: np.ndarray) -> None:
+        def nodeDataSet(self, channel_index: int, node: AnalogOutNode, data: np.ndarray) -> None:
 
             double_data = data.astype(np.float64)
 
-            result = self._device._dwf._lib.FDwfAnalogOutNodeDataSet(self._device._hdwf, idxChannel, node.value, double_data.ctypes.data_as(_typespec_ctypes.c_double_ptr), len(double_data))
+            result = self._device._dwf._lib.FDwfAnalogOutNodeDataSet(self._device._hdwf, channel_index, node.value, double_data.ctypes.data_as(_typespec_ctypes.c_double_ptr), len(double_data))
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def customAMFMEnableSet(self, idxChannel: int, enable: bool) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutCustomAMFMEnableSet(self._device._hdwf, idxChannel, enable)
+        def customAMFMEnableSet(self, channel_index: int, enable: bool) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutCustomAMFMEnableSet(self._device._hdwf, channel_index, enable)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def customAMFMEnableGet(self, idxChannel: int) -> bool:
+        def customAMFMEnableGet(self, channel_index: int) -> bool:
             c_enable = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutCustomAMFMEnableGet(self._device._hdwf, idxChannel, c_enable)
+            result = self._device._dwf._lib.FDwfAnalogOutCustomAMFMEnableGet(self._device._hdwf, channel_index, c_enable)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             enable = bool(c_enable.value)
             return enable
 
-        def reset(self, idxChannel: int) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutReset(self._device._hdwf, idxChannel)
+        def reset(self, channel_index: int) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutReset(self._device._hdwf, channel_index)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def configure(self, idxChannel: int, start: bool) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutConfigure(self._device._hdwf, idxChannel, start)
+        def configure(self, channel_index: int, start: bool) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutConfigure(self._device._hdwf, channel_index, start)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def status(self, idxChannel: int) -> DwfState:
+        def status(self, channel_index: int) -> DwfState:
             c_status = _typespec_ctypes.DwfState()
-            result = self._device._dwf._lib.FDwfAnalogOutStatus(self._device._hdwf, idxChannel, c_status)
+            result = self._device._dwf._lib.FDwfAnalogOutStatus(self._device._hdwf, channel_index, c_status)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             status = DwfState(c_status.value)
             return status
 
-        def nodePlayStatus(self, idxChannel: int, node: AnalogOutNode) -> Tuple[int, int, int]:
-            c_dataFree = _typespec_ctypes.c_int()
-            c_dataLost = _typespec_ctypes.c_int()
-            c_dataCorrupted = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutNodePlayStatus(self._device._hdwf, idxChannel, node, c_dataFree, c_dataLost, c_dataCorrupted)
+        def nodePlayStatus(self, channel_index: int, node: AnalogOutNode) -> Tuple[int, int, int]:
+            c_data_free = _typespec_ctypes.c_int()
+            c_data_lost = _typespec_ctypes.c_int()
+            c_data_corrupted = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfAnalogOutNodePlayStatus(self._device._hdwf, channel_index, node.value, c_data_free, c_data_lost, c_data_corrupted)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            dataFree = c_dataFree.value
-            dataLost = c_dataLost.value
-            dataCorrupted = c_dataCorrupted.value
-            return (dataFree, dataLost, dataCorrupted)
+            data_free = c_data_free.value
+            data_lost = c_data_lost.value
+            data_corrupted = c_data_corrupted.value
+            return (data_free, data_lost, data_corrupted)
 
-        def nodePlayData(self, idxChannel:int,  node: AnalogOutNode, data: np.ndarray) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutNodePlayData(self._device._hdwf, idxChannel, node, data.ctypes.data_as(_typespec_ctypes.c_double_ptr), len(data))
+        def nodePlayData(self, channel_index:int, node: AnalogOutNode, data: np.ndarray) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutNodePlayData(self._device._hdwf, channel_index, node.value, data.ctypes.data_as(_typespec_ctypes.c_double_ptr), len(data))
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
