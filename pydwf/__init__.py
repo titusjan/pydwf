@@ -2511,263 +2511,263 @@ class DigilentWaveformsDevice:
             trigger_source_list = [trigger_source for trigger_source in TRIGSRC if trigger_source_bitset & (1 << trigger_source.value)]
             return trigger_source_list
 
-        def enableSet(self, idxChannel: int, enable: bool) -> None:
+        def enableSet(self, channel_index: int, enable: bool) -> None:
             """Enable or disable the specified AnalogOut channel.
 
             This function is OBSOLETE. Use `nodeEnableSet` instead.
             """
-            result = self._device._dwf._lib.FDwfAnalogOutEnableSet(self._device._hdwf, idxChannel, enable)
+            result = self._device._dwf._lib.FDwfAnalogOutEnableSet(self._device._hdwf, channel_index, enable)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def enableGet(self, idxChannel: int) -> bool:
+        def enableGet(self, channel_index: int) -> bool:
             """Get the current enable/disable status of the specified AnalogOut channel.
 
             This function is OBSOLETE. Use `nodeEnableGet` instead.
             """
             c_enable = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutEnableGet(self._device._hdwf, idxChannel, c_enable)
+            result = self._device._dwf._lib.FDwfAnalogOutEnableGet(self._device._hdwf, channel_index, c_enable)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             enable = bool(c_enable.value)
             return enable
 
-        def functionInfo(self, idxChannel: int) -> List[FUNC]:
+        def functionInfo(self, channel_index: int) -> List[FUNC]:
             """Get AnalogOut function info.
 
             This function is OBSOLETE. Use `nodeFunctionInfo` instead.
             """
             c_function_bitset = _typespec_ctypes.c_unsigned_int()
-            result = self._device._dwf._lib.FDwfAnalogOutFunctionInfo(self._device._hdwf, idxChannel, c_function_bitset)
+            result = self._device._dwf._lib.FDwfAnalogOutFunctionInfo(self._device._hdwf, channel_index, c_function_bitset)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             function_bitset = c_function_bitset.value
             function_list = [function_ for function_ in FUNC if function_bitset & (1 << function_.value)]
             return function_list
 
-        def functionSet(self, idxChannel: int, func: FUNC) -> None:
+        def functionSet(self, channel_index: int, func: FUNC) -> None:
             """Set AnalogOut function.
 
             This function is OBSOLETE. Use `nodeFunctionSet` instead.
             """
-            result = self._device._dwf._lib.FDwfAnalogOutFunctionSet(self._device._hdwf, idxChannel, func.value)
+            result = self._device._dwf._lib.FDwfAnalogOutFunctionSet(self._device._hdwf, channel_index, func.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def functionGet(self, idxChannel: int) -> FUNC:
+        def functionGet(self, channel_index: int) -> FUNC:
             """Get AnalogOut function.
 
             This function is OBSOLETE. Use `nodeFunctionGet` instead.
             """
             c_func = _typespec_ctypes.FUNC()
-            result = self._device._dwf._lib.FDwfAnalogOutFunctionGet(self._device._hdwf, idxChannel, c_func)
+            result = self._device._dwf._lib.FDwfAnalogOutFunctionGet(self._device._hdwf, channel_index, c_func)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             func = FUNC(c_func.value)
             return func
 
-        def frequencyInfo(self, idxChannel: int) -> Tuple[float, float]:
+        def frequencyInfo(self, channel_index: int) -> Tuple[float, float]:
             """Get AnalogOut channel frequency range info.
 
             This function is OBSOLETE. Use `nodeFrequencyInfo` instead.
             """
             c_hzMin = _typespec_ctypes.c_double()
             c_hzMax = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutFrequencyInfo(self._device._hdwf, idxChannel, c_hzMin, c_hzMax)
+            result = self._device._dwf._lib.FDwfAnalogOutFrequencyInfo(self._device._hdwf, channel_index, c_hzMin, c_hzMax)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             hzMin = c_hzMin.value
             hzMax = c_hzMax.value
             return (hzMin, hzMax)
 
-        def frequencySet(self, idxChannel: int, hzFrequency: float) -> None:
+        def frequencySet(self, channel_index: int, hzFrequency: float) -> None:
             """Get AnalogOut channel frequency.
 
             This function is OBSOLETE. Use `nodeFrequencySet` instead.
             """
-            result = self._device._dwf._lib.FDwfAnalogOutFrequencySet(self._device._hdwf, idxChannel, hzFrequency)
+            result = self._device._dwf._lib.FDwfAnalogOutFrequencySet(self._device._hdwf, channel_index, hzFrequency)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def frequencyGet(self, idxChannel: int) -> float:
+        def frequencyGet(self, channel_index: int) -> float:
             """Get AnalogOut channel frequency.
 
             This function is OBSOLETE. Use `nodeFrequencyGet` instead.
             """
             c_hzFrequency = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutFrequencyGet(self._device._hdwf, idxChannel, c_hzFrequency)
+            result = self._device._dwf._lib.FDwfAnalogOutFrequencyGet(self._device._hdwf, channel_index, c_hzFrequency)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             hzFrequency = c_hzFrequency.value
             return hzFrequency
 
-        def amplitudeInfo(self, idxChannel: int) -> Tuple[float, float]:
+        def amplitudeInfo(self, channel_index: int) -> Tuple[float, float]:
             """Get AnalogOut channel frequency range.
 
             This function is OBSOLETE. Use `nodeAmplitudeInfo` instead.
             """
             c_min = _typespec_ctypes.c_double()
             c_max = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutAmplitudeInfo(self._device._hdwf, idxChannel, c_min, c_max)
+            result = self._device._dwf._lib.FDwfAnalogOutAmplitudeInfo(self._device._hdwf, channel_index, c_min, c_max)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             min_ = c_min.value
             max_ = c_max.value
             return (min_, max_)
 
-        def amplitudeSet(self, idxChannel: int, vAmplitude: float) -> None:
+        def amplitudeSet(self, channel_index: int, vAmplitude: float) -> None:
             """Set AnalogOut channel frequency.
 
             This function is OBSOLETE. Use `nodeAmplitudeSet` instead.
             """
-            result = self._device._dwf._lib.FDwfAnalogOutAmplitudeSet(self._device._hdwf, idxChannel, vAmplitude)
+            result = self._device._dwf._lib.FDwfAnalogOutAmplitudeSet(self._device._hdwf, channel_index, vAmplitude)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def amplitudeGet(self, idxChannel: int) -> float:
+        def amplitudeGet(self, channel_index: int) -> float:
             """Get AnalogOut channel frequency.
 
             This function is OBSOLETE. Use `nodeAmplitudeGet` instead.
             """
             c_vAmplitude = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutAmplitudeGet(self._device._hdwf, idxChannel, c_vAmplitude)
+            result = self._device._dwf._lib.FDwfAnalogOutAmplitudeGet(self._device._hdwf, channel_index, c_vAmplitude)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             vAmplitude = c_vAmplitude.value
             return vAmplitude
 
-        def offsetInfo(self, idxChannel: int) -> Tuple[float, float]:
+        def offsetInfo(self, channel_index: int) -> Tuple[float, float]:
             """Get AnalogOut channel offset range.
 
             This function is OBSOLETE. Use `nodeOffsetInfo` instead.
             """
             c_min = _typespec_ctypes.c_double()
             c_max = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutOffsetInfo(self._device._hdwf, idxChannel,c_min, c_max)
+            result = self._device._dwf._lib.FDwfAnalogOutOffsetInfo(self._device._hdwf, channel_index,c_min, c_max)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             min_ = c_min.value
             max_ = c_max.value
             return (min_, max_)
 
-        def offsetSet(self, idxChannel: int, vOffset: float) -> None:
+        def offsetSet(self, channel_index: int, vOffset: float) -> None:
             """Set AnalogOut channel offset.
 
             This function is OBSOLETE. Use `nodeOffsetSet` instead.
             """
-            result = self._device._dwf._lib.FDwfAnalogOutOffsetSet(self._device._hdwf, idxChannel, vOffset)
+            result = self._device._dwf._lib.FDwfAnalogOutOffsetSet(self._device._hdwf, channel_index, vOffset)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def offsetGet(self, idxChannel: int) -> float:
+        def offsetGet(self, channel_index: int) -> float:
             """Get AnalogOut channel offset.
 
             This function is OBSOLETE. Use `nodeOffsetGet` instead.
             """
             c_vOffset = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutOffsetGet(self._device._hdwf, idxChannel, c_vOffset)
+            result = self._device._dwf._lib.FDwfAnalogOutOffsetGet(self._device._hdwf, channel_index, c_vOffset)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             vOffset = c_vOffset.value
             return vOffset
 
-        def symmetryInfo(self, idxChannel: int) -> Tuple[float, float]:
+        def symmetryInfo(self, channel_index: int) -> Tuple[float, float]:
             """Get AnalogOut channel symmetry range.
 
             This function is OBSOLETE. Use `nodeSymmetryInfo` instead.
             """
             c_percentageMin = _typespec_ctypes.c_double()
             c_percentageMax = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutSymmetryInfo(self._device._hdwf, idxChannel, c_percentageMin, c_percentageMax)
+            result = self._device._dwf._lib.FDwfAnalogOutSymmetryInfo(self._device._hdwf, channel_index, c_percentageMin, c_percentageMax)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             percentageMin = c_percentageMin.value
             percentageMax = c_percentageMax.value
             return (percentageMin, percentageMax)
 
-        def symmetrySet(self, idxChannel: int, percentageSymmetry: float) -> None:
+        def symmetrySet(self, channel_index: int, percentageSymmetry: float) -> None:
             """Set AnalogOut channel symmetry.
 
             This function is OBSOLETE. Use `nodeSymmetrySet` instead.
             """
-            result = self._device._dwf._lib.FDwfAnalogOutSymmetrySet(self._device._hdwf, idxChannel, percentageSymmetry)
+            result = self._device._dwf._lib.FDwfAnalogOutSymmetrySet(self._device._hdwf, channel_index, percentageSymmetry)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def symmetryGet(self, idxChannel: int) -> float:
+        def symmetryGet(self, channel_index: int) -> float:
             """Get AnalogOut channel symmetry.
 
             This function is OBSOLETE. Use `nodeSymmetryGet` instead.
             """
             c_percentageSymmetry = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutSymmetryGet(self._device._hdwf, idxChannel, c_percentageSymmetry)
+            result = self._device._dwf._lib.FDwfAnalogOutSymmetryGet(self._device._hdwf, channel_index, c_percentageSymmetry)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             percentageSymmetry = c_percentageSymmetry.value
             return percentageSymmetry
 
-        def phaseInfo(self, idxChannel: int) -> Tuple[float, float]:
+        def phaseInfo(self, channel_index: int) -> Tuple[float, float]:
             """Get AnalogOut channel phase range.
 
             This function is OBSOLETE. Use `nodePhaseInfo` instead.
             """
             c_degreeMin = _typespec_ctypes.c_double()
             c_degreeMax = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutPhaseInfo(self._device._hdwf, idxChannel, c_degreeMin, c_degreeMax)
+            result = self._device._dwf._lib.FDwfAnalogOutPhaseInfo(self._device._hdwf, channel_index, c_degreeMin, c_degreeMax)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             degreeMin = c_degreeMin.value
             degreeMax = c_degreeMax.value
             return (degreeMin, degreeMax)
 
-        def phaseSet(self, idxChannel: int, degreePhase: float) -> None:
+        def phaseSet(self, channel_index: int, degreePhase: float) -> None:
             """Get AnalogOut channel phase.
 
             This function is OBSOLETE. Use `nodePhaseSet` instead.
             """
-            result = self._device._dwf._lib.FDwfAnalogOutPhaseSet(self._device._hdwf, idxChannel, degreePhase)
+            result = self._device._dwf._lib.FDwfAnalogOutPhaseSet(self._device._hdwf, channel_index, degreePhase)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def phaseGet(self, idxChannel: int) -> float:
+        def phaseGet(self, channel_index: int) -> float:
             """Get AnalogOut channel phase.
 
             This function is OBSOLETE. Use `nodePhaseGet` instead.
             """
             c_degreePhase = _typespec_ctypes.c_double()
-            result = self._device._dwf._lib.FDwfAnalogOutPhaseGet(self._device._hdwf, idxChannel, c_degreePhase)
+            result = self._device._dwf._lib.FDwfAnalogOutPhaseGet(self._device._hdwf, channel_index, c_degreePhase)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             degreePhase = c_degreePhase.value
             return degreePhase
 
-        def dataInfo(self, idxChannel: int) -> Tuple[int, int]:
+        def dataInfo(self, channel_index: int) -> Tuple[int, int]:
             """Get AnalogOut channel data info.
 
             This function is OBSOLETE. Use `nodeDataInfo` instead.
             """
             c_samplesMin = _typespec_ctypes.c_int()
             c_samplesMax = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutDataInfo(self._device._hdwf, idxChannel, c_samplesMin, c_samplesMax)
+            result = self._device._dwf._lib.FDwfAnalogOutDataInfo(self._device._hdwf, channel_index, c_samplesMin, c_samplesMax)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             samplesMin = c_samplesMin.value
             samplesMax = c_samplesMax.value
             return (samplesMin, samplesMax)
 
-        def dataSet(self, idxChannel: int, data: np.ndarray) -> None:
+        def dataSet(self, channel_index: int, data: np.ndarray) -> None:
             """Set AnalogOut channel data.
 
             This function is OBSOLETE. Use `nodeDataSet` instead.
             """
             double_data = data.astype(np.float64)
 
-            result = self._device._dwf._lib.FDwfAnalogOutDataSet(self._device._hdwf, idxChannel, double_data.ctypes.data_as(_typespec_ctypes.c_double_ptr), len(double_data))
+            result = self._device._dwf._lib.FDwfAnalogOutDataSet(self._device._hdwf, channel_index, double_data.ctypes.data_as(_typespec_ctypes.c_double_ptr), len(double_data))
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
 
-        def playStatus(self, idxChannel: int)  -> Tuple[int, int, int]:
+        def playStatus(self, channel_index: int)  -> Tuple[int, int, int]:
             """Get AnalogOut channel play status.
 
             This function is OBSOLETE. Use `nodePlayStatus` instead.
@@ -2775,7 +2775,7 @@ class DigilentWaveformsDevice:
             c_dataFree = _typespec_ctypes.c_int()
             c_dataLost = _typespec_ctypes.c_int()
             c_dataCorrupted = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutPlayStatus(self._device._hdwf, idxChannel, c_dataFree, c_dataLost, c_dataCorrupted)
+            result = self._device._dwf._lib.FDwfAnalogOutPlayStatus(self._device._hdwf, channel_index, c_dataFree, c_dataLost, c_dataCorrupted)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             dataFree = c_dataFree.value
@@ -2783,8 +2783,8 @@ class DigilentWaveformsDevice:
             dataCorrupted = c_dataCorrupted.value
             return (dataFree, dataLost, dataCorrupted)
 
-        def playData(self, idxChannel: int, data: np.ndarray) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutPlayData(self._device._hdwf, idxChannel, data.ctypes.data_as(_typespec_ctypes.c_double_ptr), len(data))
+        def playData(self, channel_index: int, data: np.ndarray) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutPlayData(self._device._hdwf, channel_index, data.ctypes.data_as(_typespec_ctypes.c_double_ptr), len(data))
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
