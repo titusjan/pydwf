@@ -43,7 +43,6 @@ def demo_fast_analog_out(analogOut):
         vx = 2.5 * math.cos(2 * math.pi * t * frequency)
         vy = 2.5 * math.sin(2 * math.pi * t * frequency)
 
-
         # To change the output signal on each of the two channels, we just change the channel's
         # amplitude setting.
 
