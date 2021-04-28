@@ -2,7 +2,7 @@
 
 from collections import Counter
 
-from pydwf.dwf_function_signatures import dwf_function_signatures
+from pydwf.dwf_function_signatures import dwf_function_signatures, dwf_version
 
 def report_api_categories():
 
@@ -50,8 +50,11 @@ def report_api_categories():
             categories[category] = Counter()
         categories[category][obsolete_flag] += 1
 
-    print("API summary: functions by category")
-    print("==================================")
+    print()
+    print("DWF API summary: functions by category")
+    print("======================================")
+    print()
+    print("DWF version: {}".format(dwf_version))
     print()
 
     total_count_false = 0

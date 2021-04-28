@@ -8,10 +8,11 @@ Most popular programming languages provide a mechanism to access functions in sh
 
 The *pydwf* module is a binding to the functionality provided by the DWF library, using the *ctypes* module. It makes all types and functions provided by the DWF library available for use in Python programs.
 
-Overview of the C API (version 3.16.3)
---------------------------------------
+Overview of the C API
+---------------------
 
-The DWF library comes with a header file that defines the 24 enumeration types and 415 function calls that together make up the DWF API. Of the 415 function calls provided, 33 are labeled 'obsolete'. Their functionality is usually superseded by newer, more general functions.
+The DWF library comes with a header file that (for version 3.16.3) defines the 24 enumeration types and 415 function calls that together make up the DWF API.
+Of the 415 function calls provided, 33 are labeled 'obsolete'. Their functionality is usually superseded by newer, more general functions.
 
 The API functions are organized in 14 sub-categories, each providing access to a subset of the DWF functionality — for example, a specific type of instrument, or functions to send and receive messages using a certain protocol.
 
