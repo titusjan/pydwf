@@ -33,6 +33,8 @@ from typing import Optional, Tuple, List
 
 from .dwf_function_signatures import dwf_function_signatures, dwf_version as expected_dwf_version
 
+# Version number of the pydwf binding.
+__version__ = "0.2.6"
 
 _HDWF_NONE = 0  # HDWF value representing a bad device handle.
 
@@ -286,7 +288,7 @@ class DwfParam(enum.Enum):
     AnalogOut     = 7 # 0 disable / 1 enable
     Frequency     = 8 # MHz
 
-# Note, the obsolete types TRIGCOND and STS have not been defined here.
+# Note that the obsolete types TRIGCOND and STS that are defined in the C header file have not been defined here.
 # TRIGCOND has been replaced by DwfTriggerSlope; STS has been replaced by DwfState.
 
 class _typespec_ctypes:
@@ -394,7 +396,7 @@ class _typespec_ctypes:
 
 
 class DigilentWaveformsLibraryError(RuntimeError):
-    """This class represents an error as reported back by one of the DWF API functions."""
+    """This class represents an error as reported back by one of the DWF C library functions."""
     def __init__(self, code: Optional[DWFERC], msg: Optional[str]) -> None:
         self.code = code
         self.msg = msg
@@ -410,6 +412,9 @@ class DigilentWaveformsLibraryError(RuntimeError):
 
         return error_string
 
+class PyDwfError(RuntimeError):
+    """This class represents an error that is *not* caused by one of the underlying DWF C library functions."""
+    pass
 
 class DigilentWaveformsLibrary:
     """Provide access to the DWF shared library functions.
@@ -445,10 +450,10 @@ class DigilentWaveformsLibrary:
             c_version = ctypes.create_string_buffer(32)
             result = lib.FDwfGetVersion(c_version)
             if result != _RESULT_SUCCESS:
-                raise RuntimeError("Unable to verify library version")
+                raise PyDwfError("Unable to verify library version")
             actual_dwf_version = c_version.value.decode()
             if actual_dwf_version != expected_dwf_version:
-                raise RuntimeError("DWF library version mismatch: pydwf module expects {}, but actual library is version {}".format(expected_dwf_version, actual_dwf_version))
+                raise PyDwfError("DWF library version mismatch: pydwf module expects {}, but actual library is version {}".format(expected_dwf_version, actual_dwf_version))
 
         self._annotate_function_signatures(lib)
 
@@ -459,7 +464,7 @@ class DigilentWaveformsLibrary:
 
     @staticmethod
     def _annotate_function_signatures(lib: ctypes.CDLL) -> None:
-        """Add 'ctype' return type and parameter type annotations for all known functions in the DWF shared library."""
+        """Add 'ctypes' return type and parameter type annotations for all known functions in the DWF shared library."""
 
         function_signatures = dwf_function_signatures(_typespec_ctypes)
 
@@ -725,7 +730,7 @@ class DigilentWaveformsLibrary:
 
             Raises:
                 DigilentWaveformsLibraryError: the serial number of the device cannot be retrieved.
-                ValueError: the serial number returned by the library isn't of the form 'SN:XXXXXXXXXXXX'.
+                PyDwfError: the serial number returned by the library isn't of the form 'SN:XXXXXXXXXXXX'.
             """
             c_serial = ctypes.create_string_buffer(32)
             result = self._dwf._lib.FDwfEnumSN(device_index, c_serial)
@@ -733,10 +738,10 @@ class DigilentWaveformsLibrary:
                 raise self._dwf._exception()
             serial = c_serial.value.decode()
             if not serial.startswith("SN:"):
-                raise ValueError("Bad serial number string received: {!r}".format(serial))
+                raise PyDwfError("Bad serial number string received: {!r}".format(serial))
             serial = serial[3:]
             if len(serial) != 12:
-                raise ValueError("Serial number isn't 12 characters: {!r}".format(serial))
+                raise PyDwfError("Serial number isn't 12 characters: {!r}".format(serial))
             return serial
 
         def configCount(self, device_index: int) -> int:
@@ -947,13 +952,13 @@ class DigilentWaveformsLibrary:
 
             Raises:
                 DigilentWaveformsLibraryError: an error occurred in the underlying API.
-                ValueError: the serial number specified was not found (likely) or it was found more than once (unlikely).
+                PyDwfError: the serial number specified was not found (likely) or it was found more than once (unlikely).
             """
             num_devices = self._dwf.enum.count()  # Perform a device enumeration.
             candidates = [device_index for device_index in range(num_devices) if self._dwf.enum.serialNumber(device_index) == serial_number_sought]
 
             if len(candidates) != 1:
-                raise ValueError("Cannot open Digilent device by serial number {!r}: {} candidates.".format(serial_number_sought, len(candidates)))
+                raise PyDwfError("Cannot open Digilent device by serial number {!r}: {} candidates.".format(serial_number_sought, len(candidates)))
 
             # We found a unique candidate. Open it.
             device_index = candidates[0]
@@ -4507,8 +4512,12 @@ class DigilentWaveformsDevice:
 
         def tx(self, vID: int, extended: bool, remote: bool, data: bytes) -> None:
             if len(data) > 8:
-                raise RuntimeError("CAN message too long.")
+                raise PyDwfError("CAN message too long.")
+
+            # The cast below of data (of type 'bytes') to a ctype unsigned char pointer is flagged as suspect by MyPI, but it works.
+            # Some googling didn't show any alternatives, so for now we leave this as-is.
             result = self._device._dwf._lib.FDwfDigitalCanTx(self._device._hdwf, vID, extended, remote, len(data), ctypes.cast(data, _typespec_ctypes.c_unsigned_char_ptr))
+
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
