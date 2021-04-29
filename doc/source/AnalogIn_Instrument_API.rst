@@ -4,7 +4,7 @@ AnalogIn Instrument API
 
 The AnalogIn instrument implements multiple channels of analog input on devices that support it, such as the Analog Discovery and the Analog Discovery 2.
 
-To use the AnalogIn instrument you first need to initialize a DigitalWaveformLibrary instance.
+To use the AnalogIn instrument you first need to initialize a DigitalWaveformsLibrary instance.
 Next, you open a specific device.
 The device's AnalogIn instrument API can now be accessed via its *analogIn* attribute, which is an instance of the AnalogInAPI class.
 
@@ -21,194 +21,391 @@ For example:
        # Get a reference to the device's AnalogIn instrument API.
        analogIn = device.analogIn
 
-       # Use the analog in instrument.
+       # Use the AnalogIn instrument.
        analogIn.reset()
-
-The AnalogIn instrument is the most complicated instrument implemented in the DWF library; there are many parameters that can be used to control its behavior.
 
 The AnalogIn instrument state machine
 -------------------------------------
 
 (to be written)
 
-The AnalogIn instrument API
----------------------------
+API methods
+-----------
+
+The AnalogIn instrument is the most complicated instrument implemented in the DWF library; there are many parameters that can be used to control its behavior and,
+consequently, many functions to control and query the instrument.
 
 Version 3.16.3 of the DWF library has 93 'FDwfAnalogIn' functions, one of which (FDwfAnalogInTriggerSourceInfo) is obsolete.
 All of these are available through the AnalogIn API.
 
 Configuration functions
-~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^
 
-* analogIn.reset()
-* analogIn.configure(reconfigure: bool, start: bool)
+.. code-block:: python
+
+   analogIn.reset()
+
+.. code-block:: python
+
+   analogIn.configure(reconfigure: bool, start: bool)
 
 Status inquiry functions
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-* analogIn.status(read_data: bool) -> DwfState
+.. code-block:: python
+
+   analogIn.status(read_data: bool) -> DwfState
 
 Information on last status() request
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+""""""""""""""""""""""""""""""""""""
 
-* analogIn.statusTime() -> Tuple[int, int, int]
-* analogIn.statusSample(channel_index: int) -> float
-* analogIn.statusAutoTriggered() -> bool
-* analogIn.statusSamplesLeft() -> int
-* analogIn.statusSamplesValid() -> int
-* analogIn.statusIndexWrite() -> int
-* analogIn.statusRecord() -> Tuple[int, int, int]
+.. code-block:: python
 
-Retrieving bulk analog-in data 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   analogIn.statusTime() -> Tuple[int, int, int]
 
-* analogIn.statusData(channel_index: int, count: int) -> np.ndarray
-* analogIn.statusData2(channel_index: int, offset: int, count: int) -> np.ndarray
-* analogIn.statusData16(channel_index: int, offset: int, count: int) -> np.ndarray
+.. code-block:: python
 
-* analogIn.statusNoise(channel_index: int, count: int) -> Tuple[np.ndarray, np.ndarray]
-* analogIn.statusNoise2(channel_index: int, offset: int, count: int) -> Tuple[np.ndarray, np.ndarray]
+   analogIn.statusSample(channel_index: int) -> float
+
+.. code-block:: python
+
+   analogIn.statusAutoTriggered() -> bool
+
+.. code-block:: python
+
+   analogIn.statusSamplesLeft() -> int
+
+.. code-block:: python
+
+   analogIn.statusSamplesValid() -> int
+
+.. code-block:: python
+
+   analogIn.statusIndexWrite() -> int
+
+.. code-block:: python
+
+   analogIn.statusRecord() -> Tuple[int, int, int]
+
+Retrieving bulk analog-in data
+""""""""""""""""""""""""""""""
+
+.. code-block:: python
+
+   analogIn.statusData(channel_index: int, count: int) -> np.ndarray
+   analogIn.statusData2(channel_index: int, offset: int, count: int) -> np.ndarray
+   analogIn.statusData16(channel_index: int, offset: int, count: int) -> np.ndarray
+
+.. code-block:: python
+
+   analogIn.statusNoise(channel_index: int, count: int) -> Tuple[np.ndarray, np.ndarray]
+   analogIn.statusNoise2(channel_index: int, offset: int, count: int) -> Tuple[np.ndarray, np.ndarray]
 
 Acquisition settings
-~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^
 
 Number of ADC bits
-~~~~~~~~~~~~~~~~~~
+""""""""""""""""""
 
-* analogIn.bitsInfo() -> int
+The raw resolution of the ADC, in bits. This value cannot be changed, only queried.
+
+The Analog Discovery 2 uses an Analog Devices AD9648 two-channel ADC.
+It can convert 14-bit samples at a rate of 125 MHz. So for the Analog Discovery 2, the 'bitsInfo' method always returns 14.
+
+.. code-block:: python
+
+   analogIn.bitsInfo() -> int
 
 Record length
-~~~~~~~~~~~~~
+"""""""""""""
 
-* analogIn.recordLengthSet(length: float)
-* analogIn.recordLengthGet() -> float
+The length of the record window, in seconds. This value is only used in the "Record" acquisition mode.
+
+A value of 0 (zero) denotes a recording of an indefinite length.
+
+.. code-block:: python
+
+   analogIn.recordLengthSet(length: float)
+   analogIn.recordLengthGet() -> float
 
 Sample frequency
-~~~~~~~~~~~~~~~~
+""""""""""""""""
 
-* analogIn.frequencyInfo() -> Tuple[float, float]
-* analogIn.frequencySet(sample_frequency: float)
-* analogIn.frequencyGet() -> float
+The sample frequency of the AnalogIn instrument, in Hz.
+
+The 'frequencyInfo' method can be used to query the range of possible values for this setting.
+
+.. code-block:: python
+
+   analogIn.frequencyInfo() -> Tuple[float, float]
+   analogIn.frequencySet(sample_frequency: float)
+   analogIn.frequencyGet() -> float
 
 Acquisition buffer size
-~~~~~~~~~~~~~~~~~~~~~~~
+"""""""""""""""""""""""
 
-* analogIn.bufferSizeInfo() -> Tuple[int, int]
-* analogIn.bufferSizeSet(buffer_size: int)
-* analogIn.bufferSizeGet() -> int
+The buffer size of the AnalogIn instrument, in samples.
+
+The 'bufferSizeInfo' method can be used to query the range of possible values for this setting.
+
+The maximum buffer size depends on the configuration of the device. For the Analog Discovery 2, for example,
+the maximum buffer size can be 512, 2048, 8192 (default), or 16384, depending on the configuration.
+
+When using the "Record" acquisition mode, the buffer size should be left at the default value, which is equal
+to the maximum value. In other modes (e.g. Single), the buffer size determines the size of the acquisition window.
+
+.. code-block:: python
+
+   analogIn.bufferSizeInfo() -> Tuple[int, int]
+   analogIn.bufferSizeSet(buffer_size: int)
+   analogIn.bufferSizeGet() -> int
 
 Noise buffer size
-~~~~~~~~~~~~~~~~~
+"""""""""""""""""
 
-* analogIn.noiseSizeInfo() -> int
-* analogIn.noiseSizeSet(noise_buffer_active: bool)
-* analogIn.noiseSizeGet() -> int
+.. code-block:: python
+
+   analogIn.noiseSizeInfo() -> int
+   analogIn.noiseSizeSet(noise_buffer_active: bool)
+   analogIn.noiseSizeGet() -> int
 
 Acquisition mode
-~~~~~~~~~~~~~~~~
+""""""""""""""""
 
-* analogIn.acquisitionModeInfo() -> List[ACQMODE]
-* analogIn.acquisitionModeSet(acquisition_mode: ACQMODE)
-* analogIn.acquisitionModeGet() -> ACQMODE
+.. code-block:: python
+
+   analogIn.acquisitionModeInfo() -> List[ACQMODE]
+   analogIn.acquisitionModeSet(acquisition_mode: ACQMODE)
+   analogIn.acquisitionModeGet() -> ACQMODE
 
 Channel-specific settings
--------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* analogIn.channelCount() -> int
+Many settings can be set differently for the AnalogIn channels.
 
-* analogIn.channelEnableSet(channel_index: int, enable: bool)
-* analogIn.channelEnableGet(channel_index: int) -> bool
+The function 'channelCount' defined below queries the number of available channels; all other functions take a 'channel_index' argument
+that indicates which channel's setting is to be changed. This value should be in the range of 0 to channelCount - 1.
 
-* analogIn.channelFilterInfo() -> List[FILTER]
-* analogIn.channelFilterSet(channel_index: int, filter_: FILTER)
-* analogIn.channelFilterGet(channel_index: int) -> FILTER
+Channel count
+"""""""""""""
 
-* analogIn.channelRangeInfo() -> Tuple[float, float, float]
-* analogIn.channelRangeSteps() -> List[float]
-* analogIn.channelRangeSet(channel_index: int, voltsRange: float)
-* analogIn.channelRangeGet(channel_index: int) -> float
+The number of channels supported by the AnalofInstrument. This value cannot be changed, only queried.
 
-* analogIn.channelOffsetInfo() -> Tuple[float, float, float]
-* analogIn.channelOffsetSet(channel_index: int, voltOffset: float)
-* analogIn.channelOffsetGet(channel_index: int) -> float
+For the Analog Dicovery 2, the 'channelCount' method always returns 2.
 
-* analogIn.channelAttenuationSet(channel_index: int, attenuation: float)
-* analogIn.channelAttenuationGet(channel_index: int) -> float
+.. code-block:: python
 
-* analogIn.channelBandwidthSet(channel_index: int, bandwidth: float)
-* analogIn.channelBandwidthGet(channel_index: int) -> float
+   analogIn.channelCount() -> int
 
-* analogIn.channelImpedanceSet(channel_index: int, impedance: float)
-* analogIn.channelImpedanceGet(channel_index: int) -> float
+Channel enable/disable
+""""""""""""""""""""""
 
-Triggering
-----------
+.. code-block:: python
 
-Trigger source
-~~~~~~~~~~~~~~
+   analogIn.channelEnableSet(channel_index: int, enable: bool)
+   analogIn.channelEnableGet(channel_index: int) -> bool
 
-* analogIn.triggerSourceInfo() -> List[TRIGSRC] (OBSOLETE)
-* analogIn.triggerSourceSet(trigger_source: TRIGSRC)
-* analogIn.triggerSourceGet() -> TRIGSRC
+Channel filtering
+"""""""""""""""""
 
-* analogIn.triggerForce()
+.. code-block:: python
+
+   analogIn.channelFilterInfo() -> List[FILTER]
+   analogIn.channelFilterSet(channel_index: int, filter\_: FILTER)
+   analogIn.channelFilterGet(channel_index: int) -> FILTER
+
+Channel range
+"""""""""""""
+
+.. code-block:: python
+
+   analogIn.channelRangeInfo() -> Tuple[float, float, float]
+   analogIn.channelRangeSteps() -> List[float]
+   analogIn.channelRangeSet(channel_index: int, voltsRange: float)
+   analogIn.channelRangeGet(channel_index: int) -> float
+
+Channel offset
+""""""""""""""
+
+.. code-block:: python
+
+   analogIn.channelOffsetInfo() -> Tuple[float, float, float]
+   analogIn.channelOffsetSet(channel_index: int, voltOffset: float)
+   analogIn.channelOffsetGet(channel_index: int) -> float
+
+Channel attenuation
+"""""""""""""""""""
+
+.. code-block:: python
+
+   analogIn.channelAttenuationSet(channel_index: int, attenuation: float)
+   analogIn.channelAttenuationGet(channel_index: int) -> float
+
+Channel bandwidth
+"""""""""""""""""
+
+.. code-block:: python
+
+   analogIn.channelBandwidthSet(channel_index: int, bandwidth: float)
+   analogIn.channelBandwidthGet(channel_index: int) -> float
+
+Channel impedance
+"""""""""""""""""
+
+.. code-block:: python
+
+   analogIn.channelImpedanceSet(channel_index: int, impedance: float)
+   analogIn.channelImpedanceGet(channel_index: int) -> float
+
+Trigger for the AnalogIn instrument
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+AnalogIn Trigger source
+"""""""""""""""""""""""
+
+.. code-block:: python
+
+   analogIn.triggerSourceInfo() -> List[TRIGSRC] (OBSOLETE)
+   analogIn.triggerSourceSet(trigger_source: TRIGSRC)
+   analogIn.triggerSourceGet() -> TRIGSRC
+
+Trigger position
+""""""""""""""""
+
+.. code-block:: python
+
+   analogIn.triggerPositionInfo() -> Tuple[float, float, float]
+   analogIn.triggerPositionSet(secPosition: float)
+   analogIn.triggerPositionGet() -> float
+   analogIn.triggerPositionStatus() -> float
+
+Force trigger
+"""""""""""""
+
+.. code-block:: python
+
+   analogIn.triggerForce()
 
 AnalogIn trigger detector
-~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* analogIn.triggerPositionInfo() -> Tuple[float, float, float]
-* analogIn.triggerPositionSet(secPosition: float)
-* analogIn.triggerPositionGet() -> float
-* analogIn.triggerPositionStatus() -> float
+Trigger auto-timeout
+""""""""""""""""""""
 
-* analogIn.triggerAutoTimeoutInfo() -> Tuple[float, float, float]
-* analogIn.triggerAutoTimeoutSet(secTimout: float)
-* analogIn.triggerAutoTimeoutGet() -> float
+.. code-block:: python
 
-* analogIn.triggerHoldOffInfo() -> Tuple[float, float, float]
-* analogIn.triggerHoldOffSet(secHoldOff: float)
-* analogIn.triggerHoldOffGet() -> float
+   analogIn.triggerAutoTimeoutInfo() -> Tuple[float, float, float]
+   analogIn.triggerAutoTimeoutSet(secTimout: float)
+   analogIn.triggerAutoTimeoutGet() -> float
 
-* analogIn.triggerTypeInfo() -> List[TRIGTYPE]
-* analogIn.triggerTypeSet(trigger_type: TRIGTYPE)
-* analogIn.triggerTypeGet() -> TRIGTYPE
+Trigger holdoff
+"""""""""""""""
 
-* analogIn.triggerChannelInfo() -> Tuple[int, int]
-* analogIn.triggerChannelSet(channel_index: int)
-* analogIn.triggerChannelGet() -> int
+.. code-block:: python
 
-* analogIn.triggerFilterInfo() -> List[FILTER]
-* analogIn.triggerFilterSet(filter_: FILTER)
-* analogIn.triggerFilterGet() -> FILTER
+   analogIn.triggerHoldOffInfo() -> Tuple[float, float, float]
+   analogIn.triggerHoldOffSet(secHoldOff: float)
+   analogIn.triggerHoldOffGet() -> float
 
-* analogIn.triggerLevelInfo() -> Tuple[float, float, float]
-* analogIn.triggerLevelSet(trigger_level: float)
-* analogIn.triggerLevelGet() -> float
+Trigger type
+""""""""""""
 
-* analogIn.triggerHysteresisInfo() -> Tuple[float, float, float]
-* analogIn.triggerHysteresisSet(trigger_hysteresis: float)
-* analogIn.triggerHysteresisGet() -> float
+.. code-block:: python
 
-* analogIn.triggerConditionInfo() -> List[DwfTriggerSlope]
-* analogIn.triggerConditionSet(trigger_condition: DwfTriggerSlope)
-* analogIn.triggerConditionGet() -> DwfTriggerSlope
+   analogIn.triggerTypeInfo() -> List[TRIGTYPE]
+   analogIn.triggerTypeSet(trigger_type: TRIGTYPE)
+   analogIn.triggerTypeGet() -> TRIGTYPE
 
-* analogIn.triggerLengthInfo() -> Tuple[float, float, float]
-* analogIn.triggerLengthSet(secLength: float)
-* analogIn.triggerLengthGet() -> float
+Trigger channel
+"""""""""""""""
 
-* analogIn.triggerLengthConditionInfo() -> List[TRIGLEN]
-* analogIn.triggerLengthConditionSet(trigger_length: TRIGLEN)
-* analogIn.triggerLengthConditionGet() -> TRIGLEN
+.. code-block:: python
+
+   analogIn.triggerChannelInfo() -> Tuple[int, int]
+   analogIn.triggerChannelSet(channel_index: int)
+   analogIn.triggerChannelGet() -> int
+
+Trigger filter
+""""""""""""""
+
+.. code-block:: python
+
+   analogIn.triggerFilterInfo() -> List[FILTER]
+   analogIn.triggerFilterSet(filter\_: FILTER)
+   analogIn.triggerFilterGet() -> FILTER
+
+Trigger level
+"""""""""""""
+
+The trigger level, in Volt.
+
+.. code-block:: python
+
+   analogIn.triggerLevelInfo() -> Tuple[float, float, float]
+   analogIn.triggerLevelSet(trigger_level: float)
+   analogIn.triggerLevelGet() -> float
+
+Trigger hysteresis
+""""""""""""""""""
+
+The trigger hysteresis, in Volt.
+
+.. code-block:: python
+
+   analogIn.triggerHysteresisInfo() -> Tuple[float, float, float]
+   analogIn.triggerHysteresisSet(trigger_hysteresis: float)
+   analogIn.triggerHysteresisGet() -> float
+
+Trigger condition
+"""""""""""""""""
+
+.. code-block:: python
+
+   analogIn.triggerConditionInfo() -> List[DwfTriggerSlope]
+   analogIn.triggerConditionSet(trigger_condition: DwfTriggerSlope)
+   analogIn.triggerConditionGet() -> DwfTriggerSlope
+
+Trigger length
+""""""""""""""
+
+.. code-block:: python
+
+   analogIn.triggerLengthInfo() -> Tuple[float, float, float]
+   analogIn.triggerLengthSet(secLength: float)
+   analogIn.triggerLengthGet() -> float
+
+Trigger length condition
+""""""""""""""""""""""""
+
+.. code-block:: python
+
+   analogIn.triggerLengthConditionInfo() -> List[TRIGLEN]
+   analogIn.triggerLengthConditionSet(trigger_length: TRIGLEN)
+   analogIn.triggerLengthConditionGet() -> TRIGLEN
 
 Sampling clock settings
------------------------
+^^^^^^^^^^^^^^^^^^^^^^^
 
-* analogIn.samplingSourceSet(sampling_source: TRIGSRC)
-* analogIn.samplingSourceGet() -> TRIGSRC
+Sampling clock source
+"""""""""""""""""""""
 
-* analogIn.samplingSlopeSet(sampling_slope: DwfTriggerSlope)
-* analogIn.samplingSlopeGet() -> DwfTriggerSlope
+.. code-block:: python
 
-* analogIn.samplingDelaySet(sampling_delay: float)
-* analogIn.samplingDelayGet() -> float
+   analogIn.samplingSourceSet(sampling_source: TRIGSRC)
+   analogIn.samplingSourceGet() -> TRIGSRC
+
+Sampling clock slope
+""""""""""""""""""""
+
+.. code-block:: python
+
+   analogIn.samplingSlopeSet(sampling_slope: DwfTriggerSlope)
+   analogIn.samplingSlopeGet() -> DwfTriggerSlope
+
+Sampling clock delay
+""""""""""""""""""""
+
+.. code-block:: python
+
+   analogIn.samplingDelaySet(sampling_delay: float)
+   analogIn.samplingDelayGet() -> float
