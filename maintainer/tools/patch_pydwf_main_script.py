@@ -83,7 +83,8 @@ def patch_python_script(scriptname, zipped_directory_data):
 def main():
 
     target_specifications = {
-        "pydwf-examples": "../../examples"
+        "pydwf-examples"  : "../../examples",
+        "pydwf-html-docs" : "../../doc/build/html"
     }
 
     zipped_directory_data = make_zipped_directory_data(target_specifications)
