@@ -131,7 +131,7 @@ def run_demo(analogIn, sample_frequency, record_length, trigger_flag, signal_fre
     # Outer loop: perform repeated acquisitions.
     acquisition_nr = 0
 
-    while True: 
+    while True:
 
         acquisition_nr += 1 # Increment acquisition number.
 
