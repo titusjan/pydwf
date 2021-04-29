@@ -1403,6 +1403,8 @@ class DigilentWaveformsDevice:
             dataCorrupt = c_dataCorrupt.value
             return (dataAvailable, dataLost, dataCorrupt)
 
+        # Acquisition configuration:
+
         def recordLengthSet(self, length: float) -> None:
             """Set the Record length in seconds.
 
@@ -1420,8 +1422,6 @@ class DigilentWaveformsDevice:
                 raise self._device._dwf._exception()
             length = c_length.value
             return length
-
-        # Acquisition configuration:
 
         def frequencyInfo(self) -> Tuple[float, float]:
             """Retrieve the minimum and maximum configurable ADC sample frequency, in Hz"""
