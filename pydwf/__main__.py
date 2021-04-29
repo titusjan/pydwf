@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 
-"""
-This is the "pydwf" support tool that can be executed as "python -m pydwf".
+"""This is the "pydwf" support tool that can be executed as "python -m pydwf".
 """
 
 import zipfile
@@ -12,7 +11,7 @@ import argparse
 import importlib
 from collections import Counter
 
-from pydwf import DigilentWaveformsLibrary
+from pydwf import DigilentWaveformsLibrary, DwfEnumConfigInfo
 from .dwf_function_signatures import dwf_function_signatures, dwf_version
 
 def show_version():
@@ -89,6 +88,7 @@ def list_devices(use_obsolete_api: bool, list_configurations: bool):
             print()
 
 def extract_zip_to_directory(target):
+    """Extract a directory with auxiliary package data."""
     if os.path.exists(target):
         print()
         print("Unable to unpack '{}', the path already exists.".format(target))
@@ -117,33 +117,32 @@ def main():
     parser.set_defaults(execute=lambda args: parser.print_help())
 
     # Declare the sub-parser for the "version" command.
-    parser_version = subparsers.add_parser("version",
+    subparser_version = subparsers.add_parser("version",
         description="Show version of the DWF library.",
         help="show version of the DWF library")
-    parser_version.set_defaults(execute=lambda args: show_version())
+    subparser_version.set_defaults(execute=lambda args: show_version())
 
-    # Declare the sub-parser for the "ls" command.
-
-    parser_ls = subparsers.add_parser("list", aliases=["ls"],
+    # Declare the sub-parser for the "list" command.
+    subparser_list = subparsers.add_parser("list", aliases=["ls"],
         description="List Digilent Waveforms devices.",
         help="list Digilent Waveform devices")
-    parser_ls.add_argument('-c', '--list-configurations', action='store_true',
-                        help="for each device, printing its configurations", dest='list_configurations')
-    parser_ls.add_argument('-u', '--use-obsolete-api', action='store_true',
+    subparser_list.add_argument('-u', '--use-obsolete-api', action='store_true',
                         help="for each device, print analog-in parameters obtained using obsolete FDwfEnumAnalogIn* API calls", dest='use_obsolete_api')
-    parser_ls.set_defaults(execute=lambda args: list_devices(args.list_configurations, args.use_obsolete_api))
+    subparser_list.add_argument('-c', '--list-configurations', action='store_true',
+                        help="for each device, printing its configurations", dest='list_configurations')
+    subparser_list.set_defaults(execute=lambda args: list_devices(args.use_obsolete_api, args.list_configurations))
 
-    # Declare the sub-parser for the "pydwf-examples" command.
-    parser_extract_examples = subparsers.add_parser("extract-examples",
+    # Declare the sub-parser for the "extract-examples" command.
+    subparser_extract_examples = subparsers.add_parser("extract-examples",
         description="Extract pydwf example scripts to 'pydwf-examples' directory.",
         help="extract pydwf example scripts to 'pydwf-examples' directory")
-    parser_extract_examples.set_defaults(execute=lambda args: extract_zip_to_directory("pydwf-examples"))
+    subparser_extract_examples.set_defaults(execute=lambda args: extract_zip_to_directory("pydwf-examples"))
 
-    # Declare the sub-parser for the "pydwf-html-docs" command.
-    parser_extract_examples = subparsers.add_parser("extract-html-docs",
+    # Declare the sub-parser for the "extract-html-docs" command.
+    subparser_extract_html = subparsers.add_parser("extract-html-docs",
         description="Extract pydwf HTML documentation to 'pydwf-html-docs' directory.",
         help="extract pydwf HTML documentation to 'pydwf-html-docs' directory")
-    parser_extract_examples.set_defaults(execute=lambda args: extract_zip_to_directory("pydwf-html-docs"))
+    subparser_extract_html.set_defaults(execute=lambda args: extract_zip_to_directory("pydwf-html-docs"))
 
     # Parse command-line arguments.
     args = parser.parse_args()
