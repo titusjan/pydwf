@@ -1,0 +1,7 @@
+# Configuration file for .readthedocs.yaml
+
+version: 2
+
+sphinx
+  builder: html
+  configuration: doc/conf.py
