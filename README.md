@@ -1,7 +1,7 @@
 # pydwf
 
-This is *pydwf*, a Python 3 wrapper for the Digilent Waveforms library to control the *Discovery*
-line of multi-function lab devices. It fully implements all functionality offered by the underlying
+This is *pydwf*, a Python wrapper for the Digilent Waveforms library to control their line of
+multi-function lab devices. It fully implements all functionality offered by the underlying
 C library (over 400 functions!) in an easy-to-use Python API.
 
 The package offers a convenient command line tool that can be used, among other things, to list
@@ -18,6 +18,17 @@ devices. It should also work with other devices, like the legacy Analog Discover
 Explorer board, and the new Analog Discovery Pro devices, but these haven't been tested.
 
 If you have such a device and encounter issues, please let me know.
+
+## Dependencies
+
+The *pydwf* package is Python 3 only.
+
+It requires the Digilent Adept and Digilent Waveforms packages to be installed on your computer.
+
+Furthermore, it depends on the *numpy* package to handle the large amounts of data that travel
+between the PC and the devices.
+
+Some of the examples depend on the *matplotlib* library, but *pydwf* itself will work without it.
 
 ## Project hosting
 
@@ -40,7 +51,7 @@ pip install pydwf
 A working installation of the Digilent Adept and DWF libraries is a prerequisite for using *pydwf*.
 If the Waveforms GUI application provided by Digilent works, you're good to go.
 
-After installing *pydwf*, the following command will show the version of pydwf and the underlying
+After installing *pydwf*, the following command will show the version of *pydwf* and the underlying
 DWF library:
 
 ```
@@ -65,7 +76,9 @@ by executing the following command:
 python -m pydwf extract-html-docs
 ```
 
-This will create a local directory called *pydwf-docs-html* containing the project documentation.
+This will create a local directory called *pydwf-docs-html* containing the project documentation in HTML format.
+
+Please note that the documentation is not yet complete — it's a big API!
 
 ## Examples
 
