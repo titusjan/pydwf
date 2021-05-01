@@ -49,7 +49,7 @@ def main():
 
     target_specifications = {
         "pydwf-examples"  : "../../examples",
-        "pydwf-html-docs" : "../../doc/build/html"
+        "pydwf-html-docs" : "../../documentation/build/html"
     }
 
     filename = "../../pydwf/auxiliary_package_data.py"
