@@ -1862,11 +1862,11 @@ class DigilentWaveformsDevice:
                 raise self._device._dwf._exception()
 
         def triggerChannelGet(self) -> int:
-            c_idxChannel = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogInTriggerChannelGet(self._device._hdwf, c_idxChannel)
+            c_channel_index = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfAnalogInTriggerChannelGet(self._device._hdwf, c_channel_index)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            channel_index = c_idxChannel.value
+            channel_index = c_channel_index.value
             return channel_index
 
         def triggerFilterInfo(self) -> List[FILTER]:
@@ -2086,18 +2086,18 @@ class DigilentWaveformsDevice:
             cChannel = c_cChannel.value
             return cChannel
 
-        def masterSet(self, channel_index: int, idxMaster: int) -> None:
-            result = self._device._dwf._lib.FDwfAnalogOutMasterSet(self._device._hdwf, channel_index, idxMaster)
+        def masterSet(self, channel_index: int, master_index: int) -> None:
+            result = self._device._dwf._lib.FDwfAnalogOutMasterSet(self._device._hdwf, channel_index, master_index)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def masterGet(self, channel_index: int) -> int:
-            c_idxMaster = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfAnalogOutMasterGet(self._device._hdwf, channel_index, c_idxMaster)
+            c_master_index = _typespec_ctypes.c_int()
+            result = self._device._dwf._lib.FDwfAnalogOutMasterGet(self._device._hdwf, channel_index, c_master_index)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
-            idxMaster = c_idxMaster.value
-            return idxMaster
+            master_index = c_master_index.value
+            return master_index
 
         def triggerSourceSet(self, channel_index: int, trigger_source: TRIGSRC) -> None:
             result = self._device._dwf._lib.FDwfAnalogOutTriggerSourceSet(self._device._hdwf, channel_index, trigger_source.value)
@@ -3232,7 +3232,7 @@ class DigilentWaveformsDevice:
             return auto
 
         def statusData(self, count_bytes: int) -> np.ndarray:
-            """Retrieve the acquired data samples from the specified idxChannel on the DigitalIn instrument.
+            """Retrieve the acquired data samples from the DigitalIn instrument.
             It copies the data samples to the provided buffer.
             """
             samples = np.empty(count_bytes, dtype='B')
@@ -3242,7 +3242,7 @@ class DigilentWaveformsDevice:
             return samples
 
         def statusData2(self, first_sample: int, count_bytes: int) -> np.ndarray:
-            """Retrieve the acquired data samples from the specified idxChannel on the DigitalIn instrument.
+            """Retrieve the acquired data samples from the DigitalIn instrument.
             """
 
             samples = np.empty(count_bytes, dtype='B')
@@ -3827,173 +3827,173 @@ class DigilentWaveformsDevice:
             channel_count = c_channel_count.value
             return channel_count
 
-        def enableSet(self, idxChannel: int, enable: bool) -> None:
+        def enableSet(self, channel_index: int, enable: bool) -> None:
             """Enables or disables a digital-out channel."""
-            result = self._device._dwf._lib.FDwfDigitalOutEnableSet(self._device._hdwf, idxChannel, enable)
+            result = self._device._dwf._lib.FDwfDigitalOutEnableSet(self._device._hdwf, channel_index, enable)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def enableGet(self, idxChannel: int) -> bool:
+        def enableGet(self, channel_index: int) -> bool:
             """Checks if a specific digital-out channel is enabled."""
             c_enable = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfDigitalOutEnableGet(self._device._hdwf, idxChannel, c_enable)
+            result = self._device._dwf._lib.FDwfDigitalOutEnableGet(self._device._hdwf, channel_index, c_enable)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             enable = bool(c_enable.value)
             return enable
 
-        def outputInfo(self, idxChannel: int) -> List[DwfDigitalOutOutput]:
+        def outputInfo(self, channel_index: int) -> List[DwfDigitalOutOutput]:
             c_output_bitset = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfDigitalOutOutputInfo(self._device._hdwf, idxChannel, c_output_bitset)
+            result = self._device._dwf._lib.FDwfDigitalOutOutputInfo(self._device._hdwf, channel_index, c_output_bitset)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             output_bitset = c_output_bitset.value
             output_list = [output for output in DwfDigitalOutOutput if output_bitset & (1 << output.value)]
             return output_list
 
-        def outputSet(self, idxChannel: int, output_value: DwfDigitalOutOutput) -> None:
-            result = self._device._dwf._lib.FDwfDigitalOutOutputSet(self._device._hdwf, idxChannel, output_value.value)
+        def outputSet(self, channel_index: int, output_value: DwfDigitalOutOutput) -> None:
+            result = self._device._dwf._lib.FDwfDigitalOutOutputSet(self._device._hdwf, channel_index, output_value.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def outputGet(self, idxChannel: int) -> DwfDigitalOutOutput:
+        def outputGet(self, channel_index: int) -> DwfDigitalOutOutput:
             c_output_value = _typespec_ctypes.DwfDigitalOutOutput()
-            result = self._device._dwf._lib.FDwfDigitalOutOutputGet(self._device._hdwf, idxChannel, c_output_value)
+            result = self._device._dwf._lib.FDwfDigitalOutOutputGet(self._device._hdwf, channel_index, c_output_value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             output_value = DwfDigitalOutOutput(c_output_value.value)
             return output_value
 
-        def typeInfo(self, idxChannel: int) -> List[DwfDigitalOutType]:
+        def typeInfo(self, channel_index: int) -> List[DwfDigitalOutType]:
             c_type_bitset = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfDigitalOutTypeInfo(self._device._hdwf, idxChannel, c_type_bitset)
+            result = self._device._dwf._lib.FDwfDigitalOutTypeInfo(self._device._hdwf, channel_index, c_type_bitset)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             type_bitset = c_type_bitset.value
             type_list = [type_ for type_ in DwfDigitalOutType if type_bitset & (1 << type_.value)]
             return type_list
 
-        def typeSet(self, idxChannel: int, output_type: DwfDigitalOutType) -> None:
-            result = self._device._dwf._lib.FDwfDigitalOutTypeSet(self._device._hdwf, idxChannel, output_type.value)
+        def typeSet(self, channel_index: int, output_type: DwfDigitalOutType) -> None:
+            result = self._device._dwf._lib.FDwfDigitalOutTypeSet(self._device._hdwf, channel_index, output_type.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def typeGet(self, idxChannel: int) -> DwfDigitalOutType:
+        def typeGet(self, channel_index: int) -> DwfDigitalOutType:
             c_output_type = _typespec_ctypes.DwfDigitalOutType()
-            result = self._device._dwf._lib.FDwfDigitalOutTypeGet(self._device._hdwf, idxChannel, c_output_type)
+            result = self._device._dwf._lib.FDwfDigitalOutTypeGet(self._device._hdwf, channel_index, c_output_type)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             output_type = DwfDigitalOutType(c_output_type.value)
             return output_type
 
-        def idleInfo(self, idxChannel: int) -> List[DwfDigitalOutIdle]:
+        def idleInfo(self, channel_index: int) -> List[DwfDigitalOutIdle]:
             c_idle_bitset = _typespec_ctypes.c_int()
-            result = self._device._dwf._lib.FDwfDigitalOutIdleInfo(self._device._hdwf, idxChannel, c_idle_bitset)
+            result = self._device._dwf._lib.FDwfDigitalOutIdleInfo(self._device._hdwf, channel_index, c_idle_bitset)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             idle_bitset = c_idle_bitset.value
             idle_list = [idle for idle in DwfDigitalOutIdle if idle_bitset & (1 << idle.value)]
             return idle_list
 
-        def idleSet(self, idxChannel: int, idle_mode: DwfDigitalOutIdle) -> None:
-            result = self._device._dwf._lib.FDwfDigitalOutIdleSet(self._device._hdwf, idxChannel, idle_mode.value)
+        def idleSet(self, channel_index: int, idle_mode: DwfDigitalOutIdle) -> None:
+            result = self._device._dwf._lib.FDwfDigitalOutIdleSet(self._device._hdwf, channel_index, idle_mode.value)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def idleGet(self, idxChannel: int) -> DwfDigitalOutIdle:
+        def idleGet(self, channel_index: int) -> DwfDigitalOutIdle:
             c_idle_mode = _typespec_ctypes.DwfDigitalOutIdle()
-            result = self._device._dwf._lib.FDwfDigitalOutIdleGet(self._device._hdwf, idxChannel, c_idle_mode)
+            result = self._device._dwf._lib.FDwfDigitalOutIdleGet(self._device._hdwf, channel_index, c_idle_mode)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             idle_mode = DwfDigitalOutIdle(c_idle_mode.value)
             return idle_mode
 
-        def dividerInfo(self, idxChannel: int) -> Tuple[int, int]:
+        def dividerInfo(self, channel_index: int) -> Tuple[int, int]:
             c_divider_init_min = _typespec_ctypes.c_unsigned_int()
             c_divider_init_max = _typespec_ctypes.c_unsigned_int()
-            result = self._device._dwf._lib.FDwfDigitalOutDividerInfo(self._device._hdwf, idxChannel, c_divider_init_min, c_divider_init_max)
+            result = self._device._dwf._lib.FDwfDigitalOutDividerInfo(self._device._hdwf, channel_index, c_divider_init_min, c_divider_init_max)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             divider_init_min = c_divider_init_min.value
             divider_init_max = c_divider_init_max.value
             return (divider_init_min, divider_init_max)
 
-        def dividerInitSet(self, idxChannel: int, divider_init: int) -> None:
-            result = self._device._dwf._lib.FDwfDigitalOutDividerInitSet(self._device._hdwf, idxChannel, divider_init)
+        def dividerInitSet(self, channel_index: int, divider_init: int) -> None:
+            result = self._device._dwf._lib.FDwfDigitalOutDividerInitSet(self._device._hdwf, channel_index, divider_init)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def dividerInitGet(self, idxChannel: int) -> int:
+        def dividerInitGet(self, channel_index: int) -> int:
             c_divider_init = _typespec_ctypes.c_unsigned_int()
-            result = self._device._dwf._lib.FDwfDigitalOutDividerInitGet(self._device._hdwf, idxChannel, c_divider_init)
+            result = self._device._dwf._lib.FDwfDigitalOutDividerInitGet(self._device._hdwf, channel_index, c_divider_init)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             divider_init = c_divider_init.value
             return divider_init
 
-        def dividerSet(self, idxChannel: int, divider: int) -> None:
-            result = self._device._dwf._lib.FDwfDigitalOutDividerSet(self._device._hdwf, idxChannel, divider)
+        def dividerSet(self, channel_index: int, divider: int) -> None:
+            result = self._device._dwf._lib.FDwfDigitalOutDividerSet(self._device._hdwf, channel_index, divider)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def dividerGet(self, idxChannel: int) -> int:
+        def dividerGet(self, channel_index: int) -> int:
             c_divider = _typespec_ctypes.c_unsigned_int()
-            result = self._device._dwf._lib.FDwfDigitalOutDividerGet(self._device._hdwf, idxChannel, c_divider)
+            result = self._device._dwf._lib.FDwfDigitalOutDividerGet(self._device._hdwf, channel_index, c_divider)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             divider = c_divider.value
             return divider
 
-        def counterInfo(self, idxChannel: int) -> Tuple[int, int]:
+        def counterInfo(self, channel_index: int) -> Tuple[int, int]:
             c_counter_min = _typespec_ctypes.c_unsigned_int()
             c_counter_max = _typespec_ctypes.c_unsigned_int()
-            result = self._device._dwf._lib.FDwfDigitalOutCounterInfo(self._device._hdwf, idxChannel, c_counter_min, c_counter_max)
+            result = self._device._dwf._lib.FDwfDigitalOutCounterInfo(self._device._hdwf, channel_index, c_counter_min, c_counter_max)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             counter_min = c_counter_min.value
             counter_max = c_counter_max.value
             return (counter_min, counter_max)
 
-        def counterInitSet(self, idxChannel: int, high: bool, counter_init: int) -> None:
-            result = self._device._dwf._lib.FDwfDigitalOutCounterInitSet(self._device._hdwf, idxChannel, high, counter_init)
+        def counterInitSet(self, channel_index: int, high: bool, counter_init: int) -> None:
+            result = self._device._dwf._lib.FDwfDigitalOutCounterInitSet(self._device._hdwf, channel_index, high, counter_init)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def counterInitGet(self, idxChannel: int) -> Tuple[int, int]:
+        def counterInitGet(self, channel_index: int) -> Tuple[int, int]:
             c_high = _typespec_ctypes.c_int()
             c_counter_init = _typespec_ctypes.c_unsigned_int()
-            result = self._device._dwf._lib.FDwfDigitalOutCounterInitGet(self._device._hdwf, idxChannel, c_high, c_counter_init)
+            result = self._device._dwf._lib.FDwfDigitalOutCounterInitGet(self._device._hdwf, channel_index, c_high, c_counter_init)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             high = c_high.value
             counter_init = c_counter_init.value
             return (high, counter_init)
 
-        def counterSet(self, idxChannel: int, low_count: int, high_count: int) -> None:
-            result = self._device._dwf._lib.FDwfDigitalOutCounterSet(self._device._hdwf, idxChannel, low_count, high_count)
+        def counterSet(self, channel_index: int, low_count: int, high_count: int) -> None:
+            result = self._device._dwf._lib.FDwfDigitalOutCounterSet(self._device._hdwf, channel_index, low_count, high_count)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
-        def counterGet(self, idxChannel: int) -> Tuple[int, int]:
+        def counterGet(self, channel_index: int) -> Tuple[int, int]:
             c_low_count = _typespec_ctypes.c_unsigned_int()
             c_high_count = _typespec_ctypes.c_unsigned_int()
-            result = self._device._dwf._lib.FDwfDigitalOutCounterGet(self._device._hdwf, idxChannel, c_low_count, c_high_count)
+            result = self._device._dwf._lib.FDwfDigitalOutCounterGet(self._device._hdwf, channel_index, c_low_count, c_high_count)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             low_count = c_low_count.value
             high_count = c_high_count.value
             return (low_count, high_count)
 
-        def dataInfo(self, idxChannel: int) -> int:
+        def dataInfo(self, channel_index: int) -> int:
             """Return the maximum buffer size, the number of custom data bits."""
             c_max_databits = _typespec_ctypes.c_unsigned_int()
-            result = self._device._dwf._lib.FDwfDigitalOutDataInfo(self._device._hdwf, idxChannel, c_max_databits)
+            result = self._device._dwf._lib.FDwfDigitalOutDataInfo(self._device._hdwf, channel_index, c_max_databits)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
             max_databits = c_max_databits.value
             return max_databits
 
-        def dataSet(self, idxChannel: int, bits: str, tristate: bool=False) -> None:
+        def dataSet(self, channel_index: int, bits: str, tristate: bool=False) -> None:
             """Set digital-out arbitrary channel data."""
 
             if tristate:
@@ -4010,7 +4010,7 @@ class DigilentWaveformsDevice:
 
             octets_as_bytes = bytes(octets)
 
-            result = self._device._dwf._lib.FDwfDigitalOutDataSet(self._device._hdwf, idxChannel, octets_as_bytes, countOfBits)
+            result = self._device._dwf._lib.FDwfDigitalOutDataSet(self._device._hdwf, channel_index, octets_as_bytes, countOfBits)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
