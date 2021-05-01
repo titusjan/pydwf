@@ -51,8 +51,8 @@ pip install pydwf
 A working installation of the Digilent Adept and DWF libraries is a prerequisite for using *pydwf*.
 If the Waveforms GUI application provided by Digilent works, you're good to go.
 
-After installing *pydwf*, the following command will show the version of *pydwf* and the underlying
-DWF library:
+After installing *pydwf*, the following command will show the version of *pydwf* and the
+underlying DWF library:
 
 ```
 python -m pydwf version
@@ -67,16 +67,19 @@ python -m pydwf list -c
 
 ## Documentation
 
-The project documentation will be hosted on readthedocs in the near future.
+The project documentation is hosted on *readthedocs* and can be reached via the following URL:
 
-For now, the documentation can easily be installed locally after installing the package
-by executing the following command:
+https://pydwf.readthedocs.io/en/latest/
+
+If desired, the documentation can also be installed locally after installing the package by
+executing the following command:
 
 ```
 python -m pydwf extract-html-docs
 ```
 
-This will create a local directory called *pydwf-docs-html* containing the project documentation in HTML format.
+This will create a local directory called *pydwf-docs-html* containing the project documentation
+in HTML format.
 
 Please note that the documentation is not yet complete — it's a big API!
 
