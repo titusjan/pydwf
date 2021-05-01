@@ -10,7 +10,7 @@ from demo_utilities import find_demo_device, DemoDeviceNotFoundError
 
 
 class circle_sampler:
-
+    """This sampler generates XY samples for a circular shape on-demand."""
     def __init__(self, channel: str, sample_frequency: float, refresh_frequency: float):
         self.channel = channel
         self.sample_frequency = sample_frequency
@@ -28,11 +28,11 @@ class circle_sampler:
 
 
 class rotating_polygon_sampler:
-
-    def __init__(self, channel: str, sample_frequency: float, refresh_frequency: float, n_points: float, n_step: int, revolutions_per_sec: float):
+    """This sampler generates XY samples for a polygon shape on demand."""
+    def __init__(self, channel: str, sample_frequency: float, refresh_frequency: float, n_points: float, n_step: int, shape_revolutions_per_sec: float):
         self.sample_frequency = sample_frequency
         self.refresh_frequency = refresh_frequency
-        self.revolutions_per_sec = revolutions_per_sec
+        self.shape_revolutions_per_sec = shape_revolutions_per_sec
         self.channel = channel
         self.n_points = n_points
         self.n_step   = n_step
@@ -60,9 +60,9 @@ class rotating_polygon_sampler:
         x = x0 + (x1 - x0) * residual
         y = y0 + (y1 - y0) * residual
 
-        # rotate (x, y) by "revolutions_per_sec * t"
+        # rotate (x, y) by (shape_revolutions_per_sec * t) revolutions.
 
-        h = 2 * np.pi * self.revolutions_per_sec * t
+        h = 2 * np.pi * self.shape_revolutions_per_sec * t
 
         if self.channel == 'x':
             return np.cos(h) * x - np.sin(h) * y
@@ -70,7 +70,7 @@ class rotating_polygon_sampler:
             return np.sin(h) * x + np.cos(h) * y
 
 
-def demo_analog_output_instrument_api(analogOut, shape, sample_frequency, refresh_frequency, n_points, n_step, revolutions_per_sec):
+def demo_analog_output_instrument_api(analogOut, shape, sample_frequency, refresh_frequency, n_points, n_step, shape_revolutions_per_sec):
 
     channel_count = analogOut.count()
 
@@ -88,8 +88,8 @@ def demo_analog_output_instrument_api(analogOut, shape, sample_frequency, refres
         sampler_ch1 = circle_sampler('x', sample_frequency, refresh_frequency)
         sampler_ch2 = circle_sampler('y', sample_frequency, refresh_frequency)
     elif shape == 'poly':
-        sampler_ch1 = rotating_polygon_sampler('x', sample_frequency, refresh_frequency, n_points, n_step, revolutions_per_sec)
-        sampler_ch2 = rotating_polygon_sampler('y', sample_frequency, refresh_frequency, n_points, n_step, revolutions_per_sec)
+        sampler_ch1 = rotating_polygon_sampler('x', sample_frequency, refresh_frequency, n_points, n_step, shape_revolutions_per_sec)
+        sampler_ch2 = rotating_polygon_sampler('y', sample_frequency, refresh_frequency, n_points, n_step, shape_revolutions_per_sec)
 
     analogOut.nodeEnableSet(CH1, AnalogOutNode.Carrier, True)
     analogOut.nodeFunctionSet(CH1, AnalogOutNode.Carrier, FUNC.Play)
