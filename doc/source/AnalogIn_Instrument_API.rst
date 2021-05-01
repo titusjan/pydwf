@@ -32,11 +32,11 @@ The AnalogIn instrument state machine
 API methods
 -----------
 
-The AnalogIn instrument is the most complicated instrument implemented in the DWF library; there are many parameters that can be used to control its behavior and,
-consequently, many functions to control and query the instrument.
+The AnalogIn instrument is the most complicated instrument implemented in the DWF library; there are many settings that control its behavior and,
+consequently, many functions to control and query those settings.
 
-Version 3.16.3 of the DWF library has 93 'FDwfAnalogIn' functions, one of which (FDwfAnalogInTriggerSourceInfo) is obsolete.
-All of these are available through the AnalogIn API.
+Version 3.16.3 of the DWF library has 93 'FDwfAnalogIn' functions, one of which (*FDwfAnalogInTriggerSourceInfo*) is obsolete.
+All of these are available through the AnalogIn API of *pydwf*.
 
 Configuration functions
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -87,8 +87,8 @@ Information on last status() request
 
    analogIn.statusRecord() -> Tuple[int, int, int]
 
-Retrieving bulk analog-in data
-""""""""""""""""""""""""""""""
+Retrieving bulk analog-in status data
+"""""""""""""""""""""""""""""""""""""
 
 .. code-block:: python
 
@@ -131,7 +131,7 @@ A value of 0 (zero) denotes a recording of an indefinite length.
 Sample frequency
 """"""""""""""""
 
-The sample frequency of the AnalogIn instrument, in Hz.
+The sample frequency of the AnalogIn instrument, in samples per second.
 
 The 'frequencyInfo' method can be used to query the range of possible values for this setting.
 
@@ -144,12 +144,12 @@ The 'frequencyInfo' method can be used to query the range of possible values for
 Acquisition buffer size
 """""""""""""""""""""""
 
-The buffer size of the AnalogIn instrument, in samples.
+The sample buffer size of the AnalogIn instrument, in samples.
 
 The 'bufferSizeInfo' method can be used to query the range of possible values for this setting.
 
 The maximum buffer size depends on the configuration of the device. For the Analog Discovery 2, for example,
-the maximum buffer size can be 512, 2048, 8192 (default), or 16384, depending on the configuration.
+the maximum AnalogIn buffer size can be 512, 2048, 8192, or 16384, depending on the configuration.
 
 When using the "Record" acquisition mode, the buffer size should be left at the default value, which is equal
 to the maximum value. In other modes (e.g. Single), the buffer size determines the size of the acquisition window.
@@ -163,10 +163,21 @@ to the maximum value. In other modes (e.g. Single), the buffer size determines t
 Noise buffer size
 """""""""""""""""
 
+The noise buffer size of the AnalogInstrument, in samples.
+
+The underlying C API functions for the noise buffer size suggest that it is an independent setting,
+but it really isn't.
+
+Setting the noise buffer size to a value 0 disables it completely; setting it to any other value
+enables it with the size equal to the size of the sample buffer divided by 8.
+
+In *pydwf*, this behavior is represented by the fact that the *noiseSizeSet* function takes a
+boolean parameter instead of an integer parameter.
+
 .. code-block:: python
 
    analogIn.noiseSizeInfo() -> int
-   analogIn.noiseSizeSet(noise_buffer_active: bool)
+   analogIn.noiseSizeSet(enable_noise_buffer: bool)
    analogIn.noiseSizeGet() -> int
 
 Acquisition mode
@@ -183,13 +194,13 @@ Channel-specific settings
 
 Many settings can be set differently for the AnalogIn channels.
 
-The function 'channelCount' defined below queries the number of available channels; all other functions take a 'channel_index' argument
-that indicates which channel's setting is to be changed. This value should be in the range of 0 to channelCount - 1.
+The function *channelCount* queries the number of available channels; all other functions take a *channel_index* argument
+that indicates which channel's setting is to be changed. This value should be in the range of 0 to (*channelCount* - 1).
 
 Channel count
 """""""""""""
 
-The number of channels supported by the AnalofInstrument. This value cannot be changed, only queried.
+The number of channels supported by the AnalogIn instrument. This value cannot be changed, only queried.
 
 For the Analog Dicovery 2, the 'channelCount' method always returns 2.
 
@@ -199,6 +210,9 @@ For the Analog Dicovery 2, the 'channelCount' method always returns 2.
 
 Channel enable/disable
 """"""""""""""""""""""
+
+AnalogIn channels can either be enabled or disabled individually.
+These functions allow you to set and query their enabled states.
 
 .. code-block:: python
 
@@ -211,7 +225,7 @@ Channel filtering
 .. code-block:: python
 
    analogIn.channelFilterInfo() -> List[FILTER]
-   analogIn.channelFilterSet(channel_index: int, filter\_: FILTER)
+   analogIn.channelFilterSet(channel_index: int, filter_: FILTER)
    analogIn.channelFilterGet(channel_index: int) -> FILTER
 
 Channel range
@@ -226,6 +240,10 @@ Channel range
 
 Channel offset
 """"""""""""""
+
+Each channel has a channel offset value, in Volts.
+
+These functions allow you to query the valid range, and to set and get the current offset value.
 
 .. code-block:: python
 
@@ -263,9 +281,11 @@ Trigger for the AnalogIn instrument
 AnalogIn Trigger source
 """""""""""""""""""""""
 
+Note that analogIn.triggerSourceInfo() is considered obsolete. Use the *triggerInfo* function in the Device API instead.
+
 .. code-block:: python
 
-   analogIn.triggerSourceInfo() -> List[TRIGSRC] (OBSOLETE)
+   analogIn.triggerSourceInfo() -> List[TRIGSRC]       # *** OBSOLETE ***
    analogIn.triggerSourceSet(trigger_source: TRIGSRC)
    analogIn.triggerSourceGet() -> TRIGSRC
 
@@ -301,6 +321,8 @@ Trigger auto-timeout
 Trigger holdoff
 """""""""""""""
 
+The trigger holdoff setting is the minimum time (in seconds) for a trigger to be recognized after a previous trigger.
+
 .. code-block:: python
 
    analogIn.triggerHoldOffInfo() -> Tuple[float, float, float]
@@ -319,6 +341,10 @@ Trigger type
 Trigger channel
 """""""""""""""
 
+The AnalogIn trigger detector is sensitive to a specific channel.
+
+These functions return the valid range of values for the trigger channel and set and get the trigger channel.
+
 .. code-block:: python
 
    analogIn.triggerChannelInfo() -> Tuple[int, int]
@@ -331,7 +357,7 @@ Trigger filter
 .. code-block:: python
 
    analogIn.triggerFilterInfo() -> List[FILTER]
-   analogIn.triggerFilterSet(filter\_: FILTER)
+   analogIn.triggerFilterSet(filter_: FILTER)
    analogIn.triggerFilterGet() -> FILTER
 
 Trigger level
@@ -409,3 +435,12 @@ Sampling clock delay
 
    analogIn.samplingDelaySet(sampling_delay: float)
    analogIn.samplingDelayGet() -> float
+
+Example scripts
+---------------
+
+AnalogInSimple.py
+^^^^^^^^^^^^^^^^^
+
+AnalogInRecordMode.py
+^^^^^^^^^^^^^^^^^^^^^

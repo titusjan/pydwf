@@ -24,6 +24,16 @@ For example:
        # Use the AnalogOut instrument.
        analogOut.reset()
 
+The AnalogOut instrument state machine
+--------------------------------------
+
+(to be written)
+
+Channels and nodes
+------------------
+
+(to be written)
+
 API methods
 -----------
 
@@ -31,6 +41,10 @@ The AnalogOut instrument is a complicated instrument; there are many parameters 
 We summarize them below.
 
 Version 3.16.3 of the DWF library has 83 'FDwfAnalogOut' functions, 25 of which are obsolete.
+All of these are available through the AnalogIn API of *pydwf*.
+
+Miscellaneus functions
+^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -61,7 +75,7 @@ Version 3.16.3 of the DWF library has 83 'FDwfAnalogOut' functions, 25 of which 
    analogOut.masterGet(channel_index: int) -> int
 
 Triggering
-""""""""""
+^^^^^^^^^^
 
 .. code-block:: python
 
@@ -74,7 +88,7 @@ Triggering
    analogOut.triggerSlopeGet(channel_index: int) -> DwfTriggerSlope
 
 Run duration, wait duration, and repeats
-""""""""""""""""""""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -102,7 +116,7 @@ Run duration, wait duration, and repeats
    analogOut.repeatTriggerGet(channel_index: int) -> bool
 
 Analog Output settings
-""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -124,14 +138,23 @@ Analog Output settings
 AnalogOut node functions
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
+Query available signal nodes
+""""""""""""""""""""""""""""
+
 .. code-block:: python
 
    analogOut.nodeInfo(channel_index: int) -> List[AnalogOutNode]
+
+Node enable/disable setting
+"""""""""""""""""""""""""""
 
 .. code-block:: python
 
    analogOut.nodeEnableSet(channel_index: int, node: AnalogOutNode, enable: bool)
    analogOut.nodeEnableGet(channel_index: int, node: AnalogOutNode) -> bool
+
+Node signal function (waveform) setting
+"""""""""""""""""""""""""""""""""""""""
 
 .. code-block:: python
 
@@ -139,11 +162,17 @@ AnalogOut node functions
    analogOut.nodeFunctionSet(channel_index: int, node: AnalogOutNode, func: FUNC)
    analogOut.nodeFunctionGet(channel_index: int, node: AnalogOutNode) -> FUNC
 
+Node signal frequency setting
+"""""""""""""""""""""""""""""
+
 .. code-block:: python
 
    analogOut.nodeFrequencyInfo(channel_index: int, node: AnalogOutNode) -> Tuple[float, float]
    analogOut.nodeFrequencySet(channel_index: int, node: AnalogOutNode, hzFrequency: float)
    analogOut.nodeFrequencyGet(channel_index: int, node: AnalogOutNode) -> float
+
+Node signal amplitude setting
+"""""""""""""""""""""""""""""
 
 .. code-block:: python
 
@@ -151,17 +180,26 @@ AnalogOut node functions
    analogOut.nodeAmplitudeSet(channel_index: int, node: AnalogOutNode, vAmplitude: float)
    analogOut.nodeAmplitudeGet(channel_index: int, node: AnalogOutNode) -> float
 
+Node signal offset setting
+""""""""""""""""""""""""""
+
 .. code-block:: python
 
    analogOut.nodeOffsetInfo(channel_index: int, node: AnalogOutNode) -> Tuple[float, float]
    analogOut.nodeOffsetSet(channel_index: int, node: AnalogOutNode, vOffset: float)
    analogOut.nodeOffsetGet(channel_index: int, node: AnalogOutNode) -> float
 
+Node signal symmetry setting
+""""""""""""""""""""""""""""
+
 .. code-block:: python
 
    analogOut.nodeSymmetryInfo(channel_index: int, node: AnalogOutNode) -> Tuple[float, float]
    analogOut.nodeSymmetrySet(channel_index: int, node: AnalogOutNode, percentageSymmetry: float)
    analogOut.nodeSymmetryGet(channel_index: int, node: AnalogOutNode) -> float
+
+Node signal phase setting
+"""""""""""""""""""""""""
 
 .. code-block:: python
 
@@ -186,11 +224,17 @@ Obsolete functions
    analogOut.enableSet(channel_index: int, enable: bool)
    analogOut.enableGet(channel_index: int) -> bool
 
+Signal function (waveform) setting (OBSOLETE)
+"""""""""""""""""""""""""""""""""""""""""""""
+
 .. code-block:: python
 
    analogOut.functionInfo(channel_index: int) -> List[FUNC]
    analogOut.functionSet(channel_index: int, func: FUNC)
    analogOut.functionGet(channel_index: int) -> FUNC
+
+Signal frequency setting (OBSOLETE)
+"""""""""""""""""""""""""""""""""""
 
 .. code-block:: python
 
@@ -198,11 +242,17 @@ Obsolete functions
    analogOut.frequencySet(channel_index: int, hzFrequency: float)
    analogOut.frequencyGet(channel_index: int) -> float
 
+Signal amplitude setting (OBSOLETE)
+"""""""""""""""""""""""""""""""""""
+
 .. code-block:: python
 
    analogOut.amplitudeInfo(channel_index: int) -> Tuple[float, float]
    analogOut.amplitudeSet(channel_index: int, vAmplitude: float)
    analogOut.amplitudeGet(channel_index: int) -> float
+
+Signal offset setting (OBSOLETE)
+""""""""""""""""""""""""""""""""
 
 .. code-block:: python
 
@@ -210,11 +260,17 @@ Obsolete functions
    analogOut.offsetSet(channel_index: int, vOffset: float)
    analogOut.offsetGet(channel_index: int) -> float
 
+Signal symmetry setting (OBSOLETE)
+""""""""""""""""""""""""""""""""""
+
 .. code-block:: python
 
    analogOut.symmetryInfo(channel_index: int) -> Tuple[float, float]
    analogOut.symmetrySet(channel_index: int, percentageSymmetry: float)
    analogOut.symmetryGet(channel_index: int) -> float
+
+Signal phase setting (OBSOLETE)
+"""""""""""""""""""""""""""""""
 
 .. code-block:: python
 
@@ -222,9 +278,21 @@ Obsolete functions
    analogOut.phaseSet(channel_index: int, degreePhase: float)
    analogOut.phaseGet(channel_index: int) -> float
 
+Arbitrary signal playback (OBSOLETE)
+""""""""""""""""""""""""""""""""""""
+
 .. code-block:: python
 
    analogOut.dataInfo(channel_index: int) -> Tuple[int, int]
    analogOut.dataSet(channel_index: int, data: np.ndarray)
    analogOut.playStatus(channel_index: int)  -> Tuple[int, int, int]
    analogOut.playData(channel_index: int, data: np.ndarray)
+
+Example scripts
+---------------
+
+AnalogOutSimple.py
+^^^^^^^^^^^^^^^^^^
+
+AnalogOutContinuousPlay.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^
