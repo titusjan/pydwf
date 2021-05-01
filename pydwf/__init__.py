@@ -13,7 +13,7 @@ from typing import Optional, Tuple, List
 from .dwf_function_signatures import dwf_function_signatures, dwf_version as expected_dwf_version
 
 # Version number of the pydwf package.
-__version__ = "0.2.10"
+__version__ = "0.2.11"
 
 _HDWF_NONE = 0  # HDWF value representing a bad device handle.
 

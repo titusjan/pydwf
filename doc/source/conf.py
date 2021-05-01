@@ -22,7 +22,7 @@ copyright = '2019–2021, Sidney Cadot'
 author = 'Sidney Cadot'
 
 # The full version, including alpha/beta/rc tags
-release = '0.2.0'
+release = '0.2.11'
 
 # -- General configuration ---------------------------------------------------
 
