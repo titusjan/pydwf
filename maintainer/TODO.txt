@@ -1,12 +1,22 @@
-- Fix mypy errors
-- if not result
-- Make tickets:
-  - verify functionalities:
-  - document functionalities:
-- Make setup.py
-- Make sure we can put package on pypi
-- Make sure we can put docs on readtehdocs.io
-- Write docs
-- Add utility code
+TODO:
 
-- Copy back into our QMI repository
+- Make sure we can put docs on readthedocs.io
+- Complete the documentation.
+
+Issues with the C header file as delivered with the SDK:
+
+- In dwf.h, function FDwfDigitalInInputOrderSet, parameter 'fDioFirst' is a bool. This type doesn't exist in C, unless 'stdbool.h' is included.
+- There's a bunch of lines in dwf.h with trailing spaces.
+- The comment on the line describing the "dwfercUnknownError" constant is incorrect.
+- In the definition of the DwfAnalogImpedance type constants, Admittance, Conductance, and Susceptance are commented as having unit 'Siemen',
+    which should be "Siemens".
+- The function 'FDwfAnalogInTriggerHoldOffInfo' has a parameter that is called 'pnStep' rather than 'pnSteps'.
+
+Open issues, dwfsdk.pdf:
+
+- Section 1.2 "the standard c-type bool". "bool" is not a standard C type, Bool_t is.
+- Section 2 "FDwfGetLastError: bad description of "dwfercUnknownError".
+- Section 2 "FDwfParamSet": not all DwfParam values found in the header file are described here.
+- Section 4: not documented: FDwfDeviceEnableSet, FDwfDeviceParamGet, FDwfDebiceParamSet.
+- Section 4: TRIGSRC values High and Low are not documented.
+
