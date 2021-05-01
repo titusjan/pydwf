@@ -11,14 +11,16 @@ import argparse
 import importlib
 from collections import Counter
 
+import pydwf
 from pydwf import DigilentWaveformsLibrary, DwfEnumConfigInfo
-from .dwf_function_signatures import dwf_function_signatures, dwf_version
+from pydwf.dwf_function_signatures import dwf_function_signatures, dwf_version
 
 def show_version():
     """Show DWF library version number."""
 
     dwf = DigilentWaveformsLibrary()
-    print("DWF library version: {}".format(dwf.getVersion()))
+    print("pydwf version ............ : {}".format(pydwf.__version__))
+    print("DWF library version ...... : {}".format(dwf.getVersion()))
 
 def list_devices(use_obsolete_api: bool, list_configurations: bool):
     """List devices supported by the DWF library."""
