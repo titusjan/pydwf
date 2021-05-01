@@ -2,27 +2,6 @@
 
 This module is based on the C header file "dwf.h", version 3.16.3, as extracted from the Linux package;
 size = 48191 bytes; md5sum = c77ad106f85cbad3aef5d61872351754.
-
-Open issues, header file:
-
-- In dwf.h, function FDwfDigitalInInputOrderSet, parameter 'fDioFirst' is a bool. This type doesn't exist in C, unless 'stdbool.h' is included.
-- There's a bunch of lines in dwf.h with trailing spaces.
-- The comment on the line describing the "dwfercUnknownError" constant is incorrect.
-- In the definition of the DwfAnalogImpedance type constants, Admittance, Conductance, and Susceptance are commented as having unit 'Siemen',
-    which should be "Siemens".
-- The DEVVER enum type has 2 values with integer value 2 (devverEExplorerC and devverDiscoveryB), is that intentional?
-- The DwfState enum type has 2 values with integer value 3 (DwfStateTriggered and DwfStateRunning), is that intentional?
-- The function 'FDwfAnalogInTriggerForce' is not documented in the PDF?
-- The function 'FDwfAnalogInTriggerHoldOffInfo' has a parameter that is called 'pnStep' rather than 'pnSteps'.
-
-Open issues, dwfsdk.pdf:
-
-- Section 1.2 "the standard c-type bool". "bool" is not a standard C type, Bool_t is.
-- Section 2 "FDwfGetLastError: bad description of "dwfercUnknownError".
-- Section 2 "FDwfParamSet": not all DwfParam values found in the header file are described here.
-- Section 4: not documented: FDwfDeviceEnableSet, FDwfDeviceParamGet, FDwfDebiceParamSet.
-- Section 4: TRIGSRC values High and Low are not documented.
-
 """
 
 import sys
@@ -33,8 +12,8 @@ from typing import Optional, Tuple, List
 
 from .dwf_function_signatures import dwf_function_signatures, dwf_version as expected_dwf_version
 
-# Version number of the pydwf binding.
-__version__ = "0.2.7"
+# Version number of the pydwf package.
+__version__ = "0.2.9"
 
 _HDWF_NONE = 0  # HDWF value representing a bad device handle.
 
@@ -59,6 +38,8 @@ class DEVID(enum.Enum):
     ADP3X50    = 6
 
 # Note: enum values are not unique.
+# For the EExplorer board the revA was 0, for newer products the revA starts with 1 
+
 class DEVVER(enum.Enum):
     """Device version, represented as type 'int'."""
     EExplorerC = 2  # Duplicate enum value with DiscoveryB (historical)
@@ -89,7 +70,8 @@ class TRIGSRC(enum.Enum):
     High              = 15
     Low               = 16
 
-# Note: the enum values are not unique.
+#  Note: DwfState.Triggered and DwfState.Running have identical values (3).
+#  DwfState.Triggered is used for capture instruments (oscilloscope) and DwfState.Running for signal generation instruments.
 class DwfState(enum.Enum):
     """Instrument states, represented as type 'unsigned char'."""
     Ready     = 0
@@ -98,7 +80,7 @@ class DwfState(enum.Enum):
     Armed     = 1
     Wait      = 7
     Triggered = 3
-    Running   = 3  # Duplicate value, but there is no state 6. Typo?
+    Running   = 3
     Done      = 2
 
 @enum.unique
@@ -395,8 +377,16 @@ class _typespec_ctypes:
     AnalogOutNode               = c_int
 
 
-class DigilentWaveformsLibraryError(RuntimeError):
-    """This class represents an error as reported back by one of the DWF C library functions."""
+class PyDwfError(RuntimeError):
+    """This class represents any error in PyDWF (caused by the underlying C API or otherwise)."""
+    pass
+
+
+class DigilentWaveformsLibraryError(PyDwfError):
+    """This class represents an error as reported back by one of the DWF C library functions.
+
+    This is a specialisation of PyDwfError, to allow applications to catch and PyDwfError exception.
+    """
     def __init__(self, code: Optional[DWFERC], msg: Optional[str]) -> None:
         self.code = code
         self.msg = msg
@@ -412,9 +402,6 @@ class DigilentWaveformsLibraryError(RuntimeError):
 
         return error_string
 
-class PyDwfError(RuntimeError):
-    """This class represents an error that is *not* caused by one of the underlying DWF C library functions."""
-    pass
 
 class DigilentWaveformsLibrary:
     """Provide access to the DWF shared library functions.
@@ -1501,7 +1488,7 @@ class DigilentWaveformsDevice:
             nSizeMax = c_nSizeMax.value
             return nSizeMax
 
-        def noiseSizeSet(self, noise_buffer_active: bool) -> None:
+        def noiseSizeSet(self, enable_noise_buffer: bool) -> None:
             """Enable or disable the noise buffer.
 
             This function determines if the noise buffer is enabled or disabled.
@@ -1511,7 +1498,7 @@ class DigilentWaveformsDevice:
 
                   If enabled, the noise buffer size is always the size of the regular (sample) buffer divided by 8.
             """
-            result = self._device._dwf._lib.FDwfAnalogInNoiseSizeSet(self._device._hdwf, int(noise_buffer_active))
+            result = self._device._dwf._lib.FDwfAnalogInNoiseSizeSet(self._device._hdwf, int(enable_noise_buffer))
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
@@ -4170,13 +4157,12 @@ class DigilentWaveformsDevice:
 
         def orderSet(self, bit_order: int) -> None:
             # bit order: 1 MSB first, 0 LSB first
-            # TODO: check if the same as in the doc PDF
             result = self._device._dwf._lib.FDwfDigitalSpiOrderSet(self._device._hdwf, bit_order)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
 
         def select(self, channel_index: int, level: int) -> None:
-            # 0 low, 1 high, -1 Z
+            # 0 low, 1 high, -1 Z (high impedance)
             result = self._device._dwf._lib.FDwfDigitalSpiSelect(self._device._hdwf, channel_index, level)
             if result != _RESULT_SUCCESS:
                 raise self._device._dwf._exception()
