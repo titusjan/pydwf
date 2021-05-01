@@ -146,11 +146,11 @@ def main():
     parser.add_argument('serial_number', nargs='?', help="serial number of the Digilent device")
 
     parser.add_argument('--shape', choices = ('circle', 'poly')     , default = 'circle' , help="shape to be output on CH1 (x coordinate) and CH2 (y coordinate)")
-    parser.add_argument('--sample_frequency'   , "-fs"  , type=float, default =   48.0e3 , help="output sample frequency")
-    parser.add_argument('--refresh_frequency'  , "-fr"  , type=float, default =   100.0  , help="number of shape redraws per second")
+    parser.add_argument('--sample-frequency'   , "-fs"  , type=float, default =   48.0e3 , help="output sample frequency")
+    parser.add_argument('--refresh-frequency'  , "-fr"  , type=float, default =   100.0  , help="number of shape redraws per second")
     parser.add_argument('--n_points'           , "-np"  , type=int  , default =       5  , help="number of poly points (poly mode only)")
     parser.add_argument('--n_step'             , "-ns"  , type=int  , default =       1  , help="steps to the next poly point (poly mode only)")
-    parser.add_argument('--revolutions_per_sec', "-rps" , type=float, default =     0.1  , help="shape revolutions per second (poly mode only)")
+    parser.add_argument('--revolutions-per-sec', "-rps" , type=float, default =     0.1  , help="shape revolutions per second (poly mode only)")
 
     args = parser.parse_args()
 
