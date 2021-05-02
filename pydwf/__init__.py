@@ -377,7 +377,7 @@ class _typespec_ctypes:
 
 
 class PyDwfError(RuntimeError):
-    """This class represents any error in PyDWF (caused by the underlying C API or otherwise)."""
+    """This class represents any error in pydwf (caused by the underlying C API or otherwise)."""
     pass
 
 
@@ -875,7 +875,7 @@ class DigilentWaveformsLibrary:
         The 12 remaining library functions are implemented as methods of the DigilentWaveformsDevice class.
 
         The DeviceAPI class also provides the openBySerialNumber() convenience method.
-        This the recommended way to open a specific device.
+        This is the recommended way to open a specific device.
         """
 
         def __init__(self, dwf: 'DigilentWaveformsLibrary') -> None:
@@ -888,8 +888,7 @@ class DigilentWaveformsLibrary:
                 This method takes approximately 2 seconds to complete.
 
             Args:
-                device_index: Zero-based index of the previously enumerated device (see the EnumAPI.count() method).
-                              To automatically enumerate all connected devices and open the first discovered device, use device_index=-1.
+                device_index: Zero-based index of the previously enumerated device (see the EnumAPI.count() method). To automatically enumerate all connected devices and open the first discovered device, use device_index=-1.
                 config_index: Zero-based index of the device configuration to use. If None, open the default device configuration.
 
             Returns:
@@ -1524,7 +1523,7 @@ class DigilentWaveformsDevice:
                         The trigger setting is ignored.
                         The last sample is at the end of the buffer.
                         The `statusSamplesValid` function is used to show the number of the acquired samples,
-                          which will grow until reaching the buffer size.
+                        which will grow until reaching the buffer size.
                         Then, the waveform "picture" is shifted for every new sample.
 
             ScanScreen : Perform continuous acquisition circularly writing samples into the buffer.

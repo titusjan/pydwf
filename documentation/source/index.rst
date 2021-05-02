@@ -29,6 +29,7 @@ The current version of pydwf is 0.2.13.
    I2C_Protocol_API
    UART_Protocol_API
    AnalogImpedance_Measurement_API
+   Generated_API_Documentation
 
 Indices and tables
 ==================

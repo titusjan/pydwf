@@ -60,27 +60,29 @@ Overview of the pydwf module API
 
 The *pydwf* library organizes the functionality offered by the underlying C library in two main classes.
 
-Class `DigilentWaveformsLibrary` represents the loaded DWF library itself, and provides functions that are not specific to a particular device, such as querying the library version, device enumeration, and opening a device for use.
+Class :py:class:`pydwf.DigilentWaveformsLibrary` represents the loaded DWF library itself, and provides functions that are not specific to a particular device,
+such as querying the library version, device enumeration, and opening a device for use.
 
-* class DigilentWaveformsLibrary:
+* class :py:class:`pydwf.DigilentWaveformsLibrary`:
 
    * miscellaneous library functions
    * enum: EnumAPI
    * device: DeviceAPI
 
-Class `DigilentWaveformsDevice` represents a specific DWF-compatible hardware device, such as an Analog Discovery 2 or a Digital Discovery. The functionality of a DigilentWaveformsDevice is offered in a number of sub-modules, each representing an *instrument*, *protocol*, or *measurement type*.
+Class :py:class:`pydwf.DigilentWaveformsDevice` represents a specific DWF-compatible hardware device, such as an Analog Discovery 2 or a Digital Discovery.
+The functionality of a DigilentWaveformsDevice is offered in a number of sub-modules, each representing an *instrument*, *protocol*, or *measurement type*.
 
-* class DigilentWaveformsDevice:
+* class :py:class:`pydwf.DigilentWaveformsDevice`:
 
    * miscellaneous device functions
-   * analogIn: AnalogInAPI
-   * analogOut: AnalogOutAPI
-   * analogIO: AnalogIOAPI
-   * digitalIO: DigitalIOAPI
-   * digitalIn: DigitalInAPI
-   * digitalOut: DigitalOutAPI
-   * digitalUart: DigitalUartAPI
-   * digitalSpi: DigitalSpiAPI
-   * digitalI2c: DigitalI2cAPI
-   * digitalCan: DigitalCanAPI
-   * analogImpedance: AnalogImpedanceAPI
+   * analogIn: :py:class:`pydwf.DigilentWaveformsDevice.AnalogInAPI`
+   * analogOut: :py:class:`pydwf.DigilentWaveformsDevice.AnalogOutAPI`
+   * analogIO: :py:class:`pydwf.DigilentWaveformsDevice.AnalogIOAPI`
+   * digitalIO: :py:class:`pydwf.DigilentWaveformsDevice.DigitalIOAPI`
+   * digitalIn: :py:class:`pydwf.DigilentWaveformsDevice.DigitalInAPI`
+   * digitalOut: :py:class:`pydwf.DigilentWaveformsDevice.DigitalOutAPI`
+   * digitalUart: :py:class:`pydwf.DigilentWaveformsDevice.DigitalUartAPI`
+   * digitalSpi: :py:class:`pydwf.DigilentWaveformsDevice.DigitalSpiAPI`
+   * digitalI2c: :py:class:`pydwf.DigilentWaveformsDevice.DigitalI2cAPI`
+   * digitalCan: :py:class:`pydwf.DigilentWaveformsDevice.DigitalCanAPI`
+   * analogImpedance: :py:class:`pydwf.DigilentWaveformsDevice.AnalogImpedanceAPI`
