@@ -1,3 +1,4 @@
+.. include:: substitutions.rst
 
 UART Protocol API
 =================
@@ -12,7 +13,9 @@ The Digilent UART protocol only supports these two basic serial TX and RX signal
 Using the UART protocol API
 ---------------------------
 
-To use the UART protocol API functionality you first need to initialize a DigitalWaveformsLibrary instance. Next, you open a specific device. The device's UART protocol API can now be accessed via its *digitalUart* attribute, which is an instance of the DigitalUartAPI class.
+To use the UART protocol API functionality you first need to initialize a |DigilentWaveformsLibrary| instance.
+Next, you open a specific device.
+The device's UART protocol API can now be accessed via its *digitalUart* attribute, which is an instance of the DigitalUartAPI class.
 
 Version 3.16.3 of the underlying C library supports 9 UART-related functions, none of which are obsolete. These map precisely onto 9 methods of the DigitalUartAPI class:
 

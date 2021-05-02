@@ -1,10 +1,11 @@
+.. include:: substitutions.rst
 
 AnalogIn Instrument API
 =======================
 
 The AnalogIn instrument implements multiple channels of analog input on devices that support it, such as the Analog Discovery and the Analog Discovery 2.
 
-To use the AnalogIn instrument you first need to initialize a DigitalWaveformsLibrary instance.
+To use the AnalogIn instrument you first need to initialize a |DigilentWaveformsLibrary| instance.
 Next, you open a specific device.
 The device's AnalogIn instrument API can now be accessed via its *analogIn* attribute, which is an instance of the AnalogInAPI class.
 
@@ -36,7 +37,7 @@ The AnalogIn instrument is the most complicated instrument implemented in the DW
 consequently, many functions to control and query those settings.
 
 Version 3.16.3 of the DWF library has 93 'FDwfAnalogIn' functions, one of which (*FDwfAnalogInTriggerSourceInfo*) is obsolete.
-All of these are available through the AnalogIn API of *pydwf*.
+All of these are available through the AnalogIn API of the |DigilentWaveformsDevice|.
 
 Configuration functions
 ^^^^^^^^^^^^^^^^^^^^^^^
