@@ -1,4 +1,5 @@
-# Configuration file for .readthedocs.yaml
+
+# Configuration file for the "readthedocs" documentation build environment.
 
 version: 2
 
