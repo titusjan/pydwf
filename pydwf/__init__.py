@@ -12,7 +12,7 @@ from typing import Optional, Tuple, List
 
 from .dwf_function_signatures import dwf_function_signatures, dwf_version as expected_dwf_version
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 _HDWF_NONE = 0  # HDWF value representing a bad device handle.
 
