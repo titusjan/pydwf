@@ -63,7 +63,7 @@ API summary: functions by category
 +---------------------+--------------------------------+------------+--------------+-----------+
 
 Overview of the |pydwf| package API
-===================================
+-----------------------------------
 
 The |pydwf.short| package encapsulates the functionality offered by the underlying C library in two main Python classes.
 
@@ -72,8 +72,8 @@ Class |DigilentWaveformsLibrary.long| represents the loaded DWF library itself, 
 * class |DigilentWaveformsLibrary.long|
 
    * miscellaneous library functions
-   * :py:attr:`~pydwf.DigilentWaveformsLibrary.enum`:   :py:class:`pydwf.DigilentWaveformsLibrary.EnumAPI`
-   * :py:attr:`~pydwf.DigilentWaveformsLibrary.device`: :py:class:`pydwf.DigilentWaveformsLibrary.DeviceAPI`
+   * :py:attr:`~pydwf.DigilentWaveformsLibrary.enum`:   :py:class:`~pydwf.DigilentWaveformsLibrary.EnumAPI`
+   * :py:attr:`~pydwf.DigilentWaveformsLibrary.device`: :py:class:`~pydwf.DigilentWaveformsLibrary.DeviceAPI`
 
 Class |DigilentWaveformsDevice.long| represents a specific DWF-compatible hardware device, such as an Analog Discovery 2 or a Digital Discovery.
 The functionality of a |DigilentWaveformsDevice| is mostly offered via a number of instance attributes, each representing an *instrument*, *protocol*, or *measurement type*.
