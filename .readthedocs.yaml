@@ -5,3 +5,7 @@ version: 2
 sphinx:
   builder: html
   configuration: documentation/source/conf.py
+
+# This is needed for numpy:
+python:
+  system.packages: true
