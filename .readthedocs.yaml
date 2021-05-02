@@ -9,4 +9,4 @@ sphinx:
 
 # This is needed for numpy:
 python:
-  system.packages: true
+  system_packages: true
