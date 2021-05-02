@@ -1,11 +1,11 @@
+.. include:: substitutions.rst
 
-Welcome to pydwf 's documentation!
-==================================
+Welcome to the |pydwf| documentation!
+=====================================
 
-pydwf is a Python binding for libdwf, the library provided by `Digilent <https://store.digilentinc.com/>`_ (now a subsidiary of National Instruments)
-to control their *Discovery* line of products.
+|pydwf.short| is a Python binding for libdwf, the library provided by |Digilent| (now a subsidiary of National Instruments) to control their line of electronic measurement and control devices, which includes the Analog and Digital Discovery, Electronic Explorer, and Analog Discovery Pro.
 
-The current version of pydwf is 0.3.0.
+The current release of |pydwf| is version |release|.
 
 .. toctree::
    :maxdepth: 2

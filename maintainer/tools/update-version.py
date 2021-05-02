@@ -15,8 +15,7 @@ def main():
     replacements = {
         "../../setup.cfg"                      : "version = $VERSION",
         "../../pydwf/__init__.py"              :   "__version__ = \"$VERSION\"",
-        "../../documentation/source/conf.py"   : "release = '$VERSION'",
-        "../../documentation/source/index.rst" : "The current version of pydwf is $VERSION."
+        "../../documentation/source/conf.py"   : "release = '$VERSION'"
     }
 
     for (filename, linespec) in replacements.items():

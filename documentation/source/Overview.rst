@@ -1,25 +1,32 @@
+.. include:: substitutions.rst
 
 Digilent Waveforms Overview
 ===========================
 
-Digilent provides the Digilent Waveforms library to control their line of *Discovery* devices. The library is available as a DLL on Microsoft Windows, a shared object ("so") library on Linux, and a framework on Apple's macOS. The provided library is accompanied by a C header file; together with the shared library file itself, this allows access to the functionality provided from the C and C++ programming languages.
+|Digilent| provides the Digilent Waveforms library to control their line of line of electronic measurement and control devices.
+The library is available as a DLL on Microsoft Windows, a shared object ("so") library on Linux, and a framework on Apple's macOS.
+The provided library is accompanied by a C header file; together with the shared library file itself, this allows access to the functionality provided from the C and C++ programming languages.
 
-Most popular programming languages provide a mechanism to access functions in shared libraries. In Python, such a mechanism is provided by the *ctypes* module that is part of the standard Python library.
+Most popular programming languages provide a mechanism to access functions in shared libraries.
+In Python, such a mechanism is provided by the |ctypes| module that is part of the standard Python library.
 
-The *pydwf* module is a binding to the functionality provided by the DWF library, using the *ctypes* module. It makes all types and functions provided by the DWF library available for use in Python programs.
+The |pydwf.short| package is a binding to the functionality provided by the DWF library, using the |ctypes| module.
+It makes all types and functions provided by the DWF library available for use in Python programs.
 
 Overview of the C API
 ---------------------
 
-The DWF library comes with a header file that (for version 3.16.3) defines the 24 enumeration types and 415 function calls that together make up the DWF API.
+The DWF library comes with a C header file that (for version 3.16.3) defines the 24 enumeration types and 415 function calls that together make up the DWF API.
 Of the 415 function calls provided, 33 are labeled 'obsolete'. Their functionality is usually superseded by newer, more general functions.
 
 The API functions are organized in 14 sub-categories, each providing access to a subset of the DWF functionality — for example, a specific type of instrument, or functions to send and receive messages using a certain protocol.
 
-The function counts for each of the sub-categories of functionality are listed below, to give some idea of the complexity of the different areas of the API. From this table, it is clear that the most complex parts of the API are the AnalogIn ("oscilloscope") and AnalogOut ("waveform generator") instruments, followed by the DigitalIn ("logic analyzer") and DigitalOut ("pattern generator") instruments. Two-thirds of all the functions provided by the DWF library are directly related to control of these four powerful instruments.
+The function counts for each of the sub-categories of functionality are listed below, to give some idea of the complexity of the different areas of the API.
+From this table, it is clear that the most complex parts of the API are the AnalogIn ("oscilloscope") and AnalogOut ("waveform generator") instruments, followed by the DigitalIn ("logic analyzer") and DigitalOut ("pattern generator") instruments.
+Two-thirds of all the functions provided by the DWF library are directly related to control of these four powerful instruments.
 
 API summary: functions by category
-==================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 +---------------------+--------------------------------+------------+--------------+-----------+
 | **category**        | **description**                | **active** | **obsolete** | **total** |
@@ -55,34 +62,33 @@ API summary: functions by category
 | **TOTAL**           |                                |        382 |           33 |       415 |
 +---------------------+--------------------------------+------------+--------------+-----------+
 
-Overview of the pydwf module API
-================================
+Overview of the |pydwf| package API
+===================================
 
-The *pydwf* library organizes the functionality offered by the underlying C library in two main classes.
+The |pydwf.short| package encapsulates the functionality offered by the underlying C library in two main Python classes.
 
-Class :py:class:`pydwf.DigilentWaveformsLibrary` represents the loaded DWF library itself, and provides functions that are not specific to a particular device,
-such as querying the library version, device enumeration, and opening a device for use.
+Class |DigilentWaveformsLibrary.long| represents the loaded DWF library itself, and provides functions that are not specific to a particular device, such as querying the library version, device enumeration, and opening a device for use.
 
-* class :py:class:`pydwf.DigilentWaveformsLibrary`:
+* class |DigilentWaveformsLibrary.long|
 
    * miscellaneous library functions
-   * enum: EnumAPI
-   * device: DeviceAPI
+   * :py:attr:`~pydwf.DigilentWaveformsLibrary.enum`:   :py:class:`pydwf.DigilentWaveformsLibrary.EnumAPI`
+   * :py:attr:`~pydwf.DigilentWaveformsLibrary.device`: :py:class:`pydwf.DigilentWaveformsLibrary.DeviceAPI`
 
-Class :py:class:`pydwf.DigilentWaveformsDevice` represents a specific DWF-compatible hardware device, such as an Analog Discovery 2 or a Digital Discovery.
-The functionality of a DigilentWaveformsDevice is offered in a number of sub-modules, each representing an *instrument*, *protocol*, or *measurement type*.
+Class |DigilentWaveformsDevice.long| represents a specific DWF-compatible hardware device, such as an Analog Discovery 2 or a Digital Discovery.
+The functionality of a |DigilentWaveformsDevice| is mostly offered via a number of instance attributes, each representing an *instrument*, *protocol*, or *measurement type*.
 
-* class :py:class:`pydwf.DigilentWaveformsDevice`:
+* class |DigilentWaveformsDevice.long|
 
    * miscellaneous device functions
-   * analogIn: :py:class:`pydwf.DigilentWaveformsDevice.AnalogInAPI`
-   * analogOut: :py:class:`pydwf.DigilentWaveformsDevice.AnalogOutAPI`
-   * analogIO: :py:class:`pydwf.DigilentWaveformsDevice.AnalogIOAPI`
-   * digitalIO: :py:class:`pydwf.DigilentWaveformsDevice.DigitalIOAPI`
-   * digitalIn: :py:class:`pydwf.DigilentWaveformsDevice.DigitalInAPI`
-   * digitalOut: :py:class:`pydwf.DigilentWaveformsDevice.DigitalOutAPI`
-   * digitalUart: :py:class:`pydwf.DigilentWaveformsDevice.DigitalUartAPI`
-   * digitalSpi: :py:class:`pydwf.DigilentWaveformsDevice.DigitalSpiAPI`
-   * digitalI2c: :py:class:`pydwf.DigilentWaveformsDevice.DigitalI2cAPI`
-   * digitalCan: :py:class:`pydwf.DigilentWaveformsDevice.DigitalCanAPI`
-   * analogImpedance: :py:class:`pydwf.DigilentWaveformsDevice.AnalogImpedanceAPI`
+   * :py:attr:`~pydwf.DigilentWaveformsDevice.analogIn`:        :py:class:`~pydwf.DigilentWaveformsDevice.AnalogInAPI`
+   * :py:attr:`~pydwf.DigilentWaveformsDevice.analogOut`:       :py:class:`~pydwf.DigilentWaveformsDevice.AnalogOutAPI`
+   * :py:attr:`~pydwf.DigilentWaveformsDevice.analogIO`:        :py:class:`~pydwf.DigilentWaveformsDevice.AnalogIOAPI`
+   * :py:attr:`~pydwf.DigilentWaveformsDevice.digitalIO`:       :py:class:`~pydwf.DigilentWaveformsDevice.DigitalIOAPI`
+   * :py:attr:`~pydwf.DigilentWaveformsDevice.digitalIn`:       :py:class:`~pydwf.DigilentWaveformsDevice.DigitalInAPI`
+   * :py:attr:`~pydwf.DigilentWaveformsDevice.digitalOut`:      :py:class:`~pydwf.DigilentWaveformsDevice.DigitalOutAPI`
+   * :py:attr:`~pydwf.DigilentWaveformsDevice.digitalUart`:     :py:class:`~pydwf.DigilentWaveformsDevice.DigitalUartAPI`
+   * :py:attr:`~pydwf.DigilentWaveformsDevice.digitalSpi`:      :py:class:`~pydwf.DigilentWaveformsDevice.DigitalSpiAPI`
+   * :py:attr:`~pydwf.DigilentWaveformsDevice.digitalI2c`:      :py:class:`~pydwf.DigilentWaveformsDevice.DigitalI2cAPI`
+   * :py:attr:`~pydwf.DigilentWaveformsDevice.digitalCan`:      :py:class:`~pydwf.DigilentWaveformsDevice.DigitalCanAPI`
+   * :py:attr:`~pydwf.DigilentWaveformsDevice.analogImpedance`: :py:class:`~pydwf.DigilentWaveformsDevice.AnalogImpedanceAPI`
