@@ -5,7 +5,7 @@ Welcome to the |pydwf| documentation!
 
 |pydwf.short| is a Python binding for libdwf, the library provided by |Digilent| (now a subsidiary of National Instruments) to control their line of electronic measurement and control devices, which includes the Analog and Digital Discovery, Electronic Explorer, and Analog Discovery Pro.
 
-The current release of |pydwf| is version |release|.
+The current release of |pydwf| is version |release|. It is intended to be used with version |libdwf-version| of the DWF C library.
 
 .. toctree::
    :maxdepth: 2

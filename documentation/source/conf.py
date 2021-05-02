@@ -14,7 +14,6 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../..'))
 
-
 # -- Project information -----------------------------------------------------
 
 project = 'pydwf'
@@ -22,7 +21,7 @@ copyright = '2019–2021, Sidney Cadot'
 author = 'Sidney Cadot'
 
 # The full version, including alpha/beta/rc tags
-release = '0.3.2'
+release = '0.3.3'
 
 # -- General configuration ---------------------------------------------------
 

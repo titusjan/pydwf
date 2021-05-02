@@ -46,6 +46,7 @@ This makes it possible to easily catch any |pydwf| error in code, e.g.
 
    except PyDwfError as e:
 
-       # This will catch both DigilentWaveformsLibraryError and the more general PyDwfError exceptions.
+       # This will catch both DigilentWaveformsLibraryError,
+       # and the more general PyDwfError exceptions.
 
        print("oops:", e)

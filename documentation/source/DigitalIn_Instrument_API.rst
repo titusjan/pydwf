@@ -33,22 +33,22 @@ The DigitalIn instrument state machine
 API methods
 -----------
 
-The DigitalIn instrument is complicated; there are many settings that control its behavior and, consequently, many functions to
-control and query those settings.
+The DigitalIn instrument is complicated; there are many settings that control its behavior and, consequently,
+many functions to control and query those settings.
 
 Version 3.16.3 of the DWF library has 55 'FDwfDigitalIn' functions, 2 of which (*FDwfDigitalInMixedSet*, *FDwfDigitalInTriggerSourceInfo*) are obsolete.
 All of these are available through the DigitalIn API of |pydwf|.
 
-Configuration functions
-^^^^^^^^^^^^^^^^^^^^^^^
+Instrument configuration
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
    digitalIn.reset()
    digitalIn.configure(reconfigure: bool, start: bool)
 
-Status inquiry functions
-^^^^^^^^^^^^^^^^^^^^^^^^
+Status inquiry
+^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -66,11 +66,10 @@ Status inquiry functions
    digitalIn.statusRecord() -> Tuple[int, int, int]
    digitalIn.statusTime() -> Tuple[int, int, int]
 
-Timing functions
-^^^^^^^^^^^^^^^^
+Timing configuration
+^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
-
 
    digitalIn.internalClockInfo() -> float
 
@@ -86,8 +85,8 @@ Timing functions
    digitalIn.dividerSet(div: int)
    digitalIn.dividerGet() -> int
 
-Configuration functions
-^^^^^^^^^^^^^^^^^^^^^^^
+Channel configuration
+^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -125,8 +124,8 @@ Configuration functions
    digitalIn.acquisitionModeSet(acquisition_mode: ACQMODE)
    digitalIn.acquisitionModeGet() -> ACQMODE
 
-Trigger functions
-^^^^^^^^^^^^^^^^^
+Trigger configuration
+^^^^^^^^^^^^^^^^^^^^^
 
 Note: this function is obsolete.
 
@@ -171,8 +170,8 @@ Note: this function is obsolete.
    digitalIn.triggerLengthSet(secMin: float, secMax: float, idxSync: int)
    digitalIn.triggerMatchSet(pin: int, mask: int, value: int, bitstuffing: int)
 
-Miscellaneous functions
-^^^^^^^^^^^^^^^^^^^^^^^
+Miscellaneous functionality
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Note: this function is obsolete.
 

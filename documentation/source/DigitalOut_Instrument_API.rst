@@ -33,29 +33,29 @@ The DigitalOut instrument state machine
 API methods
 -----------
 
-The DigitalOut instrument is complicated; there are many settings that control its behavior and, consequently, many functions to
-control and query those settings.
+The DigitalOut instrument is complicated; there are many settings that control its behavior and, consequently,
+many functions to control and query those settings.
 
 Version 3.16.3 of the DWF library has 48 'FDwfDigitalOut' functions, one of which (*FDwfDigitalOutTriggerSourceInfo*) is obsolete.
 All of these are available through the DigitalOut API of |pydwf|.
 
-Configuration functions
-^^^^^^^^^^^^^^^^^^^^^^^
+Instrument configuration
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
    digitalOut.reset()
    digitalOut.configure(start: bool)
 
-Status function
-^^^^^^^^^^^^^^^
+Digital output status inquiry
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
    digitalOut.status() -> DwfState
 
-Trigger functions
-^^^^^^^^^^^^^^^^^
+Digital output trigger configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This function is obsolete.
 
@@ -73,8 +73,8 @@ This function is obsolete.
    digitalOut.triggerSourceSet(trigger_source: TRIGSRC)
    digitalOut.triggerSourceGet() -> TRIGSRC
 
-Pattern functions
-^^^^^^^^^^^^^^^^^
+Digital output sequencer configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -101,23 +101,23 @@ Pattern functions
    digitalOut.repeatTriggerSet(repeatTrigger: bool)
    digitalOut.repeatTriggerGet() -> bool
 
-Channel Count
-^^^^^^^^^^^^^
+Digital output channel count
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
    digitalOut.count() -> int
 
-Channel enable/disable
-^^^^^^^^^^^^^^^^^^^^^^
+Digital output channel enable/disable
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
    digitalOut.enableSet(channel_index: int, enable: bool)
    digitalOut.enableGet(channel_index: int)
 
-Channel output
-^^^^^^^^^^^^^^
+Digital output channel behavior configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -137,8 +137,8 @@ Channel output
    digitalOut.idleSet(channel_index: int, idle_mode: DwfDigitalOutIdle)
    digitalOut.idleGet(channel_index: int) -> DwfDigitalOutIdle
 
-Channel timing
-^^^^^^^^^^^^^^
+Digital output channel timing configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -160,8 +160,8 @@ Channel timing
    digitalOut.counterSet(channel_index: int, low_count: int, high_count: int)
    digitalOut.counterGet(channel_index: int) -> Tuple[int, int]
 
-Channel pattern data management
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Digital output channel pattern data management
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 

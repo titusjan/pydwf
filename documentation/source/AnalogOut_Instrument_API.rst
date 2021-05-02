@@ -44,12 +44,8 @@ We summarize them below.
 Version 3.16.3 of the DWF library has 83 'FDwfAnalogOut' functions, 25 of which are obsolete.
 All of these are available through the AnalogIn API of |pydwf|.
 
-Miscellaneus functions
-^^^^^^^^^^^^^^^^^^^^^^
-
-.. code-block:: python
-
-   analogOut.count() -> int
+Instrument configuration
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -58,22 +54,6 @@ Miscellaneus functions
 .. code-block:: python
 
    analogOut.configure(channel_index: int, start: bool)
-
-.. code-block:: python
-
-   analogOut.customAMFMEnableSet(channel_index: int, enable: bool)
-   analogOut.customAMFMEnableGet(channel_index: int) -> bool
-
-.. code-block:: python
-
-   analogOut.status(channel_index: int) -> DwfState
-   analogOut.nodePlayStatus(channel_index: int, node: AnalogOutNode) -> Tuple[int, int, int]
-   analogOut.nodePlayData(channel_index:int, node: AnalogOutNode, data: np.ndarray)
-
-.. code-block:: python
-
-   analogOut.masterSet(channel_index: int, idxMaster: int)
-   analogOut.masterGet(channel_index: int) -> int
 
 Triggering
 ^^^^^^^^^^
@@ -116,7 +96,7 @@ Run duration, wait duration, and repeats
    analogOut.repeatTriggerSet(channel_index: int, repeatTrigger: bool)
    analogOut.repeatTriggerGet(channel_index: int) -> bool
 
-Analog Output settings
+Analog output settings
 ^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
@@ -212,6 +192,29 @@ Node signal phase setting
 
    analogOut.nodeDataInfo(channel_index: int, node: AnalogOutNode) -> Tuple[float, float]
    analogOut.nodeDataSet(channel_index: int, node: AnalogOutNode, data: np.ndarray)
+
+Miscellaneus functionality
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+   analogOut.count() -> int
+
+.. code-block:: python
+
+   analogOut.customAMFMEnableSet(channel_index: int, enable: bool)
+   analogOut.customAMFMEnableGet(channel_index: int) -> bool
+
+.. code-block:: python
+
+   analogOut.status(channel_index: int) -> DwfState
+   analogOut.nodePlayStatus(channel_index: int, node: AnalogOutNode) -> Tuple[int, int, int]
+   analogOut.nodePlayData(channel_index:int, node: AnalogOutNode, data: np.ndarray)
+
+.. code-block:: python
+
+   analogOut.masterSet(channel_index: int, idxMaster: int)
+   analogOut.masterGet(channel_index: int) -> int
 
 Obsolete functions
 ^^^^^^^^^^^^^^^^^^

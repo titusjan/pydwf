@@ -71,24 +71,33 @@ Class |DigilentWaveformsLibrary.long| represents the loaded DWF library itself, 
 
 * class |DigilentWaveformsLibrary.long|
 
-   * miscellaneous library functions
-   * :py:attr:`~pydwf.DigilentWaveformsLibrary.enum`:   :py:class:`~pydwf.DigilentWaveformsLibrary.EnumAPI`
-   * :py:attr:`~pydwf.DigilentWaveformsLibrary.device`: :py:class:`~pydwf.DigilentWaveformsLibrary.DeviceAPI`
+   * methods :py:meth:`~pydwf.DigilentWaveformsLibrary.getLastError`, :py:meth:`~pydwf.DigilentWaveformsLibrary.getLastErrorMsg`,
+             :py:meth:`~pydwf.DigilentWaveformsLibrary.getVersion`,
+             :py:meth:`~pydwf.DigilentWaveformsLibrary.paramSet`, :py:meth:`~pydwf.DigilentWaveformsLibrary.paramGet`
+   * attribute :py:attr:`~pydwf.DigilentWaveformsLibrary.enum`    of type :py:class:`~pydwf.DigilentWaveformsLibrary.EnumAPI`
+   * attribute :py:attr:`~pydwf.DigilentWaveformsLibrary.device`: of type :py:class:`~pydwf.DigilentWaveformsLibrary.DeviceAPI`
 
 Class |DigilentWaveformsDevice.long| represents a specific DWF-compatible hardware device, such as an Analog Discovery 2 or a Digital Discovery.
 The functionality of a |DigilentWaveformsDevice| is mostly offered via a number of instance attributes, each representing an *instrument*, *protocol*, or *measurement type*.
 
 * class |DigilentWaveformsDevice.long|
 
-   * miscellaneous device functions
-   * :py:attr:`~pydwf.DigilentWaveformsDevice.analogIn`:        :py:class:`~pydwf.DigilentWaveformsDevice.AnalogInAPI`
-   * :py:attr:`~pydwf.DigilentWaveformsDevice.analogOut`:       :py:class:`~pydwf.DigilentWaveformsDevice.AnalogOutAPI`
-   * :py:attr:`~pydwf.DigilentWaveformsDevice.analogIO`:        :py:class:`~pydwf.DigilentWaveformsDevice.AnalogIOAPI`
-   * :py:attr:`~pydwf.DigilentWaveformsDevice.digitalIO`:       :py:class:`~pydwf.DigilentWaveformsDevice.DigitalIOAPI`
-   * :py:attr:`~pydwf.DigilentWaveformsDevice.digitalIn`:       :py:class:`~pydwf.DigilentWaveformsDevice.DigitalInAPI`
-   * :py:attr:`~pydwf.DigilentWaveformsDevice.digitalOut`:      :py:class:`~pydwf.DigilentWaveformsDevice.DigitalOutAPI`
-   * :py:attr:`~pydwf.DigilentWaveformsDevice.digitalUart`:     :py:class:`~pydwf.DigilentWaveformsDevice.DigitalUartAPI`
-   * :py:attr:`~pydwf.DigilentWaveformsDevice.digitalSpi`:      :py:class:`~pydwf.DigilentWaveformsDevice.DigitalSpiAPI`
-   * :py:attr:`~pydwf.DigilentWaveformsDevice.digitalI2c`:      :py:class:`~pydwf.DigilentWaveformsDevice.DigitalI2cAPI`
-   * :py:attr:`~pydwf.DigilentWaveformsDevice.digitalCan`:      :py:class:`~pydwf.DigilentWaveformsDevice.DigitalCanAPI`
-   * :py:attr:`~pydwf.DigilentWaveformsDevice.analogImpedance`: :py:class:`~pydwf.DigilentWaveformsDevice.AnalogImpedanceAPI`
+   * methods :py:meth:`~pydwf.DigilentWaveformsDevice.close`,
+             :py:meth:`~pydwf.DigilentWaveformsDevice.autoConfigureSet`, :py:meth:`~pydwf.DigilentWaveformsDevice.autoConfigureGet`,
+             :py:meth:`~pydwf.DigilentWaveformsDevice.reset`,
+             :py:meth:`~pydwf.DigilentWaveformsDevice.enableSet`,
+             :py:meth:`~pydwf.DigilentWaveformsDevice.triggerInfo`, :py:meth:`~pydwf.DigilentWaveformsDevice.triggerSet`, :py:meth:`~pydwf.DigilentWaveformsDevice.triggerGet`,
+             :py:meth:`~pydwf.DigilentWaveformsDevice.triggerPC`,
+             :py:meth:`~pydwf.DigilentWaveformsDevice.triggerSlopeInfo`,
+             :py:meth:`~pydwf.DigilentWaveformsDevice.paramSet`, :py:meth:`~pydwf.DigilentWaveformsDevice.paramGet`
+   * attribute :py:attr:`~pydwf.DigilentWaveformsDevice.analogIn`        of type :py:class:`~pydwf.DigilentWaveformsDevice.AnalogInAPI`
+   * attribute :py:attr:`~pydwf.DigilentWaveformsDevice.analogOut`       of type :py:class:`~pydwf.DigilentWaveformsDevice.AnalogOutAPI`
+   * attribute :py:attr:`~pydwf.DigilentWaveformsDevice.analogIO`        of type :py:class:`~pydwf.DigilentWaveformsDevice.AnalogIOAPI`
+   * attribute :py:attr:`~pydwf.DigilentWaveformsDevice.digitalIO`       of type :py:class:`~pydwf.DigilentWaveformsDevice.DigitalIOAPI`
+   * attribute :py:attr:`~pydwf.DigilentWaveformsDevice.digitalIn`       of type :py:class:`~pydwf.DigilentWaveformsDevice.DigitalInAPI`
+   * attribute :py:attr:`~pydwf.DigilentWaveformsDevice.digitalOut`      of type :py:class:`~pydwf.DigilentWaveformsDevice.DigitalOutAPI`
+   * attribute :py:attr:`~pydwf.DigilentWaveformsDevice.digitalUart`     of type :py:class:`~pydwf.DigilentWaveformsDevice.DigitalUartAPI`
+   * attribute :py:attr:`~pydwf.DigilentWaveformsDevice.digitalSpi`      of type :py:class:`~pydwf.DigilentWaveformsDevice.DigitalSpiAPI`
+   * attribute :py:attr:`~pydwf.DigilentWaveformsDevice.digitalI2c`      of type :py:class:`~pydwf.DigilentWaveformsDevice.DigitalI2cAPI`
+   * attribute :py:attr:`~pydwf.DigilentWaveformsDevice.digitalCan`      of type :py:class:`~pydwf.DigilentWaveformsDevice.DigitalCanAPI`
+   * attribute :py:attr:`~pydwf.DigilentWaveformsDevice.analogImpedance` of type :py:class:`~pydwf.DigilentWaveformsDevice.AnalogImpedanceAPI`

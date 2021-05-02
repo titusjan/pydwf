@@ -39,8 +39,8 @@ consequently, many functions to control and query those settings.
 Version 3.16.3 of the DWF library has 93 'FDwfAnalogIn' functions, one of which (*FDwfAnalogInTriggerSourceInfo*) is obsolete.
 All of these are available through the AnalogIn API of the |DigilentWaveformsDevice|.
 
-Configuration functions
-^^^^^^^^^^^^^^^^^^^^^^^
+Instrument configuration
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -50,15 +50,15 @@ Configuration functions
 
    analogIn.configure(reconfigure: bool, start: bool)
 
-Status inquiry functions
-^^^^^^^^^^^^^^^^^^^^^^^^
+Status inquiry
+^^^^^^^^^^^^^^
 
 .. code-block:: python
 
    analogIn.status(read_data: bool) -> DwfState
 
-Information on last status() request
-""""""""""""""""""""""""""""""""""""
+Last status() request inquiry
+"""""""""""""""""""""""""""""
 
 .. code-block:: python
 
