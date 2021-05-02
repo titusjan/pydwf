@@ -5,7 +5,7 @@ Welcome to pydwf 's documentation!
 pydwf is a Python binding for libdwf, the library provided by `Digilent <https://store.digilentinc.com/>`_ (now a subsidiary of National Instruments)
 to control their *Discovery* line of products.
 
-The current version of pydwf is 0.2.13.
+The current version of pydwf is 0.3.0.
 
 .. toctree::
    :maxdepth: 2
